@@ -88,6 +88,9 @@
   jederzeit neu gedruckt werden kann.
 - 2026-11-07 (Lehrkraft): Knopf „Neuer Link“ entfernt (nicht gebraucht). Stattdessen pro Schüler:in
   „Entwicklung drucken“ (`#/lehrkraft/schueler/<id>/drucken`). Lernstand-Knöpfe grün zur Unterscheidung.
+- 2026-11-07 (Lehrkraft): Keine gemischten Klassen → KC wird **pro Klasse** gewählt (`klassen.kerncurriculum`);
+  Trigger übertragen es auf `schueler.kerncurriculum` (darauf basiert die Auswertung). Kompetenz-Kürzel (`code`)
+  werden in der Oberfläche nicht mehr angezeigt; Anzeige = Kurzname, darunter klein der KC-Wortlaut.
 - 2026-11-07: React statt Svelte – bewährte Drag-&-Drop-Lösung mit Touch-Unterstützung für iPad.
 - 2026-11-07: Öffentliches Repo statt privatem (GitHub Pages bei privatem Repo nur mit Bezahlkonto).
   Unbedenklich, weil keine Daten und keine Geheimnisse im Code liegen.

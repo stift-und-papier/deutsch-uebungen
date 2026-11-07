@@ -14,7 +14,6 @@ export function KlassenLernstand({ klasseId }: { klasseId: string }) {
   const [kompetenzen, setKompetenzen] = useState<Kompetenz[]>([])
   const [werte, setWerte] = useState<Zeile[]>([])
   const [einstellungen, setEinstellungen] = useState<Einstellungen | null>(null)
-  const [kc, setKc] = useState<string | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
 
   useEffect(() => {
@@ -28,15 +27,10 @@ export function KlassenLernstand({ klasseId }: { klasseId: string }) {
       const f = [k, s, ko, l, e].find((r) => r.error)
       if (f?.error) return setFehler(fehlerText(f.error))
       setKlasse(k.data as Klasse)
-      const liste = s.data as Schueler[]
-      setSchueler(liste)
+      setSchueler(s.data as Schueler[])
       setKompetenzen(ko.data as Kompetenz[])
       setWerte(l.data as Zeile[])
       setEinstellungen(e.data as Einstellungen)
-      // Häufigstes KC der Klasse vorauswählen
-      const zaehler = new Map<string, number>()
-      for (const x of liste) if (x.kerncurriculum) zaehler.set(x.kerncurriculum, (zaehler.get(x.kerncurriculum) ?? 0) + 1)
-      setKc([...zaehler.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null)
     })
   }, [klasseId])
 
@@ -49,11 +43,9 @@ export function KlassenLernstand({ klasseId }: { klasseId: string }) {
   if (fehler) return <p className="hinweis-box">{fehler}</p>
   if (!klasse || !einstellungen) return <p>Lädt …</p>
 
-  const kcs = [...new Set(schueler.map((s) => s.kerncurriculum).filter(Boolean))] as string[]
-  const zeilen = schueler.filter((s) => s.kerncurriculum === kc)
+  const kc = klasse.kerncurriculum
   const mitDaten = new Set(werte.map((w) => w.kompetenz_id))
   const spalten = kompetenzen.filter((k) => k.kerncurriculum === kc && mitDaten.has(k.id))
-  const ohneKc = schueler.filter((s) => !s.kerncurriculum).length
 
   return (
     <>
@@ -61,19 +53,12 @@ export function KlassenLernstand({ klasseId }: { klasseId: string }) {
         ← Klasse {klasse.name}
       </a>
       <h1>Lernstand – Klasse {klasse.name}</h1>
-      {ohneKc > 0 && (
+      {kc ? (
+        <p className="klein">Kerncurriculum: {kc}</p>
+      ) : (
         <p className="hinweis-box">
-          Bei {ohneKc} Schüler:innen ist noch kein Kerncurriculum eingestellt. Ohne KC wird kein Lernstand berechnet.
+          Für diese Klasse ist noch kein Kerncurriculum eingestellt. Ohne KC wird kein Lernstand berechnet.
         </p>
-      )}
-      {kcs.length > 1 && (
-        <div className="umschalter" role="tablist">
-          {kcs.map((name) => (
-            <button key={name} role="tab" aria-selected={kc === name} onClick={() => setKc(name)}>
-              {name}
-            </button>
-          ))}
-        </div>
       )}
       {spalten.length === 0 ? (
         <p>Noch keine Ergebnisse zu Kompetenzen. Ordnen Sie den Aufgaben Kompetenzen zu, dann erscheinen hier die Ergebnisse.</p>
@@ -85,20 +70,20 @@ export function KlassenLernstand({ klasseId }: { klasseId: string }) {
                 <th>Pseudonym</th>
                 {spalten.map((k) => (
                   <th key={k.id} className="heatmap-kopf">
-                    <span>{k.kurzname || k.code}</span>
+                    <span>{k.kurzname || k.bereich}</span>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {zeilen.map((s) => (
+              {schueler.map((s) => (
                 <tr key={s.id}>
                   <th>
                     <a href={`#/lehrkraft/schueler/${s.id}`}>{s.pseudonym}</a>
                   </th>
                   {spalten.map((k) => (
                     <td key={k.id}>
-                      <a href={`#/lehrkraft/schueler/${s.id}`} aria-label={`${s.pseudonym}: ${k.kurzname ?? k.code}`}>
+                      <a href={`#/lehrkraft/schueler/${s.id}`} aria-label={`${s.pseudonym}: ${k.kurzname ?? k.bereich}`}>
                         <StufenFeld a={wert.get(`${s.id}:${k.id}`)} />
                       </a>
                     </td>

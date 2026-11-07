@@ -86,10 +86,8 @@ export function SchuelerLernstand({ schuelerId, drucken = false }: { schuelerId:
                 return (
                   <div key={k.id} className="kompetenz-zeile">
                     <div className="kompetenz-name">
-                      <strong>{k.kurzname || k.code}</strong>
-                      <div className="klein">
-                        {k.code}: {k.kompetenz}
-                      </div>
+                      <strong>{k.kurzname || k.bereich}</strong>
+                      <div className="klein">{k.kompetenz}</div>
                     </div>
                     <StufenBalken a={a} e={einstellungen} />
                     <Verlauf a={a} e={einstellungen} />

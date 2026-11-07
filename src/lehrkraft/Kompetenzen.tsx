@@ -38,7 +38,7 @@ export function Kompetenzen() {
           k.kerncurriculum === kc &&
           (stufe === 'alle' || k.stufe === stufe) &&
           (ausgeblendeteZeigen || !k.ausgeblendet) &&
-          (!suche || `${k.code} ${k.kompetenz} ${k.kurzname ?? ''} ${k.hinweis ?? ''}`.toLowerCase().includes(suche.toLowerCase())),
+          (!suche || `${k.kompetenz} ${k.kurzname ?? ''} ${k.hinweis ?? ''}`.toLowerCase().includes(suche.toLowerCase())),
       ),
     [liste, kc, stufe, suche, ausgeblendeteZeigen],
   )
@@ -123,16 +123,10 @@ export function Kompetenzen() {
                     <tr key={k.id} className={k.ausgeblendet ? 'ausgeblendet' : undefined}>
                       <td className="nicht-umbrechen">
                         <span className="marke">{STUFEN_TEXT[k.stufe]}</span>
-                        <br />
-                        <span className="klein">{k.code}</span>
                       </td>
                       <td>
-                        {k.kompetenz}
-                        {k.kurzname && (
-                          <div className="klein">
-                            Für Schüler:innen: <strong>{k.kurzname}</strong>
-                          </div>
-                        )}
+                        <strong>{k.kurzname || k.bereich}</strong>
+                        <div className="klein">{k.kompetenz}</div>
                         {k.hinweis && <div className="klein">Hinweis: {k.hinweis}</div>}
                         {k.ausgeblendet && <div className="klein">(ausgeblendet)</div>}
                       </td>
@@ -183,7 +177,8 @@ function KompetenzFormular({
         e.preventDefault()
         const datensatz = {
           ...werte,
-          code: werte.code.trim(),
+          // Die Kennung wird intern gebraucht, aber nicht mehr angezeigt; eigene Kompetenzen bekommen eine automatische.
+          code: werte.code.trim() || `EIGEN-${Date.now().toString(36).toUpperCase()}`,
           bereich: werte.bereich.trim(),
           kompetenz: werte.kompetenz.trim(),
           kurzname: werte.kurzname.trim() || null,
@@ -193,16 +188,12 @@ function KompetenzFormular({
         const { error } = kompetenz
           ? await supabase.from('kompetenzen').update(datensatz).eq('id', kompetenz.id)
           : await supabase.from('kompetenzen').insert({ ...datensatz, sortierung: 100000 })
-        if (error) setFehler(/unique|duplicate/i.test(error.message) ? 'Diese Kennung gibt es schon.' : fehlerText(error))
+        if (error) setFehler(fehlerText(error))
         else onFertig(true)
       }}
     >
       <h2>{kompetenz ? 'Kompetenz ändern' : 'Eigene Kompetenz hinzufügen'}</h2>
       <div className="formular zeile">
-        <label>
-          Kennung
-          <input value={werte.code} onChange={(e) => setze('code', e.target.value)} required maxLength={40} placeholder="z. B. EIGEN-RE-1" />
-        </label>
         <label>
           Kerncurriculum
           <select value={werte.kerncurriculum} onChange={(e) => setze('kerncurriculum', e.target.value)}>

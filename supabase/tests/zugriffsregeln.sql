@@ -325,6 +325,20 @@ begin
   if n <> 1 then raise exception 'FEHLGESCHLAGEN: A sieht % Einstellungen', n; end if;
   ok := ok || '2.5b Lernstand korrekt berechnet und getrennt'::text;
 
+  -- KC wird pro Klasse festgelegt und an alle (auch neue) Schüler:innen weitergegeben
+  update public.klassen set kerncurriculum = 'Gymnasium' where id = c_kl_a2;
+  if (select kerncurriculum from public.schueler where id = c_sch_a2) is distinct from 'Gymnasium' then
+    raise exception 'FEHLGESCHLAGEN: KC der Klasse nicht übernommen';
+  end if;
+  insert into public.schueler (klasse_id, pseudonym, kerncurriculum) values (c_kl_a2, 'Neu-01', 'Hauptschule');
+  if (select kerncurriculum from public.schueler where klasse_id = c_kl_a2 and pseudonym = 'Neu-01') is distinct from 'Gymnasium' then
+    raise exception 'FEHLGESCHLAGEN: neue Schülerin übernimmt KC der Klasse nicht';
+  end if;
+  update public.klassen set kerncurriculum = 'Hauptschule' where id = c_kl_b1;
+  get diagnostics n = row_count;
+  if n <> 0 then raise exception 'FEHLGESCHLAGEN: A ändert KC in Klasse von B'; end if;
+  ok := ok || '2.5c KC pro Klasse'::text;
+
   -- Eigene Schülerin anlegen: bekommt automatisch einen langen Token
   insert into public.schueler (klasse_id, pseudonym) values (c_kl_a1, 'Igel-09') returning length(token) into n;
   if n < 32 then raise exception 'FEHLGESCHLAGEN: Token zu kurz (%)', n; end if;

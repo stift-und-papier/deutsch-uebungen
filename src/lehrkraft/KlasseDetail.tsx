@@ -43,12 +43,6 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
     }
   }
 
-  async function kcSetzen(ids: string[], kc: string | null) {
-    const { error } = await supabase.from('schueler').update({ kerncurriculum: kc }).in('id', ids)
-    if (error) setFehler(fehlerText(error))
-    else void laden()
-  }
-
   async function umbenennen(s: Schueler) {
     const neu = window.prompt('Neues Pseudonym (bitte keinen echten Namen):', s.pseudonym)?.trim()
     if (!neu || neu === s.pseudonym) return
@@ -130,27 +124,29 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
             ))}
           </select>
         </label>
-        {schueler.length > 0 && (
-          <label>
-            Kerncurriculum für alle setzen
-            <select
-              value=""
-              onChange={(e) => {
-                if (e.target.value && window.confirm(`Für alle ${schueler.length} Schüler:innen „${e.target.value}“ einstellen?`))
-                  void kcSetzen(
-                    schueler.map((s) => s.id),
-                    e.target.value,
-                  )
-              }}
-            >
-              <option value="">– auswählen –</option>
-              {KERNCURRICULA.map((k) => (
-                <option key={k}>{k}</option>
-              ))}
-            </select>
-          </label>
-        )}
+        <label>
+          Kerncurriculum der Klasse
+          <select
+            value={klasse.kerncurriculum ?? ''}
+            onChange={async (e) => {
+              const { error } = await supabase
+                .from('klassen')
+                .update({ kerncurriculum: e.target.value || null })
+                .eq('id', klasse.id)
+              if (error) setFehler(fehlerText(error))
+              else void laden()
+            }}
+          >
+            <option value="">– bitte wählen –</option>
+            {KERNCURRICULA.map((k) => (
+              <option key={k}>{k}</option>
+            ))}
+          </select>
+        </label>
       </div>
+      {!klasse.kerncurriculum && (
+        <p className="hinweis-box">Bitte das Kerncurriculum der Klasse wählen – ohne KC wird kein Lernstand berechnet.</p>
+      )}
 
       {schueler.length === 0 ? (
         <p>Noch keine Schüler:innen in dieser Klasse.</p>
@@ -159,7 +155,6 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
           <thead>
             <tr>
               <th>Pseudonym</th>
-              <th>Kerncurriculum</th>
               <th>Versuche</th>
               <th>Aktionen</th>
             </tr>
@@ -169,19 +164,6 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
               <tr key={s.id}>
                 <td>
                   <strong>{s.pseudonym}</strong>
-                </td>
-                <td>
-                  <select
-                    className="klein-auswahl"
-                    aria-label={`Kerncurriculum von ${s.pseudonym}`}
-                    value={s.kerncurriculum ?? ''}
-                    onChange={(e) => void kcSetzen([s.id], e.target.value || null)}
-                  >
-                    <option value="">– bitte wählen –</option>
-                    {KERNCURRICULA.map((k) => (
-                      <option key={k}>{k}</option>
-                    ))}
-                  </select>
                 </td>
                 <td>{s.versuche[0]?.count ?? 0}</td>
                 <td className="aktionen">

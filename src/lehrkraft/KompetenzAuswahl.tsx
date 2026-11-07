@@ -29,7 +29,7 @@ export function KompetenzAuswahl({ ausgewaehlt, onChange }: Props) {
           !k.ausgeblendet &&
           k.kerncurriculum === kc &&
           (stufe === 'alle' || k.stufe === stufe) &&
-          (!suche || `${k.code} ${k.kurzname ?? ''} ${k.kompetenz} ${k.bereich}`.toLowerCase().includes(suche.toLowerCase())),
+          (!suche || `${k.kurzname ?? ''} ${k.kompetenz} ${k.bereich}`.toLowerCase().includes(suche.toLowerCase())),
       ),
     [alle, kc, stufe, suche],
   )
@@ -53,9 +53,9 @@ export function KompetenzAuswahl({ ausgewaehlt, onChange }: Props) {
           {gewaehlt.map((k) => (
             <li key={k.id} className="chip">
               <span>
-                <strong>{k.kurzname || k.code}</strong> <span className="klein">({k.kerncurriculum.slice(0, 3)}, {k.code})</span>
+                <strong>{k.kurzname || k.bereich}</strong> <span className="klein">({k.kerncurriculum})</span>
               </span>
-              <button type="button" onClick={() => umschalten(k.id)} aria-label={`${k.kurzname ?? k.code} entfernen`}>
+              <button type="button" onClick={() => umschalten(k.id)} aria-label={`${k.kurzname ?? k.bereich} entfernen`}>
                 ✕
               </button>
             </li>
@@ -100,9 +100,9 @@ export function KompetenzAuswahl({ ausgewaehlt, onChange }: Props) {
                 <label className="haken">
                   <input type="checkbox" checked={ausgewaehlt.has(k.id)} onChange={() => umschalten(k.id)} />
                   <span>
-                    <strong>{k.kurzname || k.code}</strong>{' '}
+                    <strong>{k.kurzname || k.bereich}</strong>{' '}
                     <span className="klein">
-                      · {k.bereich} · Stufe {k.stufe} · {k.code}
+                      · {k.bereich} · Stufe {k.stufe}
                     </span>
                     <br />
                     <span className="klein">{k.kompetenz}</span>
