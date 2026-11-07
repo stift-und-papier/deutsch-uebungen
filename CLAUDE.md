@@ -26,6 +26,8 @@
   - Pfad-Basis `/deutsch-uebungen/` (siehe `vite.config.ts`). Bau-Ziel Safari 15 (ältere iPads).
   - Veröffentlichung automatisch per GitHub Actions bei Push auf `main`.
 - **Backend:** Supabase (kostenloser Tarif, Region EU/Frankfurt), Row Level Security überall an.
+  - Projekt-Ref `qefbtxchyqhjfmpkgosm`, Adresse und publishable Key in `src/lib/supabase.ts`.
+  - Datenbankänderungen nur als Migrationen in `supabase/migrations/` (Supabase CLI per `npx supabase`).
   - Kostenloser Tarif pausiert nach ca. 1 Woche ohne Nutzung → im Dashboard mit einem Klick wieder starten.
   - Lehrkraft: Login per E-Mail/Passwort (Supabase Auth).
   - Schüler:innen: kein Konto, sondern zufälliger Link-Token (≥ 128 Bit). Zugriff nur über
