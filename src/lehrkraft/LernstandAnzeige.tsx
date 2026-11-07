@@ -1,4 +1,4 @@
-import { STUFEN, trendPfeil, trendText, type Auswertung, type Einstellungen } from '../lib/lernstand'
+import { datum, STUFEN, trendPfeil, trendText, type Auswertung, type Einstellungen } from '../lib/lernstand'
 
 // Feld in der Heatmap: Farbe UND Symbol (für Farbsehschwäche und Schwarz-Weiß-Druck).
 export function StufenFeld({ a }: { a: Auswertung | undefined }) {
@@ -46,24 +46,50 @@ export function StufenBalken({ a, e }: { a: Auswertung; e: Einstellungen }) {
   )
 }
 
-// Verlaufskurve des Stands (nach jedem gewerteten Versuch), mit Stufengrenzen.
+// Verlaufskurve des Stands (nach jedem gewerteten Versuch), mit Stufengrenzen und Datum je Versuch.
 export function Verlauf({ a, e }: { a: Auswertung; e: Einstellungen }) {
   const punkte = a.verlauf ?? []
   if (punkte.length < 2) return null
-  const breite = 260
-  const hoehe = 70
-  const x = (i: number) => 6 + (i / (punkte.length - 1)) * (breite - 12)
-  const y = (p: number) => hoehe - 4 - (p / 100) * (hoehe - 8)
+  const breite = 340
+  const kurve = 80 // Höhe des Kurvenbereichs, darunter Platz für die Daten
+  const x = (i: number) => 18 + (i / (punkte.length - 1)) * (breite - 36)
+  const y = (p: number) => kurve - 4 - (p / 100) * (kurve - 8)
   const linie = punkte.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(p.punkte).toFixed(1)}`).join(' ')
+  // Datum unter jedem Versuch. Wird es eng, stehen die Daten versetzt in zwei Zeilen;
+  // erst bei sehr vielen Versuchen wird nur noch jedes n-te Datum beschriftet (das letzte immer).
+  const abstand = (breite - 36) / (punkte.length - 1)
+  const zweiZeilen = abstand < 40
+  const jedes = Math.max(1, Math.ceil(40 / (abstand * (zweiZeilen ? 2 : 1))))
+  const kurz = (zeit: string) => new Date(zeit).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+  const beschriftet = punkte
+    .map((_, i) => i)
+    .filter((i) => i === punkte.length - 1 || (i % jedes === 0 && punkte.length - 1 - i >= jedes))
+  const zeile = new Map(beschriftet.map((i, nr) => [i, zweiZeilen ? nr % 2 : 0]))
+  const hoehe = kurve + (zweiZeilen ? 32 : 20)
   return (
-    <svg className="verlauf" viewBox={`0 0 ${breite} ${hoehe}`} role="img" aria-label="Verlauf des Lernstands">
+    <svg className="verlauf" viewBox={`0 0 ${breite} ${hoehe}`} role="img" aria-label="Verlauf des Lernstands mit Datum">
       {[e.grenze_minus, e.grenze_o, e.grenze_plus, e.grenze_plusplus].map((g) => (
         <line key={g} x1="0" x2={breite} y1={y(g)} y2={y(g)} className="verlauf-grenze" />
       ))}
       <path d={linie} className="verlauf-linie" />
-      {punkte.map((p, i) => (
-        <circle key={i} cx={x(i)} cy={y(p.punkte)} r="2.5" className="verlauf-punkt" />
-      ))}
+      {punkte.map((p, i) => {
+        const z = zeile.get(i)
+        return (
+          <g key={i}>
+            <circle cx={x(i)} cy={y(p.punkte)} r="2.8" className="verlauf-punkt">
+              <title>{datum(p.zeit)}</title>
+            </circle>
+            {z !== undefined && (
+              <>
+                <line x1={x(i)} x2={x(i)} y1={kurve} y2={kurve + 4 + z * 12} className="verlauf-strich" />
+                <text x={x(i)} y={kurve + 15 + z * 12} className="verlauf-datum" textAnchor="middle">
+                  {kurz(p.zeit)}
+                </text>
+              </>
+            )}
+          </g>
+        )
+      })}
     </svg>
   )
 }

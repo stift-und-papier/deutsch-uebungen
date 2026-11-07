@@ -779,8 +779,9 @@ input.luecke.nochmal {
 }
 
 .verlauf {
-  width: 260px;
-  height: 70px;
+  width: 340px;
+  max-width: 100%;
+  height: auto;
   background: var(--flaeche);
   border: 1px solid var(--rand);
   border-radius: 6px;
@@ -799,6 +800,15 @@ input.luecke.nochmal {
 
 .verlauf-punkt {
   fill: var(--akzent);
+}
+
+.verlauf-strich {
+  stroke: #8a8a80;
+}
+
+.verlauf-datum {
+  font-size: 11px;
+  fill: #3d3d38;
 }
 
 /* ---------- Entwicklung (Schüler:innen) ---------- */
