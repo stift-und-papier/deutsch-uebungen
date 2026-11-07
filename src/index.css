@@ -1282,3 +1282,17 @@ tr.ausgeblendet .aktionen {
   display: inline-block;
   vertical-align: top;
 }
+
+/* Hinweis auf eine neue Version (oben, über allem) */
+.neue-version {
+  position: fixed;
+  top: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: calc(100% - 2 * var(--space-3));
+}

@@ -104,6 +104,9 @@
   Anzahl gelöster Aufgaben, nächster Schritt. **Nie Punkte/Stufen** – Test 1.13 prüft das.
 
 ## Entscheidungen (Protokoll)
+- 2026-11-08: Versionsprüfung (`src/lib/version.ts`): Safari auf dem iPad zeigte nach einer Veröffentlichung noch die
+  alte App (GitHub Pages: max-age=600). Die App vergleicht beim Öffnen, alle 5 Minuten und beim Zurückkehren den
+  Namen der Programmdatei; beim Öffnen wird einmal automatisch neu geladen, danach nur Hinweis „Neu laden“.
 - 2026-11-08 (didaktisch, Lehrkraft): Format **Auswahl**: Schreibweise `[das | *dass]` (| trennt, * = richtig,
   mehrere * = Mehrfachauswahl), Lücken und Auswahl im selben Text mischbar. Standard-Darstellung „Antippen“
   (`aes-choice`), je Aufgabe umstellbar auf Dropdown (nur Einfachauswahl). Mehrfachauswahl zählt nur, wenn genau

@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { LehrkraftBereich } from './lehrkraft/LehrkraftBereich'
 import { usePfad } from './lib/router'
+import { useNeueVersion } from './lib/version'
 import { SchuelerBereich } from './schueler/SchuelerBereich'
 
 // Vorschauseite mit Beispieldaten – nur beim Entwickeln auf dem eigenen Rechner, nie in der veröffentlichten App.
@@ -10,6 +11,23 @@ const Vorschau = import.meta.env.DEV ? lazy(() => import('./entwicklung/Vorschau
 //   #/s/<token>/...   → Schüler:innen (persönlicher Link)
 //   #/lehrkraft/...   → Lehrkraft (mit Anmeldung)
 function App() {
+  const neueVersion = useNeueVersion()
+  return (
+    <>
+      {neueVersion && (
+        <div className="aes-card neue-version" role="status">
+          <span>Es gibt eine neue Version der Übungswiese.</span>
+          <button className="aes-btn aes-btn--primary" onClick={() => window.location.reload()}>
+            Neu laden
+          </button>
+        </div>
+      )}
+      <Bereich />
+    </>
+  )
+}
+
+function Bereich(): ReactNode {
   const pfad = usePfad()
   const [bereich, ...rest] = pfad
 
