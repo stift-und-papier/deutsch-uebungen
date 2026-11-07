@@ -96,6 +96,10 @@
 4. Politur: Druck/PDF, Offline-Speicher, `DATENSCHUTZ.md`, Löschfunktionen
 5. Später: mehrere Lehrkräfte, Aufgaben teilen, PDF/Word-Import
 
+### To-do für weitere Etappen (Wunsch der Lehrkraft, 2026-11-08)
+- **Aufgaben erstellen verbessern und übersichtlicher machen** (Editor aufräumen, Formate leichter wählbar).
+- **Aufgaben und Aufgabenpakete filtern** nach Klassenstufe (Jahrgang) und/oder Kompetenz.
+
 ## Lernstand (Etappe 2)
 - Kompetenzen pro Lehrkraft (`kompetenzen`, Import aus `docs/kompetenzen.csv` per `node scripts/kompetenzen-sql.ts <uuid>`).
   Kurznamen (`kurzname`) sind Vorschläge von Claude für die Schüleransicht – von der Lehrkraft prüfbar/änderbar.
