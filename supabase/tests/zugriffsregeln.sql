@@ -29,6 +29,7 @@ declare
   c_auf_c constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a3';
   c_auf_d constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a4';
   c_auf_e constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a5';
+  c_auf_f constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a6';
   c_fehler_finden constant jsonb := '{"text":"Ich [weis -> weiß] es [nich -> nicht].","korrigieren":false,"anzahl_zeigen":true,"gross_klein_beachten":true,"teile":[{"t":"wort","id":0,"v":"Ich","korrekturen":null},{"t":"text","v":" "},{"t":"wort","id":1,"v":"weis","korrekturen":["weiß"]},{"t":"text","v":" "},{"t":"wort","id":2,"v":"es","korrekturen":null},{"t":"text","v":" "},{"t":"wort","id":3,"v":"nich","korrekturen":["nicht"]},{"t":"text","v":"."}]}';
   c_kom_a constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000d1';
   c_kom_b constant uuid := 'bbbbbbbb-0000-4000-8000-0000000000d1';
@@ -62,8 +63,11 @@ begin
   -- Fehler-finden-Aufgabe mit Verbesserung: zwei Fehler, zwei fehlerfreie Wörter
   insert into public.aufgaben (id, owner, typ, titel, inhalt) values
     (c_auf_e, c_lk_a, 'fehler', 'Fehler A', '{"text":"Ich [weis -> weiß] es [nich -> nicht].","korrigieren":true,"anzahl_zeigen":true,"gross_klein_beachten":true,"teile":[{"t":"wort","id":0,"v":"Ich","korrekturen":null},{"t":"text","v":" "},{"t":"wort","id":1,"v":"weis","korrekturen":["weiß"]},{"t":"text","v":" "},{"t":"wort","id":2,"v":"es","korrekturen":null},{"t":"text","v":" "},{"t":"wort","id":3,"v":"nich","korrekturen":["nicht"]},{"t":"text","v":"."}]}');
+  -- Reihenfolge-Aufgabe mit zwei richtigen Reihenfolgen
+  insert into public.aufgaben (id, owner, typ, titel, inhalt) values
+    (c_auf_f, c_lk_a, 'reihenfolge', 'Reihenfolge A', '{"text":"Gestern | bin ich | ins Kino | gegangen.\nIns Kino | bin ich | gestern | gegangen.","teile":[{"t":"reihe","id":0,"bausteine":[{"k":"m","v":"Gestern"},{"k":"c","v":"bin ich"},{"k":"x","v":"ins Kino"},{"k":"a","v":"gegangen."}],"loesungen":[["Gestern","bin ich","ins Kino","gegangen."],["Ins Kino","bin ich","gestern","gegangen."]]}]}');
   insert into public.paket_aufgaben (paket_id, aufgabe_id) values
-    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b), (c_pak_a1, c_auf_c), (c_pak_a1, c_auf_d), (c_pak_a1, c_auf_e);
+    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b), (c_pak_a1, c_auf_c), (c_pak_a1, c_auf_d), (c_pak_a1, c_auf_e), (c_pak_a1, c_auf_f);
   insert into public.zuweisungen (owner, paket_id, klasse_id, schueler_id) values
     (c_lk_a, c_pak_a1, c_kl_a1, null),      -- Paket A1 an Klasse 7a
     (c_lk_a, c_pak_a2, null, c_sch_a2),     -- Paket A2 nur an Eule-02
@@ -274,6 +278,35 @@ begin
   end if;
   ok := ok || '1.10d Format Fehler finden geprüft, Fehlerstellen nicht verraten'::text;
 
+  -- 1.10e Format Reihenfolge: Bausteine gemischt und ohne Lösung; mehrere richtige Reihenfolgen; Teilpunkte je Baustein
+  v := public.schueler_start(c_tok_a1);
+  select a into v from jsonb_array_elements(v -> 'pakete' -> 0 -> 'aufgaben') a where a ->> 'id' = c_auf_f::text;
+  if v is null or v::text like '%loesungen%' or (v -> 'inhalt') ? 'text'
+     or (select jsonb_agg(b ->> 'v') from jsonb_array_elements(v -> 'inhalt' -> 'teile' -> 0 -> 'bausteine') b)
+        <> '["gegangen.","bin ich","Gestern","ins Kino"]'::jsonb then
+    raise exception 'FEHLGESCHLAGEN: Reihenfolge-Aufgabe verrät Lösung oder ist nicht gemischt: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_f, '{"0":["m","c","x","a"]}', gen_random_uuid());
+  if not (v -> 'ergebnis' ->> 'richtig')::boolean then raise exception 'FEHLGESCHLAGEN: richtige Reihenfolge abgelehnt: %', v; end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_f, '{"0":["x","c","m","a"]}', gen_random_uuid());
+  if not (v -> 'ergebnis' ->> 'richtig')::boolean then raise exception 'FEHLGESCHLAGEN: zweite richtige Reihenfolge abgelehnt: %', v; end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_f, '{"0":["c","m","x","a"]}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'anteil')::numeric <> 0.5
+     or v -> 'ergebnis' -> 'luecken' -> 0 -> 'positionen' <> '[false,false,true,true]'::jsonb then
+    raise exception 'FEHLGESCHLAGEN: Teilpunkte Reihenfolge: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_f, '{"0":["m","c"]}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'richtig')::boolean or (v -> 'ergebnis' ->> 'anteil')::numeric <> 0.5 then
+    raise exception 'FEHLGESCHLAGEN: unvollständige Reihenfolge: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_f, '{"0":["zz"]}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'anteil')::numeric <> 0 then raise exception 'FEHLGESCHLAGEN: unbekannte Kennung gewertet: %', v; end if;
+  v := public.loesung_anzeigen(c_tok_a1, c_pak_a1, c_auf_f);
+  if v -> 'luecken' -> 0 -> 'loesungen' <> '["Gestern bin ich ins Kino gegangen.","Ins Kino bin ich gestern gegangen."]'::jsonb then
+    raise exception 'FEHLGESCHLAGEN: Reihenfolge-Lösung: %', v;
+  end if;
+  ok := ok || '1.10e Format Reihenfolge geprüft, Bausteine gemischt ohne Lösung'::text;
+
   -- 1.11 Token von A1 gibt keine Lösung von B heraus
   begin
     perform public.loesung_anzeigen(c_tok_a1, c_pak_b, c_auf_b);
@@ -335,7 +368,7 @@ begin
   select count(*) into n from public.aufgaben where owner = c_lk_b;
   if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Aufgaben von B'; end if;
   select count(*) into n from public.versuche;
-  if n <> 23 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 23', n; end if;
+  if n <> 28 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 28', n; end if;
   ok := ok || '2.1 Lehrkraft sieht nur eigene Daten'::text;
 
   update public.aufgaben set titel = 'gehackt' where id = c_auf_b;
