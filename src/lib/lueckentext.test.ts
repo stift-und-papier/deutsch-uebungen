@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { neuNummerieren, teileZuText, textZuTeilen } from './lueckentext'
+import { neuNummerieren, ohneLoesung, teileZuText, textZuTeilen } from './lueckentext'
 
 describe('textZuTeilen', () => {
   it('erkennt eine Lücke', () => {
@@ -38,6 +38,46 @@ describe('textZuTeilen', () => {
   it('Umwandlung hin und zurück ergibt den gleichen Text', () => {
     const text = 'Ich weiß, [dass] du [Rad fahren/radfahren] willst.'
     expect(teileZuText(textZuTeilen(text).teile)).toBe(text)
+  })
+})
+
+describe('Auswahl-Stellen', () => {
+  it('erkennt Einfachauswahl mit *', () => {
+    const { teile, fehler } = textZuTeilen('Ich weiß, [das | *dass] du kommst.')
+    expect(fehler).toEqual([])
+    expect(teile[1]).toEqual({ t: 'auswahl', id: 0, optionen: ['das', 'dass'], richtig: [1] })
+  })
+
+  it('erkennt Mehrfachauswahl', () => {
+    const { teile } = textZuTeilen('Nomen? [*Hund | laufen | *Baum]')
+    expect(teile[1]).toEqual({ t: 'auswahl', id: 0, optionen: ['Hund', 'laufen', 'Baum'], richtig: [0, 2] })
+  })
+
+  it('mischt Lücke und Auswahl mit fortlaufenden Nummern', () => {
+    const { teile, fehler } = textZuTeilen('[Das] Kind, [das | dass*] lacht.'.replace('dass*', '*dass'))
+    expect(fehler).toEqual([])
+    expect(teile.filter((t) => t.t !== 'text').map((t) => [t.t, t.id])).toEqual([
+      ['luecke', 0],
+      ['auswahl', 1],
+    ])
+  })
+
+  it('meldet fehlende Markierung und leere Möglichkeit', () => {
+    expect(textZuTeilen('[das | dass]').fehler[0]).toContain('mit * markieren')
+    expect(textZuTeilen('[*das | ]').fehler[0]).toContain('leer')
+  })
+
+  it('Hin- und Rückweg ergibt denselben Text', () => {
+    const text = 'Ich weiß, [das | *dass] du [Rad fahren/radfahren] willst. [*Hund | laufen | *Baum]'
+    expect(teileZuText(textZuTeilen(text).teile)).toBe(text)
+  })
+
+  it('Schüler-Inhalt enthält keine Lösung, nur das Mehrfach-Kennzeichen', () => {
+    const inhalt = ohneLoesung(textZuTeilen('[das | *dass] [*a | b | *c] [Lösung]').teile)
+    const json = JSON.stringify(inhalt)
+    expect(json).not.toContain('richtig')
+    expect(json).not.toContain('Lösung')
+    expect(inhalt.teile.filter((t) => t.t === 'auswahl').map((t) => (t.t === 'auswahl' ? t.mehrfach : null))).toEqual([false, true])
   })
 })
 

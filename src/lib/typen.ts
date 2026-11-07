@@ -8,22 +8,37 @@ export const SCHWIERIGKEITEN: { wert: Schwierigkeit; text: string }[] = [
   { wert: 'schwer', text: 'schwer' },
 ]
 
-// ---- Lückentext ----
+// ---- Aufgabeninhalt: Textstücke, Lücken und Auswahl-Stellen (dürfen gemischt vorkommen) ----
+
+export type AufgabenTyp = 'lueckentext' | 'auswahl'
 
 export type TextTeil = { t: 'text'; v: string }
 export type LueckenTeil = { t: 'luecke'; id: number; loesungen: string[] }
-export type LueckentextTeil = TextTeil | LueckenTeil
+/** Auswahl-Stelle: Möglichkeiten und die Nummern der richtigen (mehrere = Mehrfachauswahl) */
+export type AuswahlTeil = { t: 'auswahl'; id: number; optionen: string[]; richtig: number[] }
+export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil
+
+export type Darstellung = 'antippen' | 'dropdown'
 
 export type LueckentextInhalt = {
   /** Eingabetext der Lehrkraft mit [Lücken] – nur für die Bearbeitung */
   text: string
   gross_klein_beachten: boolean
+  /** Wie Auswahl-Stellen bedient werden (Standard: antippen) */
+  darstellung?: Darstellung
   teile: LueckentextTeil[]
 }
 
-/** Was Schüler:innen bekommen: Lücken ohne Lösungen */
+/** Was Schüler:innen bekommen: Stellen ohne Lösungen */
 export type LueckenTeilOhneLoesung = { t: 'luecke'; id: number }
-export type LueckentextInhaltSchueler = { teile: (TextTeil | LueckenTeilOhneLoesung)[] }
+export type AuswahlTeilOhneLoesung = { t: 'auswahl'; id: number; optionen: string[]; mehrfach: boolean }
+export type LueckentextInhaltSchueler = {
+  darstellung?: Darstellung
+  teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung)[]
+}
+
+/** Antworten je Stelle: Text bei Lücken, Liste der angetippten Möglichkeiten bei Auswahl */
+export type Antworten = Record<string, string | number[]>
 
 // ---- Tabellen ----
 
@@ -48,7 +63,7 @@ export type Schueler = {
 
 export type Aufgabe = {
   id: string
-  typ: 'lueckentext'
+  typ: AufgabenTyp
   titel: string
   anweisung: string
   hinweis: string | null
@@ -94,7 +109,7 @@ export type Pruefergebnis = {
 
 export type SchuelerAufgabe = {
   id: string
-  typ: 'lueckentext'
+  typ: AufgabenTyp
   titel: string
   anweisung: string
   hinweis: string | null

@@ -498,6 +498,67 @@ tr.ausgeblendet .aktionen {
 
 .aufgabe-text {
   margin: 0;
+  /* Zeilenumbrüche aus dem Eingabetext übernehmen (z. B. Frage, darunter die Auswahl) */
+  white-space: pre-wrap;
+}
+
+/* Auswahl-Stelle (Baustein aes-choice): Knöpfe im Textfluss, umbrechend */
+.auswahl {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-1) var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  vertical-align: middle;
+  white-space: normal;
+}
+
+/* Nach dem Prüfen: Rahmen um die ganze Auswahl – grün oder warm, nie rot; dazu ✓ bzw. ↻ */
+.auswahl--ok {
+  background: var(--erfolg-flaeche);
+  outline: 2px solid var(--gruen-dunkel);
+}
+
+.auswahl--again {
+  background: var(--pfirsich-hell);
+  outline: 2px solid var(--pfirsich-dunkel);
+}
+
+.auswahl--ok > .markierung {
+  color: var(--gruen-dunkel);
+}
+
+.auswahl--again > .markierung {
+  color: var(--pfirsich-dunkel);
+}
+
+.auswahl__hinweis {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+  color: var(--tinte-gedaempft);
+}
+
+.aes-choice:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.aes-choice[aria-pressed='true']:disabled {
+  -webkit-text-fill-color: var(--flaeche);
+}
+
+.auswahl-dropdown {
+  width: auto;
+  min-width: 8ch;
+  min-height: var(--tipp-min);
+}
+
+.aes-gap--ok + .markierung,
+.auswahl-dropdown.aes-gap--ok + .markierung {
+  color: var(--gruen-dunkel);
 }
 
 .luecke-rahmen {
@@ -1213,4 +1274,11 @@ tr.ausgeblendet .aktionen {
     box-shadow: none;
     padding: 0;
   }
+}
+
+/* Mehrzeilige Beispiele im Editor lesbar halten */
+.beispiel-code {
+  white-space: pre-wrap;
+  display: inline-block;
+  vertical-align: top;
 }

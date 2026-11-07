@@ -1,18 +1,41 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AufgabeBearbeiten } from '../gemeinsam/AufgabeBearbeiten'
 import { fehlerText } from '../lib/fehler'
-import { teileZuText, textZuTeilen } from '../lib/lueckentext'
+import { ohneLoesung, stelleZuText, teileZuText, textZuTeilen } from '../lib/lueckentext'
 import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
-import { SCHWIERIGKEITEN, type Aufgabe, type LueckentextTeil, type Pruefergebnis, type Schwierigkeit } from '../lib/typen'
+import {
+  SCHWIERIGKEITEN,
+  type Antworten,
+  type Aufgabe,
+  type AufgabenTyp,
+  type Darstellung,
+  type LueckentextTeil,
+  type Pruefergebnis,
+  type Schwierigkeit,
+} from '../lib/typen'
 import { KompetenzAuswahl } from './KompetenzAuswahl'
 
-const BEISPIEL = 'Ich weiß, [dass] du heute [Rad fährst/radfährst].'
+// Je Format: Name, Standard-Arbeitsanweisung und Beispiel für den Texteingabe-Modus
+const FORMATE: Record<AufgabenTyp, { name: string; anweisung: string; beispiel: string }> = {
+  lueckentext: {
+    name: 'Lückentext',
+    anweisung: 'Ergänze die Lücken.',
+    beispiel: 'Ich weiß, [dass] du heute [Rad fährst/radfährst].',
+  },
+  auswahl: {
+    name: 'Auswahl',
+    anweisung: 'Tippe die richtige Antwort an.',
+    beispiel: 'Ich weiß, [das | *dass] du kommst.\n\nWelche Wörter sind Nomen?\n[*Hund | laufen | *Baum | schnell]',
+  },
+}
 
-// Lückentext anlegen oder bearbeiten – wahlweise als Text mit [Klammern] oder per Formular.
-export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
+// Aufgabe anlegen oder bearbeiten (Lückentext oder Auswahl) – wahlweise als Text mit [Klammern] oder per Formular.
+export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabeId: string | null; neuerTyp?: AufgabenTyp }) {
+  const [typ, setTyp] = useState<AufgabenTyp>(neuerTyp)
+  const [darstellung, setDarstellung] = useState<Darstellung>('antippen')
   const [titel, setTitel] = useState('')
-  const [anweisung, setAnweisung] = useState('Ergänze die Lücken.')
+  const [anweisung, setAnweisung] = useState(FORMATE[neuerTyp].anweisung)
   const [hinweis, setHinweis] = useState('')
   const [rueckmeldung, setRueckmeldung] = useState('')
   const [schwierigkeit, setSchwierigkeit] = useState<Schwierigkeit>('mittel')
@@ -45,6 +68,8 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
       .then(({ data, error }) => {
         if (error) return setFehler(fehlerText(error))
         const a = data as Aufgabe
+        setTyp(a.typ)
+        setDarstellung(a.inhalt.darstellung ?? 'antippen')
         setTitel(a.titel)
         setAnweisung(a.anweisung)
         setHinweis(a.hinweis ?? '')
@@ -57,14 +82,18 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
   }, [aufgabeId])
 
   const { teile, fehler: textFehler } = useMemo(() => textZuTeilen(text), [text])
-  const inhalt = { text, gross_klein_beachten: grossKlein, teile }
+  const inhalt = { text, gross_klein_beachten: grossKlein, darstellung, teile }
+  const format = FORMATE[typ]
+  const BEISPIEL = format.beispiel
+  const hatLuecke = teile.some((t) => t.t === 'luecke')
+  const hatAuswahl = teile.some((t) => t.t === 'auswahl')
 
   async function speichern() {
     setFehler(null)
     if (!titel.trim()) return setFehler('Bitte einen Titel eingeben.')
-    if (textFehler.length) return setFehler('Der Lückentext hat noch Fehler (siehe oben).')
+    if (textFehler.length) return setFehler('Der Aufgabentext hat noch Fehler (siehe oben).')
     const datensatz = {
-      typ: 'lueckentext' as const,
+      typ,
       titel: titel.trim(),
       anweisung: anweisung.trim(),
       hinweis: hinweis.trim() || null,
@@ -113,7 +142,7 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
       <a className="aes-btn aes-btn--ghost zurueck" href="#/lehrkraft/aufgaben">
         ← Alle Aufgaben
       </a>
-      <h1>{aufgabeId ? 'Lückentext bearbeiten' : 'Neuer Lückentext'}</h1>
+      <h1>{aufgabeId ? `${format.name} bearbeiten` : `Neue Aufgabe: ${format.name}`}</h1>
 
       <div className="umschalter" role="tablist">
         <button role="tab" aria-selected={!vorschau} onClick={() => setVorschau(false)}>
@@ -130,17 +159,17 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
             key={JSON.stringify(inhalt)}
             aufgabe={{
               id: aufgabeId ?? 'vorschau',
-              typ: 'lueckentext',
+              typ,
               titel: titel || '(ohne Titel)',
               anweisung,
               hinweis: hinweis || null,
               schwierigkeit,
-              inhalt: { teile: teile.map((t) => (t.t === 'luecke' ? { t: 'luecke', id: t.id } : t)) },
+              inhalt: ohneLoesung(teile, darstellung),
               versuche: 0,
               geloest: false,
               loesung_angesehen: false,
             }}
-            pruefen={vorschauPruefen(inhalt, rueckmeldung)}
+            pruefen={vorschauPruefen(typ, inhalt, rueckmeldung)}
           />
           <p className="klein">In der Vorschau wird nichts gespeichert.</p>
         </div>
@@ -173,7 +202,7 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
           </fieldset>
 
           <fieldset>
-            <legend>Lückentext</legend>
+            <legend>Aufgabentext</legend>
             <div className="umschalter" role="tablist">
               <button type="button" role="tab" aria-selected={modus === 'text'} onClick={() => setModus('text')}>
                 Als Text mit [Klammern]
@@ -186,24 +215,33 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
             {modus === 'text' ? (
               <>
                 <div className="erklaerung">
+                  {typ === 'auswahl' ? (
+                    <p>
+                      Setzen Sie jede Auswahl in <strong>[eckige Klammern]</strong>, trennen Sie die Möglichkeiten mit{' '}
+                      <strong>|</strong> und markieren Sie die richtige mit <strong>*</strong>. Mehrere <strong>*</strong> ergeben
+                      eine Mehrfachauswahl. Lücken zum Eintippen (<code>[Lösung]</code>) können Sie dazwischen mischen.
+                    </p>
+                  ) : (
+                    <p>
+                      Schreiben Sie den Text und setzen Sie jedes gesuchte Wort in <strong>[eckige Klammern]</strong>. Gibt es
+                      mehrere richtige Lösungen, trennen Sie sie mit <strong>/</strong>. Eine Auswahl zum Antippen schreiben
+                      Sie so: <code>[das | *dass]</code>.
+                    </p>
+                  )}
                   <p>
-                    Schreiben Sie den Text und setzen Sie jedes gesuchte Wort in <strong>[eckige Klammern]</strong>. Gibt es
-                    mehrere richtige Lösungen, trennen Sie sie mit <strong>/</strong>.
-                  </p>
-                  <p>
-                    Beispiel: <code>{BEISPIEL}</code>{' '}
+                    Beispiel: <code className="beispiel-code">{BEISPIEL}</code>{' '}
                     <button type="button" className="aes-btn aes-btn--ghost aes-btn--klein" onClick={() => setText(BEISPIEL)}>
                       Beispiel einfügen
                     </button>
                   </p>
                 </div>
                 <textarea
-                  rows={6}
+                  rows={7}
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder={BEISPIEL}
                   spellCheck={false}
-                  aria-label="Lückentext"
+                  aria-label="Aufgabentext"
                 />
               </>
             ) : (
@@ -218,13 +256,33 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
               </ul>
             )}
             {text && textFehler.length === 0 && (
-              <p className="klein">✓ {teile.filter((t) => t.t === 'luecke').length} Lücke(n) erkannt.</p>
+              <p className="klein">
+                ✓ {teile.filter((t) => t.t === 'luecke').length} Lücke(n) und {teile.filter((t) => t.t === 'auswahl').length}{' '}
+                Auswahl-Stelle(n) erkannt.
+              </p>
             )}
 
-            <label className="haken">
-              <input type="checkbox" checked={grossKlein} onChange={(e) => setGrossKlein(e.target.checked)} />
-              Groß-/Kleinschreibung wird bewertet
-            </label>
+            {hatLuecke && (
+              <label className="haken">
+                <input type="checkbox" checked={grossKlein} onChange={(e) => setGrossKlein(e.target.checked)} />
+                Groß-/Kleinschreibung wird bewertet
+              </label>
+            )}
+            {hatAuswahl && (
+              <div>
+                <p className="klein" style={{ margin: 0 }}>
+                  So wählen Schüler:innen aus (Mehrfachauswahl immer per Antippen):
+                </p>
+                <div className="umschalter">
+                  <button type="button" aria-pressed={darstellung === 'antippen'} onClick={() => setDarstellung('antippen')}>
+                    Antippen
+                  </button>
+                  <button type="button" aria-pressed={darstellung === 'dropdown'} onClick={() => setDarstellung('dropdown')}>
+                    Dropdown in der Lücke
+                  </button>
+                </div>
+              </div>
+            )}
           </fieldset>
 
           <KompetenzAuswahl ausgewaehlt={kompetenzIds} onChange={setKompetenzIds} />
@@ -257,13 +315,13 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
   )
 }
 
-// Formular: Textstücke und Lücken nacheinander.
-// Die Lücken werden als Rohtext gehalten (z. B. "a/"), damit man beim Tippen nichts verliert.
-type Zeile = { art: 'text'; v: string } | { art: 'luecke'; roh: string }
+// Formular: Textstücke, Lücken und Auswahl-Stellen nacheinander.
+// Lücken und Auswahl werden als Rohtext gehalten (z. B. "a/" oder "das | *dass"), damit man beim Tippen nichts verliert.
+type Zeile = { art: 'text'; v: string } | { art: 'luecke' | 'auswahl'; roh: string }
 
 function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange: (text: string) => void }) {
   const [zeilen, setZeilen] = useState<Zeile[]>(() =>
-    teile.map((t) => (t.t === 'text' ? { art: 'text', v: t.v } : { art: 'luecke', roh: t.loesungen.join('/') })),
+    teile.map((t) => (t.t === 'text' ? { art: 'text', v: t.v } : { art: t.t, roh: stelleZuText(t) })),
   )
 
   function setzen(neu: Zeile[]) {
@@ -271,22 +329,32 @@ function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange
     onChange(neu.map((z) => (z.art === 'text' ? z.v : `[${z.roh}]`)).join(''))
   }
   const aendern = (index: number, neu: Zeile) => setzen(zeilen.map((z, i) => (i === index ? neu : z)))
-  let lueckenNr = 0
+  let stellenNr = 0
 
   return (
     <div className="formular-modus">
-      {zeilen.length === 0 && <p className="klein">Fügen Sie unten abwechselnd Text und Lücken hinzu.</p>}
+      {zeilen.length === 0 && <p className="klein">Fügen Sie unten abwechselnd Text, Lücken und Auswahl-Stellen hinzu.</p>}
       {zeilen.map((z, i) => (
-        <div key={i} className={z.art === 'luecke' ? 'teil teil-luecke' : 'teil'}>
+        <div key={i} className={z.art === 'text' ? 'teil' : 'teil teil-luecke'}>
           {z.art === 'text' ? (
             <label>
               Text
               <textarea rows={2} value={z.v} onChange={(e) => aendern(i, { art: 'text', v: e.target.value })} spellCheck={false} />
             </label>
+          ) : z.art === 'luecke' ? (
+            <label>
+              Lücke {++stellenNr}: richtige Lösung(en), mehrere mit / trennen
+              <input value={z.roh} onChange={(e) => aendern(i, { art: 'luecke', roh: e.target.value })} spellCheck={false} />
+            </label>
           ) : (
             <label>
-              Lücke {++lueckenNr}: richtige Lösung(en), mehrere mit / trennen
-              <input value={z.roh} onChange={(e) => aendern(i, { art: 'luecke', roh: e.target.value })} spellCheck={false} />
+              Auswahl {++stellenNr}: Möglichkeiten mit | trennen, richtige mit * markieren
+              <input
+                value={z.roh}
+                onChange={(e) => aendern(i, { art: 'auswahl', roh: e.target.value })}
+                spellCheck={false}
+                placeholder="das | *dass"
+              />
             </label>
           )}
           <button type="button" className="aes-btn aes-btn--ghost aes-btn--klein" onClick={() => setzen(zeilen.filter((_, j) => j !== i))} aria-label="Entfernen">
@@ -301,16 +369,19 @@ function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange
         <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setzen([...zeilen, { art: 'luecke', roh: '' }])}>
           + Lücke
         </button>
+        <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setzen([...zeilen, { art: 'auswahl', roh: '' }])}>
+          + Auswahl
+        </button>
       </div>
     </div>
   )
 }
 
 // In der Vorschau prüft die Datenbank mit derselben Logik wie bei Schüler:innen – ohne zu speichern.
-function vorschauPruefen(inhalt: object, rueckmeldung: string) {
+function vorschauPruefen(typ: AufgabenTyp, inhalt: object, rueckmeldung: string) {
   let versuche = 0
-  return async (antworten: Record<string, string>) => {
-    const { data, error } = await supabase.rpc('pruefe_aufgabe', { p_typ: 'lueckentext', p_inhalt: inhalt, p_antworten: antworten })
+  return async (antworten: Antworten) => {
+    const { data, error } = await supabase.rpc('pruefe_aufgabe', { p_typ: typ, p_inhalt: inhalt, p_antworten: antworten })
     if (error) throw new Error(fehlerText(error))
     const ergebnis = data as Pruefergebnis
     versuche++

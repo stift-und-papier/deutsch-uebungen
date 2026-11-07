@@ -1,18 +1,18 @@
-import type { LueckentextInhaltSchueler, Pruefergebnis } from '../lib/typen'
+import type { Antworten, AuswahlTeilOhneLoesung, LueckentextInhaltSchueler, Pruefergebnis } from '../lib/typen'
 import { lueckenBreite } from '../lib/lueckentext'
 
 type Props = {
   inhalt: LueckentextInhaltSchueler
-  antworten: Record<string, string>
-  onAntwort: (id: number, wert: string) => void
+  antworten: Antworten
+  onAntwort: (id: number, wert: string | number[]) => void
   ergebnis?: Pruefergebnis | null
-  /** Lösungen pro Lücke (nur nach "Lösung ansehen") */
+  /** Lösungen pro Stelle (nur nach "Lösung ansehen") */
   loesungen?: Record<number, string[]> | null
   gesperrt?: boolean
 }
 
-// Zeigt einen Lückentext mit Eingabefeldern (Baustein aes-gap aus dem Design-System).
-// Nach dem Prüfen: richtige Lücken grün mit ✓ (gesperrt), andere warm (Pfirsich) mit ↻ – nie rot.
+// Zeigt den Aufgabentext mit Lücken (Baustein aes-gap) und Auswahl-Stellen (Baustein aes-choice).
+// Nach dem Prüfen: richtige Stellen grün mit ✓ (gesperrt), andere warm (Pfirsich) mit ↻ – nie rot.
 export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loesungen, gesperrt }: Props) {
   const status = new Map(ergebnis?.luecken.map((l) => [l.id, l.richtig]))
 
@@ -21,7 +21,30 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
       {inhalt.teile.map((teil, index) => {
         if (teil.t === 'text') return <span key={index}>{teil.v}</span>
         const richtig = status.get(teil.id)
-        const wert = antworten[teil.id] ?? ''
+        const zeichen = (
+          <>
+            {richtig === true && <span className="markierung" aria-label="richtig">✓</span>}
+            {richtig === false && <span className="markierung" aria-label="schau nochmal hin">↻</span>}
+            {loesungen?.[teil.id] && <span className="loesung-anzeige">{loesungen[teil.id].join(' / ')}</span>}
+          </>
+        )
+
+        if (teil.t === 'auswahl') {
+          return (
+            <Auswahl
+              key={index}
+              teil={teil}
+              dropdown={inhalt.darstellung === 'dropdown' && !teil.mehrfach}
+              gewaehlt={Array.isArray(antworten[teil.id]) ? (antworten[teil.id] as number[]) : []}
+              onWahl={(neu) => onAntwort(teil.id, neu)}
+              richtig={richtig}
+              gesperrt={gesperrt || richtig === true}
+              zeichen={zeichen}
+            />
+          )
+        }
+
+        const wert = typeof antworten[teil.id] === 'string' ? (antworten[teil.id] as string) : ''
         const breite = lueckenBreite(Math.max(wert.length, 4))
         const klasse = richtig === true ? 'aes-gap aes-gap--ok' : richtig === false ? 'aes-gap aes-gap--again' : 'aes-gap'
         return (
@@ -41,12 +64,73 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
               inputMode="text"
               enterKeyHint="next"
             />
-            {richtig === true && <span className="markierung" aria-label="richtig">✓</span>}
-            {richtig === false && <span className="markierung" aria-label="schau nochmal hin">↻</span>}
-            {loesungen?.[teil.id] && <span className="loesung-anzeige">{loesungen[teil.id].join(' / ')}</span>}
+            {zeichen}
           </span>
         )
       })}
     </p>
+  )
+}
+
+type AuswahlProps = {
+  teil: AuswahlTeilOhneLoesung
+  dropdown: boolean
+  gewaehlt: number[]
+  onWahl: (neu: number[]) => void
+  richtig: boolean | undefined
+  gesperrt: boolean
+  zeichen: React.ReactNode
+}
+
+// Eine Auswahl-Stelle: Antippen (Standard, auch Mehrfachauswahl) oder Dropdown (nur Einfachauswahl).
+function Auswahl({ teil, dropdown, gewaehlt, onWahl, richtig, gesperrt, zeichen }: AuswahlProps) {
+  const zustand = richtig === true ? ' auswahl--ok' : richtig === false ? ' auswahl--again' : ''
+  const beschriftung = `Auswahl ${teil.id + 1}${teil.mehrfach ? ' (mehrere Antworten richtig)' : ''}`
+
+  if (dropdown) {
+    return (
+      <span className="luecke-rahmen">
+        <select
+          className={`aes-gap auswahl-dropdown${richtig === true ? ' aes-gap--ok' : richtig === false ? ' aes-gap--again' : ''}`}
+          aria-label={beschriftung}
+          value={gewaehlt[0] ?? ''}
+          disabled={gesperrt}
+          onChange={(e) => onWahl(e.target.value === '' ? [] : [Number(e.target.value)])}
+        >
+          <option value="">– wählen –</option>
+          {teil.optionen.map((o, nr) => (
+            <option key={nr} value={nr}>
+              {o}
+            </option>
+          ))}
+        </select>
+        {zeichen}
+      </span>
+    )
+  }
+
+  function antippen(nr: number) {
+    if (teil.mehrfach) onWahl(gewaehlt.includes(nr) ? gewaehlt.filter((x) => x !== nr) : [...gewaehlt, nr].sort((a, b) => a - b))
+    else onWahl(gewaehlt[0] === nr ? [] : [nr])
+  }
+
+  return (
+    <span className={`auswahl${zustand}`} role="group" aria-label={beschriftung}>
+      {teil.mehrfach && <span className="auswahl__hinweis">Mehrere sind richtig:</span>}
+      {teil.optionen.map((o, nr) => (
+        <button
+          key={nr}
+          type="button"
+          className="aes-choice"
+          aria-pressed={gewaehlt.includes(nr)}
+          disabled={gesperrt}
+          onClick={() => antippen(nr)}
+        >
+          {gewaehlt.includes(nr) && <span aria-hidden="true">✓ </span>}
+          {o}
+        </button>
+      ))}
+      {zeichen}
+    </span>
   )
 }

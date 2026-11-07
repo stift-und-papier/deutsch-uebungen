@@ -56,7 +56,13 @@ export function LehrkraftBereich({ pfad }: { pfad: string[] }) {
       {bereich === 'schueler' && id && <SchuelerLernstand schuelerId={id} />}
       {bereich === 'einstellungen' && <EinstellungenSeite />}
       {bereich === 'aufgaben' && !id && <AufgabenListe />}
-      {bereich === 'aufgaben' && id && <AufgabeEditor aufgabeId={id === 'neu' ? null : id} />}
+      {bereich === 'aufgaben' && id && (
+        <AufgabeEditor
+          key={id}
+          aufgabeId={id.startsWith('neu') ? null : id}
+          neuerTyp={id === 'neu-auswahl' ? 'auswahl' : 'lueckentext'}
+        />
+      )}
       {bereich === 'pakete' && !id && <PaketListe />}
       {bereich === 'pakete' && id && <PaketDetail paketId={id} vorschau={unter === 'vorschau'} />}
       {bereich === 'kompetenzen' && <Kompetenzen />}

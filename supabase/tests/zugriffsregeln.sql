@@ -26,6 +26,7 @@ declare
   c_pak_a1 constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000b1';
   c_pak_a2 constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000b2';
   c_pak_b constant uuid := 'bbbbbbbb-0000-4000-8000-0000000000b1';
+  c_auf_c constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a3';
   c_kom_a constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000d1';
   c_kom_b constant uuid := 'bbbbbbbb-0000-4000-8000-0000000000d1';
   c_inhalt constant jsonb := '{"text":"Ich weiß, [dass] du kommst.","gross_klein_beachten":true,"teile":[{"t":"text","v":"Ich weiß, "},{"t":"luecke","id":0,"loesungen":["dass"]},{"t":"text","v":" du kommst."}]}';
@@ -49,8 +50,11 @@ begin
     (c_auf_b, c_lk_b, 'lueckentext', 'dass/das B', c_inhalt, null);
   insert into public.pakete (id, owner, titel) values
     (c_pak_a1, c_lk_a, 'Paket A1'), (c_pak_a2, c_lk_a, 'Paket A2'), (c_pak_b, c_lk_b, 'Paket B');
+  -- Auswahl-Aufgabe: Einfachauswahl im Satz und Mehrfachauswahl als eigene Frage
+  insert into public.aufgaben (id, owner, typ, titel, inhalt) values
+    (c_auf_c, c_lk_a, 'auswahl', 'Auswahl A', '{"text":"Ich weiß, [das | *dass] du kommst. [*Hund | laufen | *Baum]","darstellung":"antippen","teile":[{"t":"text","v":"Ich weiß, "},{"t":"auswahl","id":0,"optionen":["das","dass"],"richtig":[1]},{"t":"text","v":" du kommst. "},{"t":"auswahl","id":1,"optionen":["Hund","laufen","Baum"],"richtig":[0,2]}]}');
   insert into public.paket_aufgaben (paket_id, aufgabe_id) values
-    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b);
+    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b), (c_pak_a1, c_auf_c);
   insert into public.zuweisungen (owner, paket_id, klasse_id, schueler_id) values
     (c_lk_a, c_pak_a1, c_kl_a1, null),      -- Paket A1 an Klasse 7a
     (c_lk_a, c_pak_a2, null, c_sch_a2),     -- Paket A2 nur an Eule-02
@@ -128,8 +132,12 @@ begin
   if jsonb_array_length(v -> 'pakete') <> 1 or v -> 'pakete' -> 0 ->> 'titel' <> 'Paket A1' then
     raise exception 'FEHLGESCHLAGEN: falsche Pakete für A1: %', v -> 'pakete';
   end if;
-  if v::text like '%loesungen%' or v::text like '%[dass]%' or v::text like '%"dass"%' then
+  if v::text like '%loesungen%' or v::text like '%[dass]%' then
     raise exception 'FEHLGESCHLAGEN: Lösung in schueler_start sichtbar: %', v;
+  end if;
+  -- Bei der Lückentext-Aufgabe darf das Lösungswort gar nicht vorkommen (bei Auswahl-Aufgaben ist es eine Möglichkeit)
+  if (select a::text from jsonb_array_elements(v -> 'pakete' -> 0 -> 'aufgaben') a where a ->> 'id' = c_auf_a::text) like '%"dass"%' then
+    raise exception 'FEHLGESCHLAGEN: Lückentext-Lösung sichtbar: %', v;
   end if;
   if v::text like '%Ersatzprobe%' then
     raise exception 'FEHLGESCHLAGEN: Fehler-Rückmeldung vorab sichtbar';
@@ -189,6 +197,29 @@ begin
   if v -> 'luecken' -> 0 -> 'loesungen' ->> 0 <> 'dass' then raise exception 'FEHLGESCHLAGEN: Lösung falsch: %', v; end if;
   perform public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_a, '{"0":"dass"}', 'aaaaaaaa-0000-4000-8000-00000000f002');
   ok := ok || '1.10 Lösung erst nach 2 Versuchen'::text;
+
+  -- 1.10b Format Auswahl: keine Lösungen ausgeliefert, richtig/falsch/Mehrfachauswahl, unsinnige Eingaben
+  v := public.schueler_start(c_tok_a1);
+  select a into v from jsonb_array_elements(v -> 'pakete' -> 0 -> 'aufgaben') a where a ->> 'id' = c_auf_c::text;
+  if v is null or v::text like '%"richtig"%' or v::text like '%*%' or (v -> 'inhalt') ? 'text' then
+    raise exception 'FEHLGESCHLAGEN: Auswahl-Aufgabe verrät Lösung oder fehlt: %', v;
+  end if;
+  if (v -> 'inhalt' -> 'teile' -> 1 ->> 'mehrfach')::boolean or not (v -> 'inhalt' -> 'teile' -> 3 ->> 'mehrfach')::boolean then
+    raise exception 'FEHLGESCHLAGEN: Mehrfach-Kennzeichen falsch: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_c, '{"0":[1],"1":[2,0,0]}', gen_random_uuid());
+  if not (v -> 'ergebnis' ->> 'richtig')::boolean then raise exception 'FEHLGESCHLAGEN: richtige Auswahl abgelehnt: %', v; end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_c, '{"0":[1],"1":[0]}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'richtig')::boolean or (v -> 'ergebnis' ->> 'anteil')::numeric <> 0.5 then
+    raise exception 'FEHLGESCHLAGEN: unvollständige Mehrfachauswahl: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_c, '{"0":[0,1],"1":[0,1,2]}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'anteil')::numeric <> 0 then raise exception 'FEHLGESCHLAGEN: „alles antippen“ zählt: %', v; end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_c, '{"0":"dass","1":["x"]}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'anteil')::numeric <> 0 then raise exception 'FEHLGESCHLAGEN: unsinnige Eingabe gewertet: %', v; end if;
+  v := public.loesung_anzeigen(c_tok_a1, c_pak_a1, c_auf_c);
+  if v -> 'luecken' -> 1 -> 'loesungen' <> '["Hund","Baum"]'::jsonb then raise exception 'FEHLGESCHLAGEN: Auswahl-Lösung: %', v; end if;
+  ok := ok || '1.10b Format Auswahl geprüft und ohne Lösung ausgeliefert'::text;
 
   -- 1.11 Token von A1 gibt keine Lösung von B heraus
   begin
@@ -251,7 +282,7 @@ begin
   select count(*) into n from public.aufgaben where owner = c_lk_b;
   if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Aufgaben von B'; end if;
   select count(*) into n from public.versuche;
-  if n <> 12 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 12', n; end if;
+  if n <> 16 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 16', n; end if;
   ok := ok || '2.1 Lehrkraft sieht nur eigene Daten'::text;
 
   update public.aufgaben set titel = 'gehackt' where id = c_auf_b;

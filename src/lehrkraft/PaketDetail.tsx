@@ -4,6 +4,7 @@ import { fehlerText } from '../lib/fehler'
 import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import type { Aufgabe, Klasse, Paket, PaketAufgabe, Pruefergebnis, Schueler, Zuweisung } from '../lib/typen'
+import { ohneLoesung } from '../lib/lueckentext'
 import { TYP_NAMEN } from './AufgabenListe'
 
 type Daten = {
@@ -300,7 +301,7 @@ function PaketVorschau({ daten }: { daten: Daten }) {
             anweisung: a.anweisung,
             hinweis: a.hinweis,
             schwierigkeit: a.schwierigkeit,
-            inhalt: { teile: a.inhalt.teile.map((t) => (t.t === 'luecke' ? { t: 'luecke', id: t.id } : t)) },
+            inhalt: ohneLoesung(a.inhalt.teile, a.inhalt.darstellung),
             versuche: 0,
             geloest: false,
             loesung_angesehen: false,
@@ -312,7 +313,13 @@ function PaketVorschau({ daten }: { daten: Daten }) {
             versuche++
             return { ergebnis, rueckmeldung: ergebnis.richtig ? null : a.rueckmeldung_fehler, versuche }
           }}
-          loesungHolen={async () => Object.fromEntries(a.inhalt.teile.flatMap((t) => (t.t === 'luecke' ? [[t.id, t.loesungen]] : [])))}
+          loesungHolen={async () =>
+            Object.fromEntries(
+              a.inhalt.teile.flatMap((t) =>
+                t.t === 'luecke' ? [[t.id, t.loesungen]] : t.t === 'auswahl' ? [[t.id, t.richtig.map((nr) => t.optionen[nr])]] : [],
+              ),
+            )
+          }
           weiter={
             index + 1 < daten.inhalt.length
               ? { text: 'Nächste Aufgabe →', ziel: () => setIndex(index + 1) }

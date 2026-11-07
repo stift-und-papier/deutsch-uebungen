@@ -44,6 +44,8 @@
 - Antworten werden **in der Datenbank** geprüft (`pruefe_aufgabe`, plpgsql). Schüler:innen bekommen Aufgaben ohne
   Lösungen (`inhalt_ohne_loesung` – Achtung: Feld `text` enthält Lösungen und muss immer entfernt werden).
   Jedes neue Aufgabenformat braucht Zweige in `pruefe_aufgabe`, `inhalt_ohne_loesung`, `nur_loesung`.
+  Aufgabeninhalt = Liste `teile` aus `text`, `luecke` und `auswahl` (gemischt möglich; Parser `src/lib/lueckentext.ts`).
+  Antworten: Text je Lücke, Liste der gewählten Nummern je Auswahl.
 - Ansprache: Lehrkraft-Oberfläche „Sie“, Schüleransicht „du“, einfache Sprache.
 - `src/entwicklung/Vorschau.tsx`: nur im Entwicklungsmodus (`npm run dev`, `#/vorschau`, `#/vorschau/klassen`,
   `#/vorschau/aufgabe`) – Lehrkraft-Ansichten mit Beispieldaten ohne Anmeldung prüfen. Nicht im veröffentlichten Paket.
@@ -102,6 +104,10 @@
   Anzahl gelöster Aufgaben, nächster Schritt. **Nie Punkte/Stufen** – Test 1.13 prüft das.
 
 ## Entscheidungen (Protokoll)
+- 2026-11-08 (didaktisch, Lehrkraft): Format **Auswahl**: Schreibweise `[das | *dass]` (| trennt, * = richtig,
+  mehrere * = Mehrfachauswahl), Lücken und Auswahl im selben Text mischbar. Standard-Darstellung „Antippen“
+  (`aes-choice`), je Aufgabe umstellbar auf Dropdown (nur Einfachauswahl). Mehrfachauswahl zählt nur, wenn genau
+  die richtigen gewählt sind. Schüler:innen erfahren nur, OB mehrere richtig sind (`mehrfach`), nicht welche.
 - 2026-11-07 (didaktisch, Lehrkraft): Lernstand-Verfahren wie vorgeschlagen: letzte 10 gewertete Versuche, pro
   Aufgabe/Tag nur der erste, Höchstpunkte leicht/mittel/schwer 70/85/100, Abklingfaktor 0,85, Grenzen 35/55/70/85,
   ab 4 Versuchen; Trend nur bei ≥ 4 neuen Versuchen und ≥ 15 Punkten Veränderung. „Schlechter“ wird Schüler:innen nie

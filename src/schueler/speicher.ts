@@ -1,3 +1,5 @@
+import type { Antworten } from '../lib/typen'
+
 // Zwischenspeicher auf dem iPad (localStorage):
 // * Entwürfe: angefangene Antworten, damit nichts verloren geht.
 // * Warteschlange: Antworten, die wegen fehlendem Internet noch nicht gesendet werden konnten.
@@ -7,7 +9,7 @@ export type WartenderVersuch = {
   client_id: string
   paket_id: string
   aufgabe_id: string
-  antworten: Record<string, string>
+  antworten: Antworten
   bearbeitet_am: string
 }
 
@@ -32,11 +34,11 @@ function schreiben(schluessel: string, wert: unknown) {
 // Der Token wird nur gekürzt als Schlüssel verwendet.
 const kurz = (token: string) => token.slice(0, 12)
 
-export function entwurfLesen(token: string, aufgabeId: string): Record<string, string> {
+export function entwurfLesen(token: string, aufgabeId: string): Antworten {
   return lesen(`entwurf:${kurz(token)}:${aufgabeId}`, {})
 }
 
-export function entwurfSpeichern(token: string, aufgabeId: string, antworten: Record<string, string> | null) {
+export function entwurfSpeichern(token: string, aufgabeId: string, antworten: Antworten | null) {
   schreiben(`entwurf:${kurz(token)}:${aufgabeId}`, antworten)
 }
 

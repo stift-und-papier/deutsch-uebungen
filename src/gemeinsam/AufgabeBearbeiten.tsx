@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Pruefergebnis, SchuelerAufgabe } from '../lib/typen'
+import type { Antworten, Pruefergebnis, SchuelerAufgabe } from '../lib/typen'
 import { LueckentextAnzeige } from './LueckentextAnzeige'
 
 export type PruefAntwort = { ergebnis: Pruefergebnis; rueckmeldung: string | null; versuche: number }
@@ -10,12 +10,12 @@ export type AufgabenKopf = { zurueck: string; ort: string; nr: number; gesamt: n
 type Props = {
   aufgabe: SchuelerAufgabe
   /** Antworten prüfen. Gibt null zurück, wenn gerade kein Internet da ist (Antwort wird später gesendet). */
-  pruefen: (antworten: Record<string, string>) => Promise<PruefAntwort | null>
+  pruefen: (antworten: Antworten) => Promise<PruefAntwort | null>
   /** Lösung holen (erst nach 2 Versuchen erlaubt) */
   loesungHolen?: () => Promise<Record<number, string[]>>
   /** Zwischenstand merken (z. B. im Speicher des iPads) */
-  startAntworten?: Record<string, string>
-  onAntwortenGeaendert?: (antworten: Record<string, string>) => void
+  startAntworten?: Antworten
+  onAntwortenGeaendert?: (antworten: Antworten) => void
   weiter?: { text: string; ziel: () => void }
   kopf?: AufgabenKopf
 }
@@ -23,7 +23,7 @@ type Props = {
 // Bearbeitung einer Aufgabe – für Schüler:innen und für die Vorschau der Lehrkraft.
 // Aufbau nach dem Entwurf „Aufgabe“: Kopfkarte, große Aufgabenkarte, rechts die Tipp-Karte.
 export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntworten, onAntwortenGeaendert, weiter, kopf }: Props) {
-  const [antworten, setAntworten] = useState<Record<string, string>>(startAntworten ?? {})
+  const [antworten, setAntworten] = useState<Antworten>(startAntworten ?? {})
   const [ergebnis, setErgebnis] = useState<PruefAntwort | null>(null)
   const [versuche, setVersuche] = useState(aufgabe.versuche)
   const [tippOffen, setTippOffen] = useState(false)
@@ -32,8 +32,12 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
   const [beschaeftigt, setBeschaeftigt] = useState(false)
   const [meldung, setMeldung] = useState<string | null>(null)
 
-  const luecken = aufgabe.inhalt.teile.filter((t) => t.t === 'luecke')
-  const alleAusgefuellt = luecken.every((l) => (antworten[l.id] ?? '').trim() !== '')
+  // Alle Stellen (Lücken und Auswahl) – jede muss beantwortet sein, bevor geprüft werden kann
+  const luecken = aufgabe.inhalt.teile.filter((t) => t.t !== 'text')
+  const alleAusgefuellt = luecken.every((l) => {
+    const a = antworten[l.id]
+    return Array.isArray(a) ? a.length > 0 : (a ?? '').trim() !== ''
+  })
   const allesRichtig = ergebnis?.ergebnis.richtig === true
 
   async function beimPruefen() {
@@ -55,7 +59,7 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
     }
   }
 
-  function beiEingabe(id: number, wert: string) {
+  function beiEingabe(id: number, wert: string | number[]) {
     const neu = { ...antworten, [id]: wert }
     setAntworten(neu)
     onAntwortenGeaendert?.(neu)
@@ -87,16 +91,20 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
     }
   }
 
+  // Wie die Stellen heißen: „Lücke“, „Auswahl“ oder – gemischt – „Stelle“
+  const arten = new Set(luecken.map((l) => l.t))
+  const wort = arten.size > 1 ? { eins: 'Stelle', viele: 'Stellen' } : arten.has('auswahl') ? { eins: 'Auswahl', viele: 'Antworten' } : { eins: 'Lücke', viele: 'Lücken' }
+
   // Rückmeldung in der Sprache des Design-Systems: klar, ermutigend, nie „falsch“.
   const nochmalNummern = ergebnis?.ergebnis.luecken.filter((l) => !l.richtig).map((l) => l.id + 1) ?? []
   const anzahlRichtig = ergebnis?.ergebnis.luecken.filter((l) => l.richtig).length ?? 0
   const nochmalTitel =
     anzahlRichtig === 0 || nochmalNummern.length === 0
       ? 'Schau nochmal hin.'
-      : `Fast! Schau bei Lücke ${nochmalNummern.slice(0, -1).join(', ')}${nochmalNummern.length > 1 ? ' und ' : ''}${nochmalNummern[nochmalNummern.length - 1]} nochmal hin.`
+      : `Fast! Schau bei ${wort.eins} ${nochmalNummern.slice(0, -1).join(', ')}${nochmalNummern.length > 1 ? ' und ' : ''}${nochmalNummern[nochmalNummern.length - 1]} nochmal hin.`
   const nochmalText =
     ergebnis?.rueckmeldung ??
-    (anzahlRichtig === 0 ? 'Lies den Satz noch einmal in Ruhe – du schaffst das!' : `Schon ${anzahlRichtig} von ${luecken.length} Lücken stimmen.`)
+    (anzahlRichtig === 0 ? 'Lies den Satz noch einmal in Ruhe – du schaffst das!' : `Schon ${anzahlRichtig} von ${luecken.length} ${wort.viele} stimmen.`)
 
   const mitTipp = Boolean(aufgabe.hinweis)
 
@@ -151,7 +159,7 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
                 </span>
                 <div>
                   <span className="aes-fb__title">Richtig! Gut gemacht.</span>
-                  Alle Lücken stimmen.
+                  Alle {wort.viele} stimmen.
                 </div>
               </div>
             ) : (
@@ -200,7 +208,9 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
               )}
             </div>
           </div>
-          {!alleAusgefuellt && !allesRichtig && <p className="aes-card__hint">Fülle alle Lücken aus, dann kannst du prüfen.</p>}
+          {!alleAusgefuellt && !allesRichtig && <p className="aes-card__hint">
+              {arten.has('luecke') ? 'Fülle alles aus' : 'Wähle überall eine Antwort'}, dann kannst du prüfen.
+            </p>}
           {loesungAngesehen && !loesungen && <p className="aes-card__hint">Du hast dir die Lösung schon einmal angesehen.</p>}
         </form>
 
