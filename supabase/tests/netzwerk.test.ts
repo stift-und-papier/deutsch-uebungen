@@ -36,7 +36,17 @@ describe('Zugriff ohne Anmeldung über das Netzwerk', () => {
     expect([401, 403]).toContain(status)
   })
 
-  it.each(['pruefe_aufgabe', 'nur_loesung', 'schueler_zum_token', 'neuer_token', 'zugewiesene_aufgabe'])(
+  it.each([
+    'pruefe_aufgabe',
+    'nur_loesung',
+    'schueler_zum_token',
+    'neuer_token',
+    'zugewiesene_aufgabe',
+    'lernstand_klasse',
+    'lernstand_schueler',
+    'auswertung',
+    'gewertete_versuche',
+  ])(
     'interne Funktion %s ist gesperrt',
     async (funktion) => {
       const { status } = await holen(`/rest/v1/rpc/${funktion}`, { method: 'POST', body: '{}' })

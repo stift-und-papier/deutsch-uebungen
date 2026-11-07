@@ -27,13 +27,16 @@ export type LueckentextInhaltSchueler = { teile: (TextTeil | LueckenTeilOhneLoes
 
 // ---- Tabellen ----
 
-export type Klasse = { id: string; name: string; erstellt_am: string }
+export type Kerncurriculum = 'Gymnasium' | 'Realschule' | 'Hauptschule'
+
+export type Klasse = { id: string; name: string; jahrgang: number | null; erstellt_am: string }
 
 export type Schueler = {
   id: string
   klasse_id: string
   pseudonym: string
   token: string
+  kerncurriculum: Kerncurriculum | null
   erstellt_am: string
 }
 

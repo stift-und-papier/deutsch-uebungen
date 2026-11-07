@@ -59,13 +59,26 @@
 
 ## Etappen
 0. Einrichtung ✓
-1. Kern: Login, Klassen/Pseudonyme, Links, Linkliste, Lückentext, Pakete, Bearbeitung, Antworten speichern ← **aktuell**
-2. Lernstand: Kompetenzen importieren, Zuordnung, KC pro Schüler:in, Lehrkraft- und Schüleransichten
+1. Kern: Login, Klassen/Pseudonyme, Links, Linkliste, Lückentext, Pakete, Bearbeitung, Antworten speichern ✓
+2. Lernstand: Kompetenzen importieren, Zuordnung, KC pro Schüler:in, Lehrkraft- und Schüleransichten ← **aktuell**
 3. Weitere Aufgabenformate + Schwierigkeitsstufe pro Schüler:in
 4. Politur: Druck/PDF, Offline-Speicher, `DATENSCHUTZ.md`, Löschfunktionen
 5. Später: mehrere Lehrkräfte, Aufgaben teilen, PDF/Word-Import
 
+## Lernstand (Etappe 2)
+- Kompetenzen pro Lehrkraft (`kompetenzen`, Import aus `docs/kompetenzen.csv` per `node scripts/kompetenzen-sql.ts <uuid>`).
+  Kurznamen (`kurzname`) sind Vorschläge von Claude für die Schüleransicht – von der Lehrkraft prüfbar/änderbar.
+- Berechnung in SQL (`auswertung`, `stand_bis`, `gewertete_versuche`), Parameter in `einstellungen` (pro Lehrkraft).
+- Lehrkraft: `lernstand_klasse`, `lernstand_schueler` (security invoker → RLS greift).
+- Schüler:innen: nur `schueler_entwicklung` (security definer) → Kategorien deutlich/besser/dranbleiben/erste,
+  Anzahl gelöster Aufgaben, nächster Schritt. **Nie Punkte/Stufen** – Test 1.13 prüft das.
+
 ## Entscheidungen (Protokoll)
+- 2026-11-07 (didaktisch, Lehrkraft): Lernstand-Verfahren wie vorgeschlagen: letzte 10 gewertete Versuche, pro
+  Aufgabe/Tag nur der erste, Höchstpunkte leicht/mittel/schwer 70/85/100, Abklingfaktor 0,85, Grenzen 35/55/70/85,
+  ab 4 Versuchen; Trend nur bei ≥ 4 neuen Versuchen und ≥ 15 Punkten Veränderung. „Schlechter“ wird Schüler:innen nie
+  gezeigt (→ „dranbleiben“). CSV-Auffälligkeiten (HS-Hinweise an RS-Zeilen, das/dass unter Zeichensetzung) bewusst
+  unverändert gelassen.
 - 2026-11-07 (didaktisch, Lehrkraft): Lücken-Syntax `[Lösung]`, Alternativen mit `/`. Pseudonyme automatisch
   (Tier-Nummer) ODER eigene Liste. Lösung ansehen erst nach 2 Versuchen; danach zählen Versuche nicht für den
   Lernstand (`zaehlt_fuer_lernstand = false`). Rückmeldung pro Lücke (✓ grün / ↻ orange, nie rot).

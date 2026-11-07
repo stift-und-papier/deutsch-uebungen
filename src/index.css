@@ -517,6 +517,274 @@ input.luecke.nochmal {
   background: var(--hintergrund);
 }
 
+/* ---------- Kompetenzen auswählen ---------- */
+
+.chip-liste {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #eef3fb;
+  border-radius: 999px;
+  padding: 0.2rem 0.3rem 0.2rem 0.9rem;
+}
+
+.chip button {
+  min-width: 36px;
+  min-height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.auswahl-liste {
+  list-style: none;
+  padding: 0;
+  max-height: 26rem;
+  overflow-y: auto;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+}
+
+.auswahl-liste li {
+  border-bottom: 1px solid var(--rand);
+  padding: 0.3rem 0.6rem;
+}
+
+.auswahl-liste .haken {
+  align-items: flex-start;
+}
+
+.klein-auswahl {
+  min-height: 44px;
+  padding: 0.3rem;
+}
+
+/* ---------- Lernstand (Lehrkraft) ---------- */
+
+.stufen-feld {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 2.6rem;
+  height: 2rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.stufen-feld.leer {
+  background: #f1f0ec;
+  border-style: dashed;
+}
+
+.stufen-feld.wenig {
+  background: #ffffff;
+  color: var(--text-leise);
+}
+
+.stufen-feld .trend {
+  font-size: 0.75rem;
+}
+
+.heatmap-rahmen {
+  overflow-x: auto;
+}
+
+.heatmap {
+  border-collapse: collapse;
+  background: var(--flaeche);
+}
+
+.heatmap th,
+.heatmap td {
+  border: 1px solid var(--rand);
+  padding: 0.25rem;
+  text-align: center;
+}
+
+.heatmap tbody th {
+  text-align: left;
+  white-space: nowrap;
+  padding: 0.25rem 0.6rem;
+}
+
+.heatmap-kopf {
+  vertical-align: bottom;
+  height: 10rem;
+}
+
+.heatmap-kopf span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.heatmap td a {
+  text-decoration: none;
+}
+
+.legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.kompetenz-zeile {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1.2fr) minmax(14rem, 1.5fr) auto;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--rand);
+  break-inside: avoid;
+}
+
+@media (max-width: 800px) {
+  .kompetenz-zeile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.balken {
+  position: relative;
+  height: 2.2rem;
+  border-radius: 8px;
+  overflow: visible;
+  background: #f1f0ec;
+  border: 1px solid var(--rand);
+}
+
+.balken-bereich {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  opacity: 0.18;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.balken-fuellung {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  font-weight: 800;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.balken-start {
+  position: absolute;
+  top: -0.35rem;
+  bottom: -0.35rem;
+  width: 0;
+  border-left: 3px dashed #1c1c1a;
+}
+
+.balken-start span {
+  position: absolute;
+  top: 100%;
+  left: -1rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.balken-text {
+  margin-top: 0.9rem;
+  font-size: 0.9rem;
+}
+
+.trend-pfeil {
+  font-size: 1.1rem;
+}
+
+.verlauf {
+  width: 260px;
+  height: 70px;
+  background: var(--flaeche);
+  border: 1px solid var(--rand);
+  border-radius: 6px;
+}
+
+.verlauf-grenze {
+  stroke: #d6d4cc;
+  stroke-dasharray: 3 3;
+}
+
+.verlauf-linie {
+  fill: none;
+  stroke: var(--akzent);
+  stroke-width: 2;
+}
+
+.verlauf-punkt {
+  fill: var(--akzent);
+}
+
+/* ---------- Entwicklung (Schüler:innen) ---------- */
+
+.naechster-schritt {
+  background: #eef3fb;
+  border-radius: 12px;
+  padding: 0.9rem 1.2rem;
+  font-size: 1.15rem;
+}
+
+.entwicklung {
+  border-radius: 14px;
+  padding: 0.75rem 1.25rem;
+  margin: 1rem 0;
+  border: 2px solid var(--rand);
+  background: var(--flaeche);
+}
+
+.entwicklung h2 {
+  font-size: 1.2rem;
+}
+
+.entwicklung ul {
+  padding-left: 1.2rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.entwicklung li {
+  margin: 0.3rem 0;
+}
+
+.entwicklung-deutlich,
+.entwicklung-besser {
+  border-color: var(--gut);
+  background: var(--gut-flaeche);
+}
+
+.entwicklung-dranbleiben {
+  border-color: #8fb2ea;
+  background: #eef3fb;
+}
+
 /* ---------- Drucken ---------- */
 
 @media print {

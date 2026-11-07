@@ -5,6 +5,7 @@ import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import type { AbgabeAntwort, Loesung, SchuelerStart } from '../lib/typen'
 import { neueId } from '../lib/zufall'
+import { Entwicklung } from './Entwicklung'
 import {
   entwurfLesen,
   entwurfSpeichern,
@@ -90,9 +91,16 @@ export function SchuelerBereich({ token, pfad }: Props) {
         </p>
       )}
 
-      {!paket && (
+      {bereich === 'entwicklung' && <Entwicklung token={token} zurueck={`#${basis}`} />}
+
+      {!paket && bereich !== 'entwicklung' && (
         <>
           <h1>Hallo {daten.pseudonym}!</h1>
+          <div className="knopfleiste">
+            <a className="knopf" href={`#${basis}/entwicklung`}>
+              🌱 Meine Entwicklung
+            </a>
+          </div>
           {daten.pakete.length === 0 ? (
             <p>Für dich gibt es gerade keine Übungen. Schau später noch einmal vorbei.</p>
           ) : (

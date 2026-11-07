@@ -58,7 +58,15 @@ begin
   insert into public.kompetenzen (id, owner, code, kerncurriculum, bereich, stufe, kompetenz) values
     (c_kom_a, c_lk_a, 'T-A-1', 'Realschule', 'Rechtschreibung', '6', 'Test A'),
     (c_kom_b, c_lk_b, 'T-B-1', 'Realschule', 'Rechtschreibung', '6', 'Test B');
-  insert into public.aufgabe_kompetenzen (aufgabe_id, kompetenz_id) values (c_auf_a, c_kom_a), (c_auf_b, c_kom_b);
+  insert into public.aufgabe_kompetenzen (aufgabe_id, kompetenz_id) values (c_auf_a, c_kom_a), (c_auf_b, c_kom_b), (c_auf_a2, c_kom_a);
+  update public.schueler set kerncurriculum = 'Realschule' where id in (c_sch_a1, c_sch_a2, c_sch_b1);
+
+  -- Rechenbeispiel für Eule-02 (Aufgabe "mittel" = höchstens 85 Punkte):
+  -- vor ~20 Tagen 4× nur 20 % richtig (je 17 Punkte), in den letzten Tagen 4× alles richtig (je 85 Punkte).
+  -- Erwartet: Stand 61,7 ("o"), Startstand 17 ("--"), Trend +2 Stufen → Kategorie "deutlich".
+  insert into public.versuche (client_id, schueler_id, aufgabe_id, paket_id, antworten, ergebnis, anteil_richtig, richtig, bearbeitet_am)
+  select gen_random_uuid(), c_sch_a2, c_auf_a2, c_pak_a2, '{}', '{}', w.anteil, w.anteil = 1, now() - w.tage * interval '1 day'
+  from (values (0.2, 20), (0.2, 19), (0.2, 18), (0.2, 17), (1.0, 3), (1.0, 2), (1.0, 1), (1.0, 0)) w (anteil, tage);
 
   -- =================================================================
   -- Teil 1: Nicht angemeldet (so greifen Schüler:innen zu)
@@ -190,6 +198,38 @@ begin
   end;
   ok := ok || '1.11 keine fremden Lösungen'::text;
 
+  -- 1.13 Entwicklung für Schüler:innen: Kategorie ja, absolute Werte NIE
+  v := public.schueler_entwicklung(c_tok_a2);
+  if v -> 'kompetenzen' -> 0 ->> 'kategorie' <> 'deutlich' then
+    raise exception 'FEHLGESCHLAGEN: Kategorie % statt deutlich: %', v -> 'kompetenzen' -> 0 ->> 'kategorie', v;
+  end if;
+  if v::text ~ '"(punkte|stufe|start_|vergleich_|trend_|verlauf|anzahl)' or v::text like '%61.7%' then
+    raise exception 'FEHLGESCHLAGEN: absolute Werte in schueler_entwicklung: %', v;
+  end if;
+  if v ->> 'naechster_schritt' is null then raise exception 'FEHLGESCHLAGEN: kein nächster Schritt: %', v; end if;
+  v := public.schueler_entwicklung(c_tok_a1);
+  if v -> 'kompetenzen' -> 0 ->> 'kategorie' <> 'erste' then
+    raise exception 'FEHLGESCHLAGEN: A1 sollte "erste Ergebnisse" haben: %', v;
+  end if;
+  ok := ok || '1.13 Schüler-Entwicklung ohne absolute Werte'::text;
+
+  -- 1.14 Lehrkraft-Auswertungen sind für Schüler:innen gesperrt
+  declare f text;
+  begin
+    foreach f in array array[
+      format('select * from public.lernstand_klasse(%L)', c_kl_a1),
+      format('select * from public.lernstand_schueler(%L)', c_sch_a2),
+      format('select public.gewertete_versuche(%L, %L, null::public.einstellungen)', c_sch_a2, c_kom_a)
+    ] loop
+      begin
+        execute f;
+        raise exception 'FEHLGESCHLAGEN: anon darf ausführen: %', f;
+      exception when insufficient_privilege then null;
+      end;
+    end loop;
+  end;
+  ok := ok || '1.14 anon erreicht keine Lernstands-Funktionen'::text;
+
   reset role;
 
   -- Kontrolle als Verwalter: Versuch nach Lösungsansicht zählt nicht
@@ -211,7 +251,7 @@ begin
   select count(*) into n from public.aufgaben where owner = c_lk_b;
   if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Aufgaben von B'; end if;
   select count(*) into n from public.versuche;
-  if n <> 4 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 4', n; end if;
+  if n <> 12 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 12', n; end if;
   ok := ok || '2.1 Lehrkraft sieht nur eigene Daten'::text;
 
   update public.aufgaben set titel = 'gehackt' where id = c_auf_b;
@@ -256,7 +296,7 @@ begin
   select count(*) into n from public.kompetenzen where owner = c_lk_b;
   if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Kompetenzen von B'; end if;
   select count(*) into n from public.aufgabe_kompetenzen;
-  if n <> 1 then raise exception 'FEHLGESCHLAGEN: A sieht % Kompetenz-Zuordnungen statt 1', n; end if;
+  if n <> 2 then raise exception 'FEHLGESCHLAGEN: A sieht % Kompetenz-Zuordnungen statt 2', n; end if;
   begin
     insert into public.aufgabe_kompetenzen (aufgabe_id, kompetenz_id) values (c_auf_a2, c_kom_b);
     raise exception 'FEHLGESCHLAGEN: A verknüpft Kompetenz von B';
@@ -268,6 +308,22 @@ begin
   exception when foreign_key_violation then null;
   end;
   ok := ok || '2.5a Kompetenzen getrennt und geschützt'::text;
+
+  -- Lernstand: Rechenbeispiel stimmt, fremde Klassen/Schüler:innen liefern nichts
+  select l.daten into v from public.lernstand_schueler(c_sch_a2) l where l.kompetenz_id = c_kom_a;
+  if abs((v ->> 'punkte')::numeric - 61.7) > 0.05 or (v ->> 'stufe')::int <> 2
+     or (v ->> 'start_stufe')::int <> 0 or (v ->> 'trend_stufen')::int <> 2 or not (v ->> 'trend_gueltig')::boolean then
+    raise exception 'FEHLGESCHLAGEN: Rechenbeispiel: %', v;
+  end if;
+  select count(*) into n from public.lernstand_klasse(c_kl_a2);
+  if n <> 1 then raise exception 'FEHLGESCHLAGEN: Klassen-Lernstand liefert % Zeilen', n; end if;
+  select count(*) into n from public.lernstand_klasse(c_kl_b1);
+  if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Lernstand der Klasse von B'; end if;
+  select count(*) into n from public.lernstand_schueler(c_sch_b1);
+  if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Lernstand von Schüler:in von B'; end if;
+  select count(*) into n from public.einstellungen;
+  if n <> 1 then raise exception 'FEHLGESCHLAGEN: A sieht % Einstellungen', n; end if;
+  ok := ok || '2.5b Lernstand korrekt berechnet und getrennt'::text;
 
   -- Eigene Schülerin anlegen: bekommt automatisch einen langen Token
   insert into public.schueler (klasse_id, pseudonym) values (c_kl_a1, 'Igel-09') returning length(token) into n;

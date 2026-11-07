@@ -5,7 +5,10 @@ import { supabase } from '../lib/supabase'
 import { AufgabeEditor } from './AufgabeEditor'
 import { AufgabenListe } from './AufgabenListe'
 import { KlasseDetail } from './KlasseDetail'
+import { EinstellungenSeite } from './EinstellungenSeite'
+import { KlassenLernstand } from './KlassenLernstand'
 import { KlassenListe } from './KlassenListe'
+import { SchuelerLernstand } from './SchuelerLernstand'
 import { Kompetenzen } from './Kompetenzen'
 import { Linkliste } from './Linkliste'
 import { PaketDetail } from './PaketDetail'
@@ -43,13 +46,19 @@ export function LehrkraftBereich({ pfad }: { pfad: string[] }) {
         <a href="#/lehrkraft/kompetenzen" aria-current={bereich === 'kompetenzen' ? 'page' : undefined}>
           Kompetenzen
         </a>
+        <a href="#/lehrkraft/einstellungen" aria-current={bereich === 'einstellungen' ? 'page' : undefined}>
+          Einstellungen
+        </a>
         <button className="knopf leise abmelden" onClick={() => void supabase.auth.signOut()}>
           Abmelden
         </button>
       </nav>
       <main className="seite breit">
         {bereich === 'klassen' && !id && <KlassenListe />}
-        {bereich === 'klassen' && id && <KlasseDetail klasseId={id} />}
+        {bereich === 'klassen' && id && !unter && <KlasseDetail klasseId={id} />}
+        {bereich === 'klassen' && id && unter === 'lernstand' && <KlassenLernstand klasseId={id} />}
+        {bereich === 'schueler' && id && <SchuelerLernstand schuelerId={id} />}
+        {bereich === 'einstellungen' && <EinstellungenSeite />}
         {bereich === 'aufgaben' && !id && <AufgabenListe />}
         {bereich === 'aufgaben' && id && <AufgabeEditor aufgabeId={id === 'neu' ? null : id} />}
         {bereich === 'pakete' && !id && <PaketListe />}

@@ -5,6 +5,7 @@ import { teileZuText, textZuTeilen } from '../lib/lueckentext'
 import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import { SCHWIERIGKEITEN, type Aufgabe, type LueckentextTeil, type Pruefergebnis, type Schwierigkeit } from '../lib/typen'
+import { KompetenzAuswahl } from './KompetenzAuswahl'
 
 const BEISPIEL = 'Ich weiß, [dass] du heute [Rad fährst/radfährst].'
 
@@ -22,9 +23,20 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
   const [fehler, setFehler] = useState<string | null>(null)
   const [gespeichert, setGespeichert] = useState(false)
   const [geladen, setGeladen] = useState(aufgabeId === null)
+  const [kompetenzIds, setKompetenzIds] = useState<Set<string>>(new Set())
+  const [kompetenzIdsAlt, setKompetenzIdsAlt] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!aufgabeId) return
+    void supabase
+      .from('aufgabe_kompetenzen')
+      .select('kompetenz_id')
+      .eq('aufgabe_id', aufgabeId)
+      .then(({ data }) => {
+        const ids = new Set((data ?? []).map((z) => z.kompetenz_id as string))
+        setKompetenzIds(ids)
+        setKompetenzIdsAlt(ids)
+      })
     void supabase
       .from('aufgaben')
       .select('*')
@@ -65,6 +77,19 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
       ? await supabase.from('aufgaben').update(datensatz).eq('id', aufgabeId).select('id').single()
       : await supabase.from('aufgaben').insert(datensatz).select('id').single()
     if (error) return setFehler(fehlerText(error))
+
+    // Kompetenz-Zuordnung angleichen
+    const entfernt = [...kompetenzIdsAlt].filter((id) => !kompetenzIds.has(id))
+    const neu = [...kompetenzIds].filter((id) => !kompetenzIdsAlt.has(id))
+    if (entfernt.length) {
+      const r = await supabase.from('aufgabe_kompetenzen').delete().eq('aufgabe_id', data.id).in('kompetenz_id', entfernt)
+      if (r.error) return setFehler(fehlerText(r.error))
+    }
+    if (neu.length) {
+      const r = await supabase.from('aufgabe_kompetenzen').insert(neu.map((kompetenz_id) => ({ aufgabe_id: data.id, kompetenz_id })))
+      if (r.error) return setFehler(fehlerText(r.error))
+    }
+    setKompetenzIdsAlt(new Set(kompetenzIds))
     setGespeichert(true)
     window.setTimeout(() => setGespeichert(false), 2500)
     if (!aufgabeId) gehe(`/lehrkraft/aufgaben/${data.id}`)
@@ -201,6 +226,8 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
               Groß-/Kleinschreibung wird bewertet
             </label>
           </fieldset>
+
+          <KompetenzAuswahl ausgewaehlt={kompetenzIds} onChange={setKompetenzIds} />
 
           <label>
             Tipp (optional – Schüler:innen können ihn aufklappen)

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { KERNCURRICULA } from '../lib/csv'
 import { fehlerText } from '../lib/fehler'
 import { erzeugePseudonyme, pseudonymListeLesen } from '../lib/pseudonyme'
 import { gehe, schuelerLink } from '../lib/router'
@@ -41,6 +42,12 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
       setMeldung(`${namen.length} Schüler:innen angelegt.`)
       void laden()
     }
+  }
+
+  async function kcSetzen(ids: string[], kc: string | null) {
+    const { error } = await supabase.from('schueler').update({ kerncurriculum: kc }).in('id', ids)
+    if (error) setFehler(fehlerText(error))
+    else void laden()
   }
 
   async function umbenennen(s: Schueler) {
@@ -106,9 +113,56 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
       {meldung && <p className="erfolg-box">{meldung}</p>}
 
       <div className="knopfleiste">
-        <a className="knopf haupt" href={`#/lehrkraft/klassen/${klasse.id}/links`}>
+        <a className="knopf haupt" href={`#/lehrkraft/klassen/${klasse.id}/lernstand`}>
+          Lernstand der Klasse
+        </a>
+        <a className="knopf" href={`#/lehrkraft/klassen/${klasse.id}/links`}>
           Linkliste (drucken / für IServ)
         </a>
+      </div>
+
+      <div className="formular zeile">
+        <label>
+          Jahrgang
+          <select
+            value={klasse.jahrgang ?? ''}
+            onChange={async (e) => {
+              const { error } = await supabase
+                .from('klassen')
+                .update({ jahrgang: e.target.value ? Number(e.target.value) : null })
+                .eq('id', klasse.id)
+              if (error) setFehler(fehlerText(error))
+              else void laden()
+            }}
+          >
+            <option value="">– nicht festgelegt –</option>
+            {[5, 6, 7, 8, 9, 10].map((j) => (
+              <option key={j} value={j}>
+                {j}
+              </option>
+            ))}
+          </select>
+        </label>
+        {schueler.length > 0 && (
+          <label>
+            Kerncurriculum für alle setzen
+            <select
+              value=""
+              onChange={(e) => {
+                if (e.target.value && window.confirm(`Für alle ${schueler.length} Schüler:innen „${e.target.value}“ einstellen?`))
+                  void kcSetzen(
+                    schueler.map((s) => s.id),
+                    e.target.value,
+                  )
+              }}
+            >
+              <option value="">– auswählen –</option>
+              {KERNCURRICULA.map((k) => (
+                <option key={k}>{k}</option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       {schueler.length === 0 ? (
@@ -118,6 +172,7 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
           <thead>
             <tr>
               <th>Pseudonym</th>
+              <th>Kerncurriculum</th>
               <th>Versuche</th>
               <th>Aktionen</th>
             </tr>
@@ -128,8 +183,24 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
                 <td>
                   <strong>{s.pseudonym}</strong>
                 </td>
+                <td>
+                  <select
+                    className="klein-auswahl"
+                    aria-label={`Kerncurriculum von ${s.pseudonym}`}
+                    value={s.kerncurriculum ?? ''}
+                    onChange={(e) => void kcSetzen([s.id], e.target.value || null)}
+                  >
+                    <option value="">– bitte wählen –</option>
+                    {KERNCURRICULA.map((k) => (
+                      <option key={k}>{k}</option>
+                    ))}
+                  </select>
+                </td>
                 <td>{s.versuche[0]?.count ?? 0}</td>
                 <td className="aktionen">
+                  <a className="knopf klein-knopf" href={`#/lehrkraft/schueler/${s.id}`}>
+                    Lernstand
+                  </a>
                   <button className="knopf klein-knopf" onClick={() => void linkKopieren(s)}>
                     Link kopieren
                   </button>
