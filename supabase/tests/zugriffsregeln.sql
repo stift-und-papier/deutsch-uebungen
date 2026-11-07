@@ -26,6 +26,8 @@ declare
   c_pak_a1 constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000b1';
   c_pak_a2 constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000b2';
   c_pak_b constant uuid := 'bbbbbbbb-0000-4000-8000-0000000000b1';
+  c_kom_a constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000d1';
+  c_kom_b constant uuid := 'bbbbbbbb-0000-4000-8000-0000000000d1';
   c_inhalt constant jsonb := '{"text":"Ich weiß, [dass] du kommst.","gross_klein_beachten":true,"teile":[{"t":"text","v":"Ich weiß, "},{"t":"luecke","id":0,"loesungen":["dass"]},{"t":"text","v":" du kommst."}]}';
   v jsonb;
   n bigint;
@@ -53,6 +55,10 @@ begin
     (c_lk_a, c_pak_a1, c_kl_a1, null),      -- Paket A1 an Klasse 7a
     (c_lk_a, c_pak_a2, null, c_sch_a2),     -- Paket A2 nur an Eule-02
     (c_lk_b, c_pak_b, c_kl_b1, null);       -- Paket B an Klasse von Lehrkraft B
+  insert into public.kompetenzen (id, owner, code, kerncurriculum, bereich, stufe, kompetenz) values
+    (c_kom_a, c_lk_a, 'T-A-1', 'Realschule', 'Rechtschreibung', '6', 'Test A'),
+    (c_kom_b, c_lk_b, 'T-B-1', 'Realschule', 'Rechtschreibung', '6', 'Test B');
+  insert into public.aufgabe_kompetenzen (aufgabe_id, kompetenz_id) values (c_auf_a, c_kom_a), (c_auf_b, c_kom_b);
 
   -- =================================================================
   -- Teil 1: Nicht angemeldet (so greifen Schüler:innen zu)
@@ -63,7 +69,7 @@ begin
   -- 1.1 Keine Tabelle ist direkt lesbar
   declare t text;
   begin
-    foreach t in array array['klassen','schueler','aufgaben','pakete','paket_aufgaben','zuweisungen','versuche','loesung_angesehen'] loop
+    foreach t in array array['klassen','schueler','aufgaben','pakete','paket_aufgaben','zuweisungen','versuche','loesung_angesehen','kompetenzen','aufgabe_kompetenzen'] loop
       begin
         execute format('select count(*) from public.%I', t) into n;
         raise exception 'FEHLGESCHLAGEN: anon kann Tabelle % lesen', t;
@@ -245,6 +251,23 @@ begin
   exception when insufficient_privilege then null;
   end;
   ok := ok || '2.4 Lehrkraft kann keine Versuche fälschen'::text;
+
+  -- Kompetenzen: nur eigene sichtbar, fremde nicht mit eigenen Aufgaben verknüpfbar, verwendete nicht löschbar
+  select count(*) into n from public.kompetenzen where owner = c_lk_b;
+  if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Kompetenzen von B'; end if;
+  select count(*) into n from public.aufgabe_kompetenzen;
+  if n <> 1 then raise exception 'FEHLGESCHLAGEN: A sieht % Kompetenz-Zuordnungen statt 1', n; end if;
+  begin
+    insert into public.aufgabe_kompetenzen (aufgabe_id, kompetenz_id) values (c_auf_a2, c_kom_b);
+    raise exception 'FEHLGESCHLAGEN: A verknüpft Kompetenz von B';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    delete from public.kompetenzen where id = c_kom_a;
+    raise exception 'FEHLGESCHLAGEN: verwendete Kompetenz gelöscht';
+  exception when foreign_key_violation then null;
+  end;
+  ok := ok || '2.5a Kompetenzen getrennt und geschützt'::text;
 
   -- Eigene Schülerin anlegen: bekommt automatisch einen langen Token
   insert into public.schueler (klasse_id, pseudonym) values (c_kl_a1, 'Igel-09') returning length(token) into n;

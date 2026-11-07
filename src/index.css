@@ -358,6 +358,32 @@ legend {
   word-break: break-all;
 }
 
+.marke {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #eef3fb;
+  border-radius: 6px;
+  padding: 0.1rem 0.4rem;
+}
+
+.nicht-umbrechen {
+  white-space: nowrap;
+}
+
+.kompetenz-tabelle td {
+  vertical-align: top;
+}
+
+tr.ausgeblendet td {
+  color: var(--text-leise);
+  text-decoration: line-through;
+}
+
+tr.ausgeblendet .aktionen {
+  text-decoration: none;
+}
+
 /* ---------- Lehrkraft-Menü ---------- */
 
 .hauptmenue {

@@ -6,6 +6,7 @@ import { AufgabeEditor } from './AufgabeEditor'
 import { AufgabenListe } from './AufgabenListe'
 import { KlasseDetail } from './KlasseDetail'
 import { KlassenListe } from './KlassenListe'
+import { Kompetenzen } from './Kompetenzen'
 import { Linkliste } from './Linkliste'
 import { PaketDetail } from './PaketDetail'
 import { PaketListe } from './PaketListe'
@@ -39,6 +40,9 @@ export function LehrkraftBereich({ pfad }: { pfad: string[] }) {
         <a href="#/lehrkraft/pakete" aria-current={bereich === 'pakete' ? 'page' : undefined}>
           Aufgabenpakete
         </a>
+        <a href="#/lehrkraft/kompetenzen" aria-current={bereich === 'kompetenzen' ? 'page' : undefined}>
+          Kompetenzen
+        </a>
         <button className="knopf leise abmelden" onClick={() => void supabase.auth.signOut()}>
           Abmelden
         </button>
@@ -50,6 +54,7 @@ export function LehrkraftBereich({ pfad }: { pfad: string[] }) {
         {bereich === 'aufgaben' && id && <AufgabeEditor aufgabeId={id === 'neu' ? null : id} />}
         {bereich === 'pakete' && !id && <PaketListe />}
         {bereich === 'pakete' && id && <PaketDetail paketId={id} vorschau={unter === 'vorschau'} />}
+        {bereich === 'kompetenzen' && <Kompetenzen />}
       </main>
     </div>
   )

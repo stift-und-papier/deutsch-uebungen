@@ -50,7 +50,20 @@ export type Aufgabe = {
   geaendert_am: string
 }
 
-export type Paket = { id: string; titel: string; beschreibung: string | null; erstellt_am: string }
+export type Kompetenz = {
+  id: string
+  code: string
+  kerncurriculum: 'Gymnasium' | 'Realschule' | 'Hauptschule'
+  bereich: string
+  stufe: '6' | '8' | '10' | '6-10'
+  kompetenz: string
+  hinweis: string | null
+  kurzname: string | null
+  ausgeblendet: boolean
+  sortierung: number
+}
+
+export type Paket ={ id: string; titel: string; beschreibung: string | null; erstellt_am: string }
 
 export type PaketAufgabe = { paket_id: string; aufgabe_id: string; position: number }
 
