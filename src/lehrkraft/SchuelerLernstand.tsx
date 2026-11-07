@@ -8,7 +8,7 @@ import { Legende, StufenBalken, Verlauf } from './LernstandAnzeige'
 type Zeile = { kompetenz_id: string; daten: Auswertung | null }
 
 // (b) Einzelansicht pro Schüler:in – auch als Druckansicht für Beratungsgespräche.
-export function SchuelerLernstand({ schuelerId }: { schuelerId: string }) {
+export function SchuelerLernstand({ schuelerId, drucken = false }: { schuelerId: string; drucken?: boolean }) {
   const [schueler, setSchueler] = useState<Schueler | null>(null)
   const [klasse, setKlasse] = useState<Klasse | null>(null)
   const [kompetenzen, setKompetenzen] = useState<Kompetenz[]>([])
@@ -36,6 +36,15 @@ export function SchuelerLernstand({ schuelerId }: { schuelerId: string }) {
     })()
   }, [schuelerId])
 
+  // Druckansicht: sobald alles geladen ist, den Druckdialog öffnen (dort auch „Als PDF sichern“).
+  const fertig = Boolean(schueler && klasse && einstellungen)
+  useEffect(() => {
+    if (drucken && fertig) {
+      const t = window.setTimeout(() => window.print(), 400)
+      return () => window.clearTimeout(t)
+    }
+  }, [drucken, fertig])
+
   if (fehler) return <p className="hinweis-box">{fehler}</p>
   if (!schueler || !klasse || !einstellungen) return <p>Lädt …</p>
 
@@ -46,8 +55,8 @@ export function SchuelerLernstand({ schuelerId }: { schuelerId: string }) {
   return (
     <div className="einzelansicht">
       <div className="nicht-drucken">
-        <a className="zurueck" href={`#/lehrkraft/klassen/${klasse.id}/lernstand`}>
-          ← Lernstand Klasse {klasse.name}
+        <a className="zurueck" href={drucken ? `#/lehrkraft/klassen/${klasse.id}` : `#/lehrkraft/klassen/${klasse.id}/lernstand`}>
+          ← {drucken ? `Klasse ${klasse.name}` : `Lernstand Klasse ${klasse.name}`}
         </a>
       </div>
       <h1>

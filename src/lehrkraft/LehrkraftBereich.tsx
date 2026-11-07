@@ -30,6 +30,13 @@ export function LehrkraftBereich({ pfad }: { pfad: string[] }) {
   const [bereich = 'klassen', id, unter] = pfad
   // Die Linkliste ist ein Druckblatt und kommt ohne Menü aus.
   if (bereich === 'klassen' && id && unter === 'links') return <Linkliste klasseId={id} />
+  // Ebenso die Druckansicht der Einzelansicht (öffnet direkt den Druckdialog).
+  if (bereich === 'schueler' && id && unter === 'drucken')
+    return (
+      <main className="seite breit">
+        <SchuelerLernstand schuelerId={id} drucken />
+      </main>
+    )
 
   return (
     <div className="lehrkraft">

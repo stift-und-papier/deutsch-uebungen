@@ -102,6 +102,18 @@ code {
   color: var(--akzent-text);
 }
 
+/* Auswertungen (Lernstand) in Grün, damit sie sich von den übrigen Knöpfen abheben */
+.knopf.auswertung {
+  background: var(--gut);
+  border-color: var(--gut);
+  color: #ffffff;
+}
+
+.knopf.auswertung-rand {
+  border-color: var(--gut);
+  color: var(--gut);
+}
+
 .knopf.leise {
   border-color: var(--rand);
   color: var(--text);

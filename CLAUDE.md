@@ -85,7 +85,9 @@
 - 2026-11-07: Prüfung serverseitig (Lösungen bleiben in der DB, Ergebnisse fälschungssicher). Folge: Ohne Internet
   wird die Antwort zwischengespeichert und später geprüft.
 - 2026-11-07: Link-Token 192 Bit, im Klartext gespeichert (nur für die eigene Lehrkraft lesbar), damit die Linkliste
-  jederzeit neu gedruckt werden kann. „Neuer Link“ macht den alten ungültig.
+  jederzeit neu gedruckt werden kann.
+- 2026-11-07 (Lehrkraft): Knopf „Neuer Link“ entfernt (nicht gebraucht). Stattdessen pro Schüler:in
+  „Entwicklung drucken“ (`#/lehrkraft/schueler/<id>/drucken`). Lernstand-Knöpfe grün zur Unterscheidung.
 - 2026-11-07: React statt Svelte – bewährte Drag-&-Drop-Lösung mit Touch-Unterstützung für iPad.
 - 2026-11-07: Öffentliches Repo statt privatem (GitHub Pages bei privatem Repo nur mit Bezahlkonto).
   Unbedenklich, weil keine Daten und keine Geheimnisse im Code liegen.

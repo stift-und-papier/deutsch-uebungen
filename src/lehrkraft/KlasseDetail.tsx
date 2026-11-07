@@ -5,7 +5,6 @@ import { erzeugePseudonyme, pseudonymListeLesen } from '../lib/pseudonyme'
 import { gehe, schuelerLink } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import type { Klasse, Schueler } from '../lib/typen'
-import { neuerToken } from '../lib/zufall'
 
 type SchuelerMitVersuchen = Schueler & { versuche: { count: number }[] }
 
@@ -58,18 +57,6 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
     else void laden()
   }
 
-  async function neuerLink(s: Schueler) {
-    const ok = window.confirm(
-      `Neuen Link für ${s.pseudonym} erzeugen?\n\nDer alte Link funktioniert danach nicht mehr. Die Ergebnisse bleiben erhalten.`,
-    )
-    if (!ok) return
-    const { error } = await supabase.from('schueler').update({ token: neuerToken() }).eq('id', s.id)
-    if (error) setFehler(fehlerText(error))
-    else {
-      setMeldung(`${s.pseudonym} hat einen neuen Link.`)
-      void laden()
-    }
-  }
 
   async function loeschen(s: Schueler) {
     const ok = window.confirm(
@@ -113,11 +100,11 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
       {meldung && <p className="erfolg-box">{meldung}</p>}
 
       <div className="knopfleiste">
-        <a className="knopf haupt" href={`#/lehrkraft/klassen/${klasse.id}/lernstand`}>
-          Lernstand der Klasse
-        </a>
-        <a className="knopf" href={`#/lehrkraft/klassen/${klasse.id}/links`}>
+        <a className="knopf haupt" href={`#/lehrkraft/klassen/${klasse.id}/links`}>
           Linkliste (drucken / für IServ)
+        </a>
+        <a className="knopf auswertung" href={`#/lehrkraft/klassen/${klasse.id}/lernstand`}>
+          📊 Lernstand der Klasse
         </a>
       </div>
 
@@ -198,8 +185,8 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
                 </td>
                 <td>{s.versuche[0]?.count ?? 0}</td>
                 <td className="aktionen">
-                  <a className="knopf klein-knopf" href={`#/lehrkraft/schueler/${s.id}`}>
-                    Lernstand
+                  <a className="knopf klein-knopf auswertung" href={`#/lehrkraft/schueler/${s.id}`}>
+                    📊 Lernstand
                   </a>
                   <button className="knopf klein-knopf" onClick={() => void linkKopieren(s)}>
                     Link kopieren
@@ -210,9 +197,9 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
                   <button className="knopf klein-knopf leise" onClick={() => void umbenennen(s)}>
                     Umbenennen
                   </button>
-                  <button className="knopf klein-knopf leise" onClick={() => void neuerLink(s)}>
-                    Neuer Link
-                  </button>
+                  <a className="knopf klein-knopf auswertung-rand" href={`#/lehrkraft/schueler/${s.id}/drucken`}>
+                    🖨 Entwicklung drucken
+                  </a>
                   <button className="knopf klein-knopf gefahr" onClick={() => void loeschen(s)}>
                     Löschen
                   </button>
