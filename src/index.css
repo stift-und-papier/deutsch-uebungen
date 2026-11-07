@@ -396,6 +396,21 @@ tr.ausgeblendet .aktionen {
   text-decoration: none;
 }
 
+.qr-code {
+  width: 7.5rem;
+  height: 7.5rem;
+}
+
+.qr-code svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.linkliste-tabelle tr {
+  break-inside: avoid;
+}
+
 /* ---------- Lehrkraft-Menü ---------- */
 
 .hauptmenue {
@@ -844,5 +859,13 @@ input.luecke.nochmal {
   }
   .tabelle tr {
     break-inside: avoid;
+  }
+  /* QR-Codes ca. 3 cm groß – gut scannbar mit der iPad-Kamera */
+  .qr-code {
+    width: 3cm;
+    height: 3cm;
+  }
+  @page {
+    margin: 1.5cm;
   }
 }

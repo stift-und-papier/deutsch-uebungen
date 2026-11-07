@@ -140,7 +140,7 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
 
       <div className="knopfleiste">
         <a className="knopf haupt" href={`#/lehrkraft/klassen/${klasse.id}/links`}>
-          Linkliste (drucken / für IServ)
+          Linkliste mit QR-Codes
         </a>
         <a className="knopf auswertung" href={`#/lehrkraft/klassen/${klasse.id}/lernstand`}>
           📊 Lernstand der Klasse

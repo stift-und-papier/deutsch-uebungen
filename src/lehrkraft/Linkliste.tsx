@@ -1,10 +1,12 @@
+import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
 import { fehlerText } from '../lib/fehler'
 import { schuelerLink } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import type { Klasse, Schueler } from '../lib/typen'
 
-// Druckblatt mit Pseudonym und persönlichem Link – zum Verteilen über IServ.
+// Druckblatt mit Pseudonym, persönlichem Link und QR-Code (zum Scannen mit der iPad-Kamera).
+// Die QR-Codes werden im Browser erzeugt – die Links gehen an keinen fremden Dienst.
 export function Linkliste({ klasseId }: { klasseId: string }) {
   const [klasse, setKlasse] = useState<Klasse | null>(null)
   const [schueler, setSchueler] = useState<Schueler[]>([])
@@ -43,8 +45,8 @@ export function Linkliste({ klasseId }: { klasseId: string }) {
           ← Zurück zur Klasse
         </a>
         <p className="hinweis-box">
-          Diese Links sind persönlich wie ein Schlüssel: Wer den Link hat, kann als diese Person üben.
-          Bitte einzeln verteilen (z. B. per IServ-Nachricht) und nicht öffentlich aushängen.
+          Diese Links und QR-Codes sind persönlich wie ein Schlüssel: Wer sie hat, kann als diese Person üben. Bitte
+          einzeln verteilen und nicht öffentlich aushängen.
         </p>
         <div className="knopfleiste">
           <button className="knopf haupt" onClick={() => window.print()}>
@@ -54,12 +56,16 @@ export function Linkliste({ klasseId }: { klasseId: string }) {
             Als Tabelle speichern (CSV)
           </button>
         </div>
+        <p className="klein">
+          Als PDF: Im Druckfenster als Drucker „Als PDF speichern“ bzw. „Microsoft Print to PDF“ wählen.
+        </p>
       </div>
       <h1>Persönliche Links – {klasse.name}</h1>
-      <table className="tabelle">
+      <table className="tabelle linkliste-tabelle">
         <thead>
           <tr>
             <th>Pseudonym</th>
+            <th>QR-Code</th>
             <th>Persönlicher Link</th>
           </tr>
         </thead>
@@ -69,6 +75,9 @@ export function Linkliste({ klasseId }: { klasseId: string }) {
               <td>
                 <strong>{s.pseudonym}</strong>
               </td>
+              <td>
+                <QrCode text={schuelerLink(s.token)} beschriftung={`QR-Code für ${s.pseudonym}`} />
+              </td>
               <td className="link-zelle">{schuelerLink(s.token)}</td>
             </tr>
           ))}
@@ -76,4 +85,13 @@ export function Linkliste({ klasseId }: { klasseId: string }) {
       </table>
     </main>
   )
+}
+
+function QrCode({ text, beschriftung }: { text: string; beschriftung: string }) {
+  const [svg, setSvg] = useState('')
+  useEffect(() => {
+    void QRCode.toString(text, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }).then(setSvg)
+  }, [text])
+  // Das SVG stammt aus der QR-Bibliothek und enthält nur Pfade (kein fremder Inhalt).
+  return <div className="qr-code" role="img" aria-label={beschriftung} dangerouslySetInnerHTML={{ __html: svg }} />
 }
