@@ -55,3 +55,5 @@
   → neu in Frankfurt angelegt, altes Projekt wird gelöscht. Region immer mit `npx supabase projects list` prüfen.
 - 2026-11-07: Supabase CLI in Version 2 (`supabase@2`): Der Browser-Login (`supabase login`) scheitert auf diesem
   Rechner mit „Transport error“ (auch in v3). Anmeldung stattdessen per Zugangsschlüssel (`supabase login --token`).
+  Im Terminal-Panel der Lehrkraft scheitern auch andere CLI-Befehle (vermutlich Avast-HTTPS-Prüfung);
+  aus Claudes eigener Shell funktionieren sie (`link`, `migration list --linked` ohne DB-Passwort).
