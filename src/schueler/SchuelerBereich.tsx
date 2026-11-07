@@ -192,7 +192,15 @@ export function SchuelerBereich({ token, pfad }: Props) {
       {paket && aufgabeId && (() => {
         const index = paket.aufgaben.findIndex((a) => a.id === aufgabeId)
         const aufgabe = paket.aufgaben[index]
-        if (!aufgabe) return <p>Diese Aufgabe gibt es nicht mehr.</p>
+        if (!aufgabe)
+          return (
+            <div className="aes-card">
+              <p>Diese Aufgabe gibt es nicht mehr.</p>
+              <a className="aes-btn aes-btn--secondary" href={`#${basis}/p/${paket.id}`}>
+                Zurück zum Paket
+              </a>
+            </div>
+          )
         const naechste = paket.aufgaben[index + 1]
         return (
           <>

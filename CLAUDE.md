@@ -44,7 +44,7 @@
 - Antworten werden **in der Datenbank** geprüft (`pruefe_aufgabe`, plpgsql). Schüler:innen bekommen Aufgaben ohne
   Lösungen (`inhalt_ohne_loesung` – Achtung: Feld `text` enthält Lösungen und muss immer entfernt werden).
   Jedes neue Aufgabenformat braucht Zweige in `pruefe_aufgabe`, `inhalt_ohne_loesung`, `nur_loesung`.
-  Aufgabeninhalt = Liste `teile` aus `text`, `luecke`, `auswahl` und `einheit` (Parser `src/lib/lueckentext.ts`;
+  Aufgabeninhalt = Liste `teile` aus `text`, `luecke`, `auswahl`, `einheit` und `wort` (Parser `src/lib/lueckentext.ts`;
   bei `zuordnen` werden alle Wörter zu Einheiten).
   Antworten: Text je Lücke, Liste der gewählten Nummern je Auswahl.
 - Ansprache: Lehrkraft-Oberfläche „Sie“, Schüleransicht „du“, einfache Sprache.
@@ -105,6 +105,11 @@
   Anzahl gelöster Aufgaben, nächster Schritt. **Nie Punkte/Stufen** – Test 1.13 prüft das.
 
 ## Entscheidungen (Protokoll)
+- 2026-11-08 (didaktisch, Lehrkraft): Format **Fehler finden** (deckt auch Überarbeitungsformat „Fehler markieren und
+  korrigieren“ ab): Schreibweise `[weis -> weiß]`, mehrere Verbesserungen mit /; alle Wörter (mit anhängenden
+  Satzzeichen) antippbar. Je Aufgabe „nur finden“ oder „finden + eintippen“; „Auswählen“ bewusst weggelassen (würde
+  Fehlerstellen verraten). „Finde N Fehler“ standardmäßig an. Nicht gefundene Fehler kommen ohne id zurück
+  (`"id": null`) – die Rückmeldung nennt nur die Anzahl.
 - 2026-11-08 (didaktisch, Lehrkraft): Format **Zuordnen**: Schreibweise `[Der kleine Hund = Subjekt]` (auch Wortgruppen).
   Bedienung wie Textmarker: erst Kategorie („Stift“) wählen, dann Wörter antippen; Name der Kategorie steht unter dem Wort.
   Alle übrigen Wörter sind ebenfalls antippbar (Ablenker, `kategorie: null`); bewertet werden alle Einheiten mit

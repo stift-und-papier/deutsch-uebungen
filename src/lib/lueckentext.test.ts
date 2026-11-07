@@ -135,6 +135,54 @@ describe('Zuordnen', () => {
   })
 })
 
+describe('Fehler finden', () => {
+  const woerter = (text: string) =>
+    textZuTeilen(text, 'fehler').teile.flatMap((t) => (t.t === 'wort' ? [[t.id, t.v, t.korrekturen]] : []))
+
+  it('macht Fehlerwörter und alle übrigen Wörter (mit Satzzeichen) antippbar', () => {
+    expect(woerter('Ich [weis -> weiß], dass du kommst.')).toEqual([
+      [0, 'Ich', null],
+      [1, 'weis', ['weiß']],
+      [2, 'dass', null],
+      [3, 'du', null],
+      [4, 'kommst.', null],
+    ])
+  })
+
+  it('lässt reine Satzzeichen hinter einer Klammer als Text stehen', () => {
+    const { teile } = textZuTeilen('Er [kommt -> kommt.] .', 'fehler')
+    expect(teile.filter((t) => t.t === 'wort').map((t) => (t.t === 'wort' ? t.v : ''))).toEqual(['Er', 'kommt'])
+  })
+
+  it('erlaubt mehrere Verbesserungen, Wortgruppen und Zeichensetzung', () => {
+    expect(woerter('Wir [radfahren -> Rad fahren/radfahren]. Ich [weiß -> weiß,] es.').filter((w) => w[2])).toEqual([
+      [1, 'radfahren', ['Rad fahren', 'radfahren']],
+      [3, 'weiß', ['weiß,']],
+    ])
+  })
+
+  it('meldet fehlende Verbesserung und Text ohne Fehler', () => {
+    expect(textZuTeilen('Ich [weis -> ] es.', 'fehler').fehler[0]).toContain('[Fehlerwort -> Verbesserung]')
+    expect(textZuTeilen('Ich weiß es.', 'fehler').fehler[0]).toContain('mindestens einen Fehler')
+  })
+
+  it('Hin- und Rückweg ergibt denselben Text', () => {
+    const text = 'Ich [weis -> weiß] es [nich -> nicht/nich?]. Gut.'
+    expect(teileZuText(textZuTeilen(text, 'fehler').teile)).toBe(text)
+  })
+
+  it('Schüler-Inhalt verrät weder Fehlerstellen noch Verbesserungen, nur die Anzahl', () => {
+    const inhalt = ohneLoesung(textZuTeilen('Ich [weis -> weiß] es [nich -> nicht].', 'fehler').teile, undefined, undefined, {
+      korrigieren: true,
+      anzahl_zeigen: true,
+    })
+    const json = JSON.stringify(inhalt.teile)
+    expect(json).not.toContain('weiß')
+    expect(json).not.toContain('korrekturen')
+    expect(inhalt.anzahl_fehler).toBe(2)
+  })
+})
+
 describe('neuNummerieren', () => {
   it('vergibt Lücken-Nummern neu ab 0', () => {
     const neu = neuNummerieren([

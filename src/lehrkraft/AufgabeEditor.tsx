@@ -28,6 +28,11 @@ const FORMATE: Record<AufgabenTyp, { name: string; anweisung: string; beispiel: 
     anweisung: 'Tippe die richtige Antwort an.',
     beispiel: 'Ich weiß, [das | *dass] du kommst.\n\nWelche Wörter sind Nomen?\n[*Hund | laufen | *Baum | schnell]',
   },
+  fehler: {
+    name: 'Fehler finden',
+    anweisung: 'Finde die Fehler im Text.',
+    beispiel: 'Ich [weis -> weiß] nicht, ob mein Bruder heute [komt -> kommt]. Wir wollen [radfahren -> Rad fahren].',
+  },
   zuordnen: {
     name: 'Zuordnen',
     anweisung: 'Wähle oben eine Kategorie und tippe die passenden Wörter an.',
@@ -41,6 +46,9 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
   const [darstellung, setDarstellung] = useState<Darstellung>('antippen')
   // Zuordnen: selbst eingetragene Kategorien (z. B. zusätzliche „Ablenker-Kategorien“), mit Komma getrennt
   const [kategorienText, setKategorienText] = useState('')
+  // Fehler finden: auch die richtige Form eintippen lassen? Anzahl der Fehler anzeigen?
+  const [korrigieren, setKorrigieren] = useState(false)
+  const [anzahlZeigen, setAnzahlZeigen] = useState(true)
   const [titel, setTitel] = useState('')
   const [anweisung, setAnweisung] = useState(FORMATE[neuerTyp].anweisung)
   const [hinweis, setHinweis] = useState('')
@@ -78,6 +86,8 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
         setTyp(a.typ)
         setDarstellung(a.inhalt.darstellung ?? 'antippen')
         setKategorienText((a.inhalt.kategorien ?? []).join(', '))
+        setKorrigieren(a.inhalt.korrigieren ?? false)
+        setAnzahlZeigen(a.inhalt.anzahl_zeigen ?? true)
         setTitel(a.titel)
         setAnweisung(a.anweisung)
         setHinweis(a.hinweis ?? '')
@@ -89,12 +99,13 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
       })
   }, [aufgabeId])
 
-  const { teile, fehler: textFehler } = useMemo(() => textZuTeilen(text, typ === 'zuordnen'), [text, typ])
+  const { teile, fehler: textFehler } = useMemo(() => textZuTeilen(text, typ === 'fehler' ? 'fehler' : typ === 'zuordnen'), [text, typ])
   const kategorien = typ === 'zuordnen' ? kategorienAus(teile, kategorienText.split(',')) : undefined
-  const inhalt = { text, gross_klein_beachten: grossKlein, darstellung, kategorien, teile }
+  const fehlerOptionen = typ === 'fehler' ? { korrigieren, anzahl_zeigen: anzahlZeigen } : {}
+  const inhalt = { text, gross_klein_beachten: grossKlein, darstellung, kategorien, ...fehlerOptionen, teile }
   const format = FORMATE[typ]
   const BEISPIEL = format.beispiel
-  const hatLuecke = teile.some((t) => t.t === 'luecke')
+  const hatLuecke = teile.some((t) => t.t === 'luecke') || (typ === 'fehler' && korrigieren)
   const hatAuswahl = teile.some((t) => t.t === 'auswahl')
 
   async function speichern() {
@@ -173,7 +184,7 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
               anweisung,
               hinweis: hinweis || null,
               schwierigkeit,
-              inhalt: ohneLoesung(teile, darstellung, kategorien),
+              inhalt: ohneLoesung(teile, darstellung, kategorien, fehlerOptionen),
               versuche: 0,
               geloest: false,
               loesung_angesehen: false,
@@ -224,7 +235,14 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
             {modus === 'text' ? (
               <>
                 <div className="erklaerung">
-                  {typ === 'zuordnen' ? (
+                  {typ === 'fehler' ? (
+                    <p>
+                      Schreiben Sie den Text und setzen Sie jedes Fehlerwort so in Klammern:{' '}
+                      <strong>[Fehlerwort -&gt; Verbesserung]</strong>, z. B. <code>[weis -&gt; weiß]</code>. Mehrere richtige
+                      Verbesserungen trennen Sie mit <strong>/</strong>. Für Zeichensetzung markieren Sie das Wort davor, z. B.{' '}
+                      <code>[weiß -&gt; weiß,]</code>. Alle übrigen Wörter sind ebenfalls antippbar, aber fehlerfrei.
+                    </p>
+                  ) : typ === 'zuordnen' ? (
                     <p>
                       Schreiben Sie den Satz und setzen Sie jedes Wort oder jede Wortgruppe, die zugeordnet werden soll, so in
                       Klammern: <strong>[Wort = Kategorie]</strong>, z. B. <code>[Der kleine Hund = Subjekt]</code>. Alle
@@ -282,6 +300,22 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
                 <input type="checkbox" checked={grossKlein} onChange={(e) => setGrossKlein(e.target.checked)} />
                 Groß-/Kleinschreibung wird bewertet
               </label>
+            )}
+            {typ === 'fehler' && (
+              <div>
+                <div className="umschalter">
+                  <button type="button" aria-pressed={!korrigieren} onClick={() => setKorrigieren(false)}>
+                    Nur Fehler finden
+                  </button>
+                  <button type="button" aria-pressed={korrigieren} onClick={() => setKorrigieren(true)}>
+                    Finden und verbessern (eintippen)
+                  </button>
+                </div>
+                <label className="haken">
+                  <input type="checkbox" checked={anzahlZeigen} onChange={(e) => setAnzahlZeigen(e.target.checked)} />
+                  Anzahl der Fehler anzeigen („Finde {teile.filter((t) => t.t === 'wort' && t.korrekturen).length} Fehler“)
+                </label>
+              </div>
             )}
             {typ === 'zuordnen' && (
               <label>
@@ -343,13 +377,13 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
 
 // Formular: Textstücke, Lücken, Auswahl-Stellen und Zuordnungen nacheinander.
 // Sie werden als Rohtext gehalten (z. B. "a/", "das | *dass", "Hund = Nomen"), damit man beim Tippen nichts verliert.
-type Zeile = { art: 'text'; v: string } | { art: 'luecke' | 'auswahl' | 'einheit'; roh: string }
+type Zeile = { art: 'text'; v: string } | { art: 'luecke' | 'auswahl' | 'einheit' | 'wort'; roh: string }
 
 // Wörter ohne Kategorie (Ablenker) gehören im Formular zum normalen Text; benachbarte Textstücke werden zusammengefasst.
 function zeilenAus(teile: LueckentextTeil[]): Zeile[] {
   const zeilen: Zeile[] = []
   for (const t of teile) {
-    const text = t.t === 'text' ? t.v : t.t === 'einheit' && !t.kategorie ? t.v : null
+    const text = t.t === 'text' ? t.v : (t.t === 'einheit' && !t.kategorie) || (t.t === 'wort' && !t.korrekturen) ? t.v : null
     const letzte = zeilen[zeilen.length - 1]
     if (text !== null) {
       if (letzte && letzte.art === 'text') zeilen[zeilen.length - 1] = { art: 'text', v: letzte.v + text }
@@ -385,6 +419,16 @@ function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange
             <label>
               Lücke {++stellenNr}: richtige Lösung(en), mehrere mit / trennen
               <input value={z.roh} onChange={(e) => aendern(i, { art: 'luecke', roh: e.target.value })} spellCheck={false} />
+            </label>
+          ) : z.art === 'wort' ? (
+            <label>
+              Fehler {++stellenNr}: Fehlerwort -&gt; Verbesserung (mehrere Verbesserungen mit / trennen)
+              <input
+                value={z.roh}
+                onChange={(e) => aendern(i, { art: 'wort', roh: e.target.value })}
+                spellCheck={false}
+                placeholder="weis -> weiß"
+              />
             </label>
           ) : z.art === 'einheit' ? (
             <label>
@@ -424,6 +468,9 @@ function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange
         </button>
         <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setzen([...zeilen, { art: 'einheit', roh: '' }])}>
           + Zuordnung
+        </button>
+        <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setzen([...zeilen, { art: 'wort', roh: '' }])}>
+          + Fehler
         </button>
       </div>
     </div>

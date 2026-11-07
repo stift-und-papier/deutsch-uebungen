@@ -5,7 +5,7 @@ import { lueckenBreite } from '../lib/lueckentext'
 type Props = {
   inhalt: LueckentextInhaltSchueler
   antworten: Antworten
-  onAntwort: (id: number, wert: string | number[]) => void
+  onAntwort: (id: number, wert: string | number[] | boolean) => void
   ergebnis?: Pruefergebnis | null
   /** Lösungen pro Stelle (nur nach "Lösung ansehen") */
   loesungen?: Record<number, string[]> | null
@@ -23,8 +23,18 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
   const [stift, setStift] = useState<string>(kategorien[0] ?? '')
   const farbe = (kategorie: string) => `kat-${Math.max(0, kategorien.indexOf(kategorie)) % 5}`
 
+  const mitWoertern = inhalt.teile.some((t) => t.t === 'wort')
+
   return (
     <>
+    {mitWoertern && (
+      <p className="fehler-hinweis">
+        {inhalt.anzahl_fehler ? <strong>Finde {inhalt.anzahl_fehler} Fehler. </strong> : null}
+        {inhalt.korrigieren
+          ? 'Tippe ein Fehlerwort an und schreib die richtige Form daneben.'
+          : 'Tippe die Wörter mit Fehlern an.'}
+      </p>
+    )}
     {mitStiften && (
       <div className="stifte" role="group" aria-label="Kategorie wählen">
         <span className="stifte__text">Wähle eine Kategorie und tippe die passenden Wörter an:</span>
@@ -56,6 +66,49 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
             {loesungen?.[teil.id] && <span className="loesung-anzeige">{loesungen[teil.id].join(' / ')}</span>}
           </>
         )
+
+        if (teil.t === 'wort') {
+          const a = antworten[teil.id]
+          const markiert = a === true || typeof a === 'string'
+          const zustand = richtig === true ? ' fehlerwort--ok' : richtig === false ? ' fehlerwort--again' : ''
+          const fertig = gesperrt || richtig === true
+          return (
+            <span key={index} className="luecke-rahmen">
+              <button
+                type="button"
+                className={`fehlerwort${markiert ? ' fehlerwort--markiert' : ''}${zustand}`}
+                aria-pressed={markiert}
+                aria-label={markiert ? `${teil.v}, als Fehler markiert` : teil.v}
+                disabled={fertig}
+                // Antippen markiert, erneutes Antippen nimmt die Markierung (und die Verbesserung) wieder weg
+                onClick={() => onAntwort(teil.id, markiert ? false : true)}
+              >
+                {teil.v}
+              </button>
+              {markiert && inhalt.korrigieren && (
+                <>
+                  <span className="fehlerwort__pfeil" aria-hidden="true">
+                    →
+                  </span>
+                  <input
+                    className={`aes-gap fehlerwort__eingabe${richtig === true ? ' aes-gap--ok' : richtig === false ? ' aes-gap--again' : ''}`}
+                    style={{ width: `${lueckenBreite(Math.max(teil.v.length, typeof a === 'string' ? a.length : 0))}ch` }}
+                    aria-label={`Richtige Form für „${teil.v}“`}
+                    value={typeof a === 'string' ? a : ''}
+                    disabled={fertig}
+                    autoFocus={a === true}
+                    onChange={(e) => onAntwort(teil.id, e.target.value === '' ? true : e.target.value)}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                  />
+                </>
+              )}
+              {zeichen}
+            </span>
+          )
+        }
 
         if (teil.t === 'einheit') {
           const wahl = typeof antworten[teil.id] === 'string' ? (antworten[teil.id] as string) : ''

@@ -1399,3 +1399,76 @@ tr.ausgeblendet .aktionen {
 .einheit--again + .markierung {
   color: var(--pfirsich-dunkel);
 }
+
+/* ---------- Fehler finden ---------- */
+
+.fehler-hinweis {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--himmel-hell);
+  font-size: 17px;
+  line-height: 26px;
+  color: var(--tinte);
+}
+
+.fehlerwort {
+  min-height: var(--tipp-min);
+  min-width: 32px;
+  margin: 2px 0;
+  padding: 0 var(--space-1);
+  border: 2px solid transparent;
+  border-bottom: 2px dotted var(--linie-stark);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 24px;
+  color: var(--tinte);
+  vertical-align: middle;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Markiert: hell hinterlegt und durchgestrichen – „hier ist ein Fehler“ (nicht rot) */
+.fehlerwort--markiert {
+  background: var(--schulblau-hell);
+  border: 2px solid var(--schulblau);
+  text-decoration: line-through;
+  text-decoration-color: var(--schulblau);
+}
+
+.fehlerwort:disabled {
+  cursor: default;
+  opacity: 1;
+  -webkit-text-fill-color: var(--tinte);
+}
+
+.fehlerwort--ok {
+  border-color: var(--gruen-dunkel);
+  background: var(--erfolg-flaeche);
+}
+
+.fehlerwort--again {
+  border-color: var(--pfirsich-dunkel);
+  background: var(--pfirsich-hell);
+}
+
+.fehlerwort__pfeil {
+  margin: 0 var(--space-1);
+  font-weight: 800;
+  color: var(--schulblau);
+}
+
+.fehlerwort__eingabe {
+  margin: 0;
+}
+
+.fehlerwort--ok ~ .markierung,
+.fehlerwort--ok + .markierung {
+  color: var(--gruen-dunkel);
+}
+
+.fehlerwort--again ~ .markierung {
+  color: var(--pfirsich-dunkel);
+}

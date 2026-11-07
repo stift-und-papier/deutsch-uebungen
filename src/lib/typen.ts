@@ -10,7 +10,7 @@ export const SCHWIERIGKEITEN: { wert: Schwierigkeit; text: string }[] = [
 
 // ---- Aufgabeninhalt: Textstücke, Lücken und Auswahl-Stellen (dürfen gemischt vorkommen) ----
 
-export type AufgabenTyp = 'lueckentext' | 'auswahl' | 'zuordnen'
+export type AufgabenTyp = 'lueckentext' | 'auswahl' | 'zuordnen' | 'fehler'
 
 export type TextTeil = { t: 'text'; v: string }
 export type LueckenTeil = { t: 'luecke'; id: number; loesungen: string[] }
@@ -18,7 +18,9 @@ export type LueckenTeil = { t: 'luecke'; id: number; loesungen: string[] }
 export type AuswahlTeil = { t: 'auswahl'; id: number; optionen: string[]; richtig: number[] }
 /** Antippbare Einheit beim Zuordnen (ein Wort oder eine Wortgruppe); kategorie null = gehört zu keiner Kategorie */
 export type EinheitTeil = { t: 'einheit'; id: number; v: string; kategorie: string | null }
-export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil | EinheitTeil
+/** Antippbares Wort beim Fehlerfinden (mit anhängenden Satzzeichen); korrekturen null = fehlerfrei */
+export type WortTeil = { t: 'wort'; id: number; v: string; korrekturen: string[] | null }
+export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil | EinheitTeil | WortTeil
 
 export type Darstellung = 'antippen' | 'dropdown'
 
@@ -30,6 +32,10 @@ export type LueckentextInhalt = {
   darstellung?: Darstellung
   /** Kategorien beim Zuordnen (z. B. Nomen, Verb, Adjektiv) */
   kategorien?: string[]
+  /** Fehler finden: auch die richtige Form eintippen lassen */
+  korrigieren?: boolean
+  /** Fehler finden: Anzahl der Fehler anzeigen */
+  anzahl_zeigen?: boolean
   teile: LueckentextTeil[]
 }
 
@@ -37,14 +43,18 @@ export type LueckentextInhalt = {
 export type LueckenTeilOhneLoesung = { t: 'luecke'; id: number }
 export type AuswahlTeilOhneLoesung = { t: 'auswahl'; id: number; optionen: string[]; mehrfach: boolean }
 export type EinheitOhneLoesung = { t: 'einheit'; id: number; v: string }
+export type WortOhneLoesung = { t: 'wort'; id: number; v: string }
 export type LueckentextInhaltSchueler = {
   darstellung?: Darstellung
   kategorien?: string[]
-  teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung | EinheitOhneLoesung)[]
+  korrigieren?: boolean
+  /** Anzahl der Fehler (nur wenn die Lehrkraft sie anzeigen lässt) */
+  anzahl_fehler?: number | null
+  teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung | EinheitOhneLoesung | WortOhneLoesung)[]
 }
 
 /** Antworten je Stelle: Text bei Lücken, Liste der angetippten Möglichkeiten bei Auswahl, Kategorie beim Zuordnen */
-export type Antworten = Record<string, string | number[]>
+export type Antworten = Record<string, string | number[] | boolean>
 
 // ---- Tabellen ----
 
@@ -108,7 +118,8 @@ export type Zuweisung = {
 // ---- Antworten der Schüler-Funktionen ----
 
 export type Pruefergebnis = {
-  luecken: { id: number; richtig: boolean }[]
+  /** id null = nicht gefundener Fehler (Stelle wird bewusst nicht verraten) */
+  luecken: { id: number | null; richtig: boolean }[]
   anteil: number
   richtig: boolean
 }

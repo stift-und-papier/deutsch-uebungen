@@ -35,10 +35,12 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
   // Lücken und Auswahl müssen alle beantwortet sein; beim Zuordnen muss mindestens ein Wort markiert sein
   // (die übrigen Wörter dürfen unmarkiert bleiben – manche gehören zu keiner Kategorie).
   const luecken = aufgabe.inhalt.teile.filter((t) => t.t === 'luecke' || t.t === 'auswahl')
-  const einheiten = aufgabe.inhalt.teile.filter((t) => t.t === 'einheit')
+  // Antippbare Einheiten (Zuordnen) und Wörter (Fehler finden): mindestens eins muss markiert sein
+  const einheiten = aufgabe.inhalt.teile.filter((t) => t.t === 'einheit' || t.t === 'wort')
   const beantwortet = (id: number) => {
     const a = antworten[id]
-    return Array.isArray(a) ? a.length > 0 : (a ?? '').trim() !== ''
+    if (a === true) return true
+    return Array.isArray(a) ? a.length > 0 : typeof a === 'string' && a.trim() !== ''
   }
   const alleAusgefuellt =
     luecken.every((l) => beantwortet(l.id)) && (einheiten.length === 0 || einheiten.some((e) => beantwortet(e.id)))
@@ -63,8 +65,10 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
     }
   }
 
-  function beiEingabe(id: number, wert: string | number[]) {
-    const neu = { ...antworten, [id]: wert }
+  function beiEingabe(id: number, wert: string | number[] | boolean) {
+    // Leere Antworten (gelöschte Eingabe, aufgehobene Markierung) ganz entfernen
+    const neu: Antworten = { ...antworten, [id]: wert }
+    if (wert === '' || wert === false || (Array.isArray(wert) && wert.length === 0)) delete neu[id]
     setAntworten(neu)
     onAntwortenGeaendert?.(neu)
     // Sobald eine markierte Lücke geändert wird, verschwindet ihre Markierung.
@@ -97,22 +101,35 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
 
   // Wie die Stellen heißen: „Lücke“, „Auswahl“ oder – gemischt – „Stelle“
   const arten = new Set<string>([...luecken, ...einheiten].map((l) => l.t))
-  const wort = arten.has('einheit')
+  const wort = arten.has('wort')
+    ? { eins: 'Wort', viele: 'Fehler' }
+    : arten.has('einheit')
     ? { eins: 'Wort', viele: 'Zuordnungen' }
     : arten.size > 1 ? { eins: 'Stelle', viele: 'Stellen' } : arten.has('auswahl') ? { eins: 'Auswahl', viele: 'Antworten' } : { eins: 'Lücke', viele: 'Lücken' }
 
   // Rückmeldung in der Sprache des Design-Systems: klar, ermutigend, nie „falsch“.
-  const nochmalNummern = ergebnis?.ergebnis.luecken.filter((l) => !l.richtig).map((l) => l.id + 1) ?? []
+  const nochmalNummern = ergebnis?.ergebnis.luecken.flatMap((l) => (!l.richtig && l.id !== null ? [l.id + 1] : [])) ?? []
   const anzahlRichtig = ergebnis?.ergebnis.luecken.filter((l) => l.richtig).length ?? 0
   const gezaehlt = ergebnis?.ergebnis.luecken.length ?? 0
-  const nochmalTitel =
-    anzahlRichtig === 0 || nochmalNummern.length === 0
+  // Fehler finden: nicht gefundene Fehler kommen ohne Nummer zurück – es wird nur ihre Anzahl genannt
+  const fehlend = ergebnis?.ergebnis.luecken.filter((l) => l.id === null).length ?? 0
+  const falschMarkiert = ergebnis?.ergebnis.luecken.filter((l) => l.id !== null && !l.richtig).length ?? 0
+  const nochmalTitel = arten.has('wort')
+    ? 'Fast! Schau nochmal genau hin.'
+    : anzahlRichtig === 0 || nochmalNummern.length === 0
       ? 'Schau nochmal hin.'
       : arten.has('einheit')
         ? 'Fast! Schau bei den Wörtern mit ↻ nochmal hin.'
       : `Fast! Schau bei ${wort.eins} ${nochmalNummern.slice(0, -1).join(', ')}${nochmalNummern.length > 1 ? ' und ' : ''}${nochmalNummern[nochmalNummern.length - 1]} nochmal hin.`
-  const nochmalText =
-    ergebnis?.rueckmeldung ??
+  const nochmalText = arten.has('wort')
+    ? [
+        fehlend > 0 ? `Es fehlen noch ${fehlend} Fehler.` : '',
+        falschMarkiert > 0 ? 'Bei den Wörtern mit ↻ stimmt etwas noch nicht.' : '',
+        ergebnis?.rueckmeldung ?? '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+    : ergebnis?.rueckmeldung ??
     (anzahlRichtig === 0
       ? 'Lies den Satz noch einmal in Ruhe – du schaffst das!'
       : `Schon ${anzahlRichtig} von ${gezaehlt} ${wort.viele} stimmen.`)
@@ -220,7 +237,9 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
             </div>
           </div>
           {!alleAusgefuellt && !allesRichtig && <p className="aes-card__hint">
-              {arten.has('einheit')
+              {arten.has('wort')
+                ? 'Tippe die Fehlerwörter an'
+                : arten.has('einheit')
                 ? 'Markiere die passenden Wörter'
                 : arten.has('luecke')
                   ? 'Fülle alles aus'

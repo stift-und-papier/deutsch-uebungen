@@ -6,12 +6,14 @@ import type { LueckentextInhaltSchueler, LueckentextTeil } from './typen'
 //   Ich weiß, [das | *dass] du kommst.     → Auswahl: Möglichkeiten mit | trennen, richtige mit * markieren
 //   [*Hund | laufen | *Baum]               → Mehrfachauswahl (mehrere *)
 //   [Der kleine Hund = Subjekt]            → Zuordnen: Einheit (auch mehrere Wörter) mit ihrer Kategorie
-// Beim Format „Zuordnen“ werden zusätzlich alle übrigen Wörter antippbar (Ablenker ohne Kategorie).
+//   Ich [weis -> weiß] es.                 → Fehler finden: Fehlerwort und Verbesserung(en), mehrere mit /
+// Beim Format „Zuordnen“ werden zusätzlich alle übrigen Wörter antippbar (Ablenker ohne Kategorie),
+// beim Format „Fehler finden“ alle übrigen Wörter samt anhängender Satzzeichen (fehlerfreie Ablenker).
 
 export type ParseErgebnis = { teile: LueckentextTeil[]; fehler: string[] }
 
 /** Wandelt den Eingabetext mit [Klammern] in Textstücke, Lücken, Auswahl-Stellen und Einheiten um. */
-export function textZuTeilen(text: string, woerterAntippbar = false): ParseErgebnis {
+export function textZuTeilen(text: string, woerterAntippbar: boolean | 'fehler' = false): ParseErgebnis {
   const teile: LueckentextTeil[] = []
   const fehler: string[] = []
   let rest = ''
@@ -33,7 +35,19 @@ export function textZuTeilen(text: string, woerterAntippbar = false): ParseErgeb
       if (rest) teile.push({ t: 'text', v: rest })
       rest = ''
 
-      if (!innen.includes('|') && innen.includes('=')) {
+      if (innen.includes('->')) {
+        // Fehlerwort mit Verbesserung(en)
+        const trenner = innen.indexOf('->')
+        const v = innen.slice(0, trenner).trim()
+        const korrekturen = innen
+          .slice(trenner + 2)
+          .split('/')
+          .map((k) => k.trim())
+          .filter(Boolean)
+        if (!v || korrekturen.length === 0)
+          fehler.push(`Stelle ${id + 1}: Bitte so schreiben: [Fehlerwort -> Verbesserung], z. B. [weis -> weiß].`)
+        teile.push({ t: 'wort', id: id++, v, korrekturen })
+      } else if (!innen.includes('|') && innen.includes('=')) {
         // Einheit zum Zuordnen: links Wort(e), rechts Kategorie
         const trenner = innen.lastIndexOf('=')
         const v = innen.slice(0, trenner).trim()
@@ -66,6 +80,11 @@ export function textZuTeilen(text: string, woerterAntippbar = false): ParseErgeb
     }
   }
   if (rest) teile.push({ t: 'text', v: rest })
+  if (woerterAntippbar === 'fehler') {
+    if (!teile.some((t) => t.t === 'wort') && fehler.length === 0)
+      fehler.push('Markieren Sie mindestens einen Fehler, z. B. [weis -> weiß].')
+    return { teile: neuNummerieren(teile.flatMap((t) => (t.t === 'text' ? leerzeichenTrennen(t.v) : [t]))), fehler }
+  }
   if (woerterAntippbar) {
     if (!teile.some((t) => t.t === 'einheit') && fehler.length === 0)
       fehler.push('Markieren Sie mindestens ein Wort mit seiner Kategorie, z. B. [Hund = Nomen].')
@@ -91,6 +110,21 @@ function woerterTrennen(text: string): LueckentextTeil[] {
   return teile
 }
 
+// Beim Fehlerfinden ist alles zwischen Leerzeichen ein Wort – auch mit Satzzeichen („kommst.“), damit
+// sich auch Zeichensetzungsfehler markieren lassen.
+function leerzeichenTrennen(text: string): LueckentextTeil[] {
+  return text
+    .split(/(\s+)/)
+    .filter((stueck) => stueck !== '')
+    // Leerraum und reine Satzzeichen (z. B. der Punkt direkt hinter einer [Klammer]) bleiben normaler Text
+    .map(
+      (stueck): LueckentextTeil =>
+        /^\s+$/.test(stueck) || !/[\p{L}\p{N}]/u.test(stueck)
+          ? { t: 'text', v: stueck }
+          : { t: 'wort', id: 0, v: stueck, korrekturen: null },
+    )
+}
+
 /** Kategorien einer Zuordnen-Aufgabe: zuerst die selbst eingetragenen, dann alle im Text verwendeten. */
 export function kategorienAus(teile: LueckentextTeil[], eingetragen: string[] = []): string[] {
   const alle = [...eingetragen, ...teile.flatMap((t) => (t.t === 'einheit' && t.kategorie ? [t.kategorie] : []))]
@@ -101,13 +135,16 @@ export function kategorienAus(teile: LueckentextTeil[], eingetragen: string[] = 
 export function stelleZuText(t: Exclude<LueckentextTeil, { t: 'text' }>): string {
   if (t.t === 'luecke') return t.loesungen.join('/')
   if (t.t === 'einheit') return `${t.v} = ${t.kategorie ?? ''}`
+  if (t.t === 'wort') return `${t.v} -> ${(t.korrekturen ?? []).join('/')}`
   return t.optionen.map((o, nr) => (t.richtig.includes(nr) ? `*${o}` : o)).join(' | ')
 }
 
 /** Umkehrung: Textstücke und Stellen wieder als Eingabetext. */
 export function teileZuText(teile: LueckentextTeil[]): string {
   return teile
-    .map((t) => (t.t === 'text' ? t.v : t.t === 'einheit' && !t.kategorie ? t.v : `[${stelleZuText(t)}]`))
+    .map((t) =>
+      t.t === 'text' || (t.t === 'einheit' && !t.kategorie) || (t.t === 'wort' && !t.korrekturen) ? t.v : `[${stelleZuText(t)}]`,
+    )
     .join('')
 }
 
@@ -122,10 +159,13 @@ export function ohneLoesung(
   teile: LueckentextTeil[],
   darstellung?: LueckentextInhaltSchueler['darstellung'],
   kategorien?: string[],
+  fehlerOptionen?: { korrigieren?: boolean; anzahl_zeigen?: boolean },
 ): LueckentextInhaltSchueler {
   return {
     darstellung,
     kategorien,
+    korrigieren: fehlerOptionen?.korrigieren,
+    anzahl_fehler: fehlerOptionen?.anzahl_zeigen ? teile.filter((t) => t.t === 'wort' && t.korrekturen).length : null,
     teile: teile.map((t) =>
       t.t === 'luecke'
         ? { t: 'luecke', id: t.id }
@@ -133,7 +173,9 @@ export function ohneLoesung(
           ? { t: 'auswahl', id: t.id, optionen: t.optionen, mehrfach: t.richtig.length > 1 }
           : t.t === 'einheit'
             ? { t: 'einheit', id: t.id, v: t.v }
-            : t,
+            : t.t === 'wort'
+              ? { t: 'wort', id: t.id, v: t.v }
+              : t,
     ),
   }
 }
