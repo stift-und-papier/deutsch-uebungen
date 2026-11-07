@@ -47,6 +47,15 @@ export const STUFEN = [
   { symbol: '++', name: 'Stufe ++', farbe: '#2e7d32', text: '#ffffff' },
 ] as const
 
+/** Punkte (0–100) → Stufe 0..4, wie in der Datenbank (stufe_aus_punkte) */
+export function stufeAusPunkte(punkte: number, e: Einstellungen): number {
+  if (punkte >= e.grenze_plusplus) return 4
+  if (punkte >= e.grenze_plus) return 3
+  if (punkte >= e.grenze_o) return 2
+  if (punkte >= e.grenze_minus) return 1
+  return 0
+}
+
 export function datum(zeit: string | null): string {
   return zeit ? new Date(zeit).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
 }

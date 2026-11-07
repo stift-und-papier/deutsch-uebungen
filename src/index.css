@@ -529,6 +529,36 @@ input.luecke.nochmal {
   background: var(--hintergrund);
 }
 
+/* ---------- Klassenliste ---------- */
+
+.sortier-knopf,
+.pseudonym-knopf {
+  min-height: 44px;
+  padding: 0.3rem 0.4rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.pseudonym-knopf {
+  color: var(--akzent);
+  border-radius: 6px;
+}
+
+.pseudonym-knopf span {
+  font-weight: normal;
+  font-size: 0.85rem;
+  color: var(--text-leise);
+}
+
+.pseudonym-eingabe {
+  max-width: 12rem;
+}
+
 /* ---------- Kompetenzen auswählen ---------- */
 
 .chip-liste {

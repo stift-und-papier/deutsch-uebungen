@@ -4,9 +4,22 @@ import { fehlerText } from '../lib/fehler'
 import { erzeugePseudonyme, pseudonymListeLesen } from '../lib/pseudonyme'
 import { gehe, schuelerLink } from '../lib/router'
 import { supabase } from '../lib/supabase'
+import { stufeAusPunkte, STUFEN, type Auswertung, type Einstellungen } from '../lib/lernstand'
 import type { Klasse, Schueler } from '../lib/typen'
 
 type SchuelerMitVersuchen = Schueler & { versuche: { count: number }[] }
+type Mittelwert = { punkte: number; kompetenzen: number }
+
+// Mittelwert aller Lernstände (nur Kompetenzen, für die schon eine Stufe berechnet ist).
+function mittelwerteBerechnen(zeilen: { schueler_id: string; daten: Auswertung | null }[]): Map<string, Mittelwert> {
+  const summe = new Map<string, { summe: number; anzahl: number }>()
+  for (const z of zeilen) {
+    if (z.daten?.punkte == null) continue
+    const alt = summe.get(z.schueler_id) ?? { summe: 0, anzahl: 0 }
+    summe.set(z.schueler_id, { summe: alt.summe + z.daten.punkte, anzahl: alt.anzahl + 1 })
+  }
+  return new Map([...summe].map(([id, w]) => [id, { punkte: w.summe / w.anzahl, kompetenzen: w.anzahl }]))
+}
 
 export function KlasseDetail({ klasseId }: { klasseId: string }) {
   const [klasse, setKlasse] = useState<Klasse | null>(null)
@@ -16,16 +29,27 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
   const [anzahl, setAnzahl] = useState(25)
   const [liste, setListe] = useState('')
   const [modus, setModus] = useState<'automatisch' | 'liste'>('automatisch')
+  const [umbenennenId, setUmbenennenId] = useState<string | null>(null)
+  const [entwurf, setEntwurf] = useState('')
+  const [mittelwerte, setMittelwerte] = useState<Map<string, Mittelwert>>(new Map())
+  const [einstellungen, setEinstellungen] = useState<Einstellungen | null>(null)
+  const [sortierung, setSortierung] = useState<{ nach: 'name' | 'stand'; auf: boolean }>({ nach: 'name', auf: true })
 
   const laden = useCallback(async () => {
-    const [k, s] = await Promise.all([
+    const [k, s, l, e] = await Promise.all([
       supabase.from('klassen').select('*').eq('id', klasseId).single(),
       supabase.from('schueler').select('*, versuche(count)').eq('klasse_id', klasseId).order('pseudonym'),
+      supabase.rpc('lernstand_klasse', { p_klasse: klasseId }),
+      supabase.from('einstellungen').select('*').single(),
     ])
     if (k.error) return setFehler(fehlerText(k.error))
     if (s.error) return setFehler(fehlerText(s.error))
     setKlasse(k.data as Klasse)
     setSchueler(s.data as SchuelerMitVersuchen[])
+    if (!l.error && !e.error) {
+      setMittelwerte(mittelwerteBerechnen(l.data as { schueler_id: string; daten: Auswertung | null }[]))
+      setEinstellungen(e.data as Einstellungen)
+    }
   }, [klasseId])
 
   useEffect(() => {
@@ -43,14 +67,15 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
     }
   }
 
-  async function umbenennen(s: Schueler) {
-    const neu = window.prompt('Neues Pseudonym (bitte keinen echten Namen):', s.pseudonym)?.trim()
+  // Umbenennen direkt in der Liste: Pseudonym antippen, ändern, Enter (Esc bricht ab).
+  async function umbenennenSpeichern(s: Schueler) {
+    const neu = entwurf.trim()
+    setUmbenennenId(null)
     if (!neu || neu === s.pseudonym) return
     const { error } = await supabase.from('schueler').update({ pseudonym: neu }).eq('id', s.id)
     if (error) setFehler(fehlerText(error))
     else void laden()
   }
-
 
   async function loeschen(s: Schueler) {
     const ok = window.confirm(
@@ -81,6 +106,26 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
       window.prompt('Link zum Kopieren:', schuelerLink(s.token))
     }
   }
+
+  function sortieren(nach: 'name' | 'stand') {
+    setSortierung((alt) => (alt.nach === nach ? { nach, auf: !alt.auf } : { nach, auf: nach === 'name' }))
+  }
+  const pfeil = (nach: 'name' | 'stand') => (sortierung.nach === nach ? (sortierung.auf ? '▲' : '▼') : '⇅')
+
+  // Nach Name (A–Z) oder nach Ø Lernstand; ohne Daten stehen immer am Ende.
+  const sortiert = [...schueler].sort((a, b) => {
+    if (sortierung.nach === 'stand') {
+      const pa = mittelwerte.get(a.id)?.punkte
+      const pb = mittelwerte.get(b.id)?.punkte
+      if (pa === undefined || pb === undefined) {
+        if (pa !== pb) return pa === undefined ? 1 : -1
+      } else if (pa !== pb) {
+        return sortierung.auf ? pa - pb : pb - pa
+      }
+    }
+    const v = a.pseudonym.localeCompare(b.pseudonym, 'de', { numeric: true })
+    return sortierung.nach === 'name' && !sortierung.auf ? -v : v
+  })
 
   if (!klasse) return fehler ? <p className="hinweis-box">{fehler}</p> : <p>Lädt …</p>
 
@@ -154,16 +199,77 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
         <table className="tabelle">
           <thead>
             <tr>
-              <th>Pseudonym</th>
+              <th>
+                <button type="button" className="sortier-knopf" onClick={() => sortieren('name')}>
+                  Pseudonym {pfeil('name')}
+                </button>
+              </th>
+              <th>
+                <button type="button" className="sortier-knopf" onClick={() => sortieren('stand')}>
+                  Ø Lernstand {pfeil('stand')}
+                </button>
+              </th>
               <th>Versuche</th>
               <th>Aktionen</th>
             </tr>
           </thead>
           <tbody>
-            {schueler.map((s) => (
+            {sortiert.map((s) => {
+              const m = mittelwerte.get(s.id)
+              const stufe = m && einstellungen ? STUFEN[stufeAusPunkte(m.punkte, einstellungen)] : null
+              return (
               <tr key={s.id}>
                 <td>
-                  <strong>{s.pseudonym}</strong>
+                  {umbenennenId === s.id ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        void umbenennenSpeichern(s)
+                      }}
+                    >
+                      <input
+                        className="pseudonym-eingabe"
+                        aria-label="Neues Pseudonym"
+                        value={entwurf}
+                        onChange={(e) => setEntwurf(e.target.value)}
+                        onBlur={(e) => {
+                          if (!e.currentTarget.dataset.abbruch) void umbenennenSpeichern(s)
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape') {
+                            e.currentTarget.dataset.abbruch = '1'
+                            setUmbenennenId(null)
+                          }
+                        }}
+                        autoFocus
+                        maxLength={40}
+                      />
+                    </form>
+                  ) : (
+                    <button
+                      type="button"
+                      className="pseudonym-knopf"
+                      title="Antippen zum Umbenennen"
+                      onClick={() => {
+                        setEntwurf(s.pseudonym)
+                        setUmbenennenId(s.id)
+                      }}
+                    >
+                      {s.pseudonym} <span aria-hidden="true">✎</span>
+                    </button>
+                  )}
+                </td>
+                <td>
+                  {stufe && m ? (
+                    <span title={`Durchschnitt aus ${m.kompetenzen} Kompetenz${m.kompetenzen === 1 ? '' : 'en'}`}>
+                      <span className="stufen-feld" style={{ background: stufe.farbe, color: stufe.text }}>
+                        {stufe.symbol}
+                      </span>{' '}
+                      <span className="klein">aus {m.kompetenzen}</span>
+                    </span>
+                  ) : (
+                    <span className="klein">noch keine Daten</span>
+                  )}
                 </td>
                 <td>{s.versuche[0]?.count ?? 0}</td>
                 <td className="aktionen">
@@ -176,9 +282,6 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
                   <a className="knopf klein-knopf" href={schuelerLink(s.token)} target="_blank" rel="noreferrer">
                     Als Schüler:in ansehen
                   </a>
-                  <button className="knopf klein-knopf leise" onClick={() => void umbenennen(s)}>
-                    Umbenennen
-                  </button>
                   <a className="knopf klein-knopf auswertung-rand" href={`#/lehrkraft/schueler/${s.id}/drucken`}>
                     🖨 Entwicklung drucken
                   </a>
@@ -187,12 +290,14 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
                   </button>
                 </td>
               </tr>
-            ))}
+              )
+            })}
           </tbody>
         </table>
       )}
       <p className="klein">
-        Hinweis: Mit „Als Schüler:in ansehen“ zählen Ihre eigenen Versuche wie Versuche dieser Person. Zum Ausprobieren
+        Pseudonym antippen zum Umbenennen. „Ø Lernstand“ ist der Durchschnitt aller Kompetenzen, für die schon eine Stufe
+        berechnet ist. Hinweis: Mit „Als Schüler:in ansehen“ zählen Ihre eigenen Versuche wie Versuche dieser Person. Zum Ausprobieren
         besser eine eigene Test-Person anlegen (z. B. „Test-Lehrkraft“).
       </p>
 
