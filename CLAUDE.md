@@ -26,7 +26,7 @@
   - Pfad-Basis `/deutsch-uebungen/` (siehe `vite.config.ts`). Bau-Ziel Safari 15 (ältere iPads).
   - Veröffentlichung automatisch per GitHub Actions bei Push auf `main`.
 - **Backend:** Supabase (kostenloser Tarif, Region EU/Frankfurt), Row Level Security überall an.
-  - Projekt-Ref `qefbtxchyqhjfmpkgosm`, Adresse und publishable Key in `src/lib/supabase.ts`.
+  - Projekt-Ref `lmyvdhvuykeiizeeglvc` (Frankfurt, `eu-central-1`), Adresse und publishable Key in `src/lib/supabase.ts`.
   - Datenbankänderungen nur als Migrationen in `supabase/migrations/` (Supabase CLI per `npx supabase`).
   - Kostenloser Tarif pausiert nach ca. 1 Woche ohne Nutzung → im Dashboard mit einem Klick wieder starten.
   - Lehrkraft: Login per E-Mail/Passwort (Supabase Auth).
@@ -51,4 +51,7 @@
 - 2026-11-07: React statt Svelte – bewährte Drag-&-Drop-Lösung mit Touch-Unterstützung für iPad.
 - 2026-11-07: Öffentliches Repo statt privatem (GitHub Pages bei privatem Repo nur mit Bezahlkonto).
   Unbedenklich, weil keine Daten und keine Geheimnisse im Code liegen.
-- 2026-11-07: Supabase im kostenlosen Tarif.
+- 2026-11-07: Supabase im kostenlosen Tarif. Erstes Projekt lag versehentlich in London (eu-west-2)
+  → neu in Frankfurt angelegt, altes Projekt wird gelöscht. Region immer mit `npx supabase projects list` prüfen.
+- 2026-11-07: Supabase CLI in Version 2 (`supabase@2`): Der Browser-Login (`supabase login`) scheitert auf diesem
+  Rechner mit „Transport error“ (auch in v3). Anmeldung stattdessen per Zugangsschlüssel (`supabase login --token`).
