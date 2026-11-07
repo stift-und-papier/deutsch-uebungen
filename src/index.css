@@ -1,176 +1,158 @@
-/* Grundgestaltung der ganzen App.
-   Nur Systemschriften (keine Schriften aus dem Internet, wegen Datenschutz).
-   Große Tippflächen (mind. 44 px) und keine Hover-Effekte, die man zum Bedienen braucht. */
-:root {
-  --text: #1c1c1a;
-  --text-leise: #5b5b55;
-  --hintergrund: #fafaf7;
-  --flaeche: #ffffff;
-  --rand: #d6d4cc;
-  --akzent: #2457a6;
-  --akzent-text: #ffffff;
-  --gut: #1f7a3d;
-  --gut-flaeche: #e6f4ea;
-  --nochmal: #b35c00;
-  --nochmal-flaeche: #fff1e0;
-  --gefahr: #b3261e;
-  --hinweis-flaeche: #fff8db;
-
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.5;
-  color: var(--text);
-  background: var(--hintergrund);
-  -webkit-text-size-adjust: 100%;
-}
+/* Gestaltung der App nach dem Design-System „Übungswiese“ (src/design/).
+   Alle Farben, Abstände, Radien und Schriften kommen als Variablen aus tokens.css.
+   Schriftgrößen folgen den Textstilen aus tokens.json (titel, titel-klein, text-gross, text, text-klein, beschriftung, knopf).
+   Schriften liegen lokal im Projekt – keine externen Dienste. */
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 26px;
+  color: var(--tinte);
+  background: var(--himmel-hell);
 }
 
 h1 {
-  font-size: 1.6rem;
-  line-height: 1.25;
-  margin: 0.5rem 0 1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 38px;
+  color: var(--schulblau);
+  margin: var(--space-2) 0 var(--space-4);
 }
 
 h2 {
-  font-size: 1.25rem;
-  margin: 0 0 0.75rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 30px;
+  color: var(--schulblau);
+  margin: 0 0 var(--space-3);
 }
 
 a {
-  color: var(--akzent);
+  color: var(--schulblau);
+  font-weight: 700;
+}
+
+/* Links, die wie Knöpfe aussehen, nicht unterstreichen */
+a.aes-btn,
+a.aes-nav__item {
+  text-decoration: none;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--fokus);
+  outline-offset: 2px;
 }
 
 code {
-  background: #eeece4;
-  padding: 0.1em 0.3em;
-  border-radius: 4px;
+  background: var(--schulblau-hell);
+  padding: 0 var(--space-1);
+  border-radius: var(--space-1);
 }
 
 .seite {
-  max-width: 46rem;
+  max-width: 48rem;
   margin: 0 auto;
-  padding: 1rem 1rem 3rem;
+  padding: var(--space-4) var(--space-4) var(--space-7);
 }
 
 .seite.breit {
-  max-width: 64rem;
+  max-width: 72rem;
 }
 
 .seite.schmal {
-  max-width: 30rem;
+  max-width: 32rem;
 }
 
 .klein {
-  font-size: 0.875rem;
-  color: var(--text-leise);
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--tinte-gedaempft);
 }
 
 .zurueck {
-  display: inline-block;
-  padding: 0.6rem 0;
-  min-height: 44px;
-}
-
-/* ---------- Knöpfe ---------- */
-
-.knopf {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 0.5rem 1.1rem;
-  border: 2px solid var(--akzent);
-  border-radius: 10px;
-  background: var(--flaeche);
-  color: var(--akzent);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  touch-action: manipulation;
+  min-height: var(--tipp-min);
 }
 
-.knopf.haupt {
-  background: var(--akzent);
-  color: var(--akzent-text);
+/* ---------- Knöpfe: Baustein aes-btn plus wenige App-Varianten ---------- */
+
+/* Kleinere Pille für Tabellenzeilen – bleibt mindestens 48 px hoch */
+.aes-btn--klein {
+  padding: var(--space-2) var(--space-4);
+  font-size: 17px;
+}
+
+/* Löschen: ruhig in Pflaume (Rot ist im Design dem Stufenbalken vorbehalten) */
+.knopf-gefahr {
+  color: var(--pflaume-dunkel);
+  border-color: var(--pflaume-dunkel);
 }
 
 /* Auswertungen (Lernstand) in Grün, damit sie sich von den übrigen Knöpfen abheben */
-.knopf.auswertung {
-  background: var(--gut);
-  border-color: var(--gut);
-  color: #ffffff;
+.knopf-auswertung {
+  background: var(--gruen-dunkel);
+  border-color: var(--gruen-dunkel);
+  color: var(--flaeche);
 }
 
-.knopf.auswertung-rand {
-  border-color: var(--gut);
-  color: var(--gut);
+.knopf-auswertung-rand {
+  border-color: var(--gruen-dunkel);
+  color: var(--gruen-dunkel);
 }
 
-.knopf.leise {
-  border-color: var(--rand);
-  color: var(--text);
-}
-
-.knopf.gefahr {
-  border-color: var(--gefahr);
-  color: var(--gefahr);
-}
-
-.knopf:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.knopf:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.klein-knopf {
-  min-height: 44px;
-  padding: 0.3rem 0.8rem;
-  font-size: 0.9rem;
+.zurueck {
+  padding-left: 0;
 }
 
 .knopfleiste {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin: 1rem 0;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
 }
 
-/* Umschalter (Reiter) */
+/* Umschalter (Reiter) als Pillen */
 .umschalter {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
-  margin: 0.5rem 0 1rem;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-4);
 }
 
 .umschalter button {
-  min-height: 44px;
-  padding: 0.4rem 1rem;
-  border: 2px solid var(--rand);
-  border-radius: 10px;
+  min-height: var(--tipp-min);
+  padding: var(--space-2) var(--space-5);
+  border: 2px solid var(--linie-stark);
+  border-radius: var(--radius-pill);
   background: var(--flaeche);
-  font: inherit;
-  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--schulblau);
   cursor: pointer;
 }
 
 .umschalter button[aria-selected='true'],
 .umschalter button[aria-pressed='true'] {
-  border-color: var(--akzent);
-  background: var(--akzent);
-  color: var(--akzent-text);
-  font-weight: 600;
+  border-color: var(--schulblau);
+  background: var(--schulblau);
+  color: var(--flaeche);
 }
 
 /* ---------- Formulare ---------- */
@@ -178,8 +160,8 @@ code {
 .formular {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin: 1rem 0;
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
 }
 
 .formular.zeile {
@@ -195,36 +177,46 @@ code {
 .formular label {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  font-weight: 600;
+  gap: var(--space-1);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--tinte);
 }
 
 .formular label.haken {
   flex-direction: row;
   align-items: center;
-  gap: 0.6rem;
-  font-weight: normal;
-  min-height: 44px;
+  gap: var(--space-3);
+  font-size: 17px;
+  line-height: 26px;
+  font-weight: 400;
+  letter-spacing: 0;
+  min-height: var(--tipp-min);
 }
 
 .haken input {
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 24px;
+  height: 24px;
+  accent-color: var(--schulblau);
 }
 
 input:not([type='checkbox']),
 textarea,
 select {
-  font: inherit;
-  font-weight: normal;
+  font-family: var(--font-sans);
+  font-weight: 400;
   /* mind. 16 px, sonst zoomt Safari auf dem iPad beim Antippen */
-  font-size: max(1rem, 16px);
-  padding: 0.6rem 0.75rem;
-  min-height: 48px;
-  border: 2px solid var(--rand);
-  border-radius: 8px;
+  font-size: 17px;
+  line-height: 26px;
+  letter-spacing: 0;
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--tipp-min);
+  border: 2px solid var(--linie-stark);
+  border-radius: var(--radius-sm);
   background: var(--flaeche);
-  color: var(--text);
+  color: var(--tinte);
   width: 100%;
 }
 
@@ -233,29 +225,30 @@ textarea {
 }
 
 fieldset {
-  border: 2px solid var(--rand);
-  border-radius: 12px;
-  padding: 1rem;
+  border: 2px solid var(--linie);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
   margin: 0;
 }
 
 legend {
-  font-weight: 700;
-  padding: 0 0.4rem;
+  font-weight: 800;
+  padding: 0 var(--space-2);
+  color: var(--schulblau);
 }
 
 .erklaerung {
-  background: #eef3fb;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.75rem;
+  background: var(--schulblau-hell);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 .formular-modus .teil {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
   align-items: flex-end;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 .formular-modus .teil label {
@@ -263,39 +256,40 @@ legend {
 }
 
 .formular-modus .teil-luecke {
-  background: #eef3fb;
-  border-radius: 8px;
-  padding: 0.5rem;
+  background: var(--schulblau-hell);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
 }
 
-/* ---------- Kästen und Meldungen ---------- */
+/* ---------- Karten und Meldungen ---------- */
 
+/* „kasten“ = Karte auf den Lehrkraft-Seiten (wie aes-card) */
 .kasten {
   background: var(--flaeche);
-  border: 2px solid var(--rand);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin: var(--space-5) 0;
+  box-shadow: var(--schatten-karte);
 }
 
 .gefahrzone {
-  border-color: #f0c8c4;
+  background: var(--flaeche-warm);
 }
 
 .hinweis-box {
-  background: var(--hinweis-flaeche);
-  border-left: 5px solid #d9a400;
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  margin: 1rem 0;
+  background: var(--pfirsich-hell);
+  color: var(--pfirsich-dunkel);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-4) 0;
 }
 
 .erfolg-box {
-  background: var(--gut-flaeche);
-  border-left: 5px solid var(--gut);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  margin: 1rem 0;
+  background: var(--erfolg-flaeche);
+  color: var(--gruen-dunkel);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-4) 0;
 }
 
 /* ---------- Listen und Tabellen ---------- */
@@ -303,57 +297,68 @@ legend {
 .kachelliste {
   list-style: none;
   padding: 0;
-  margin: 1rem 0;
+  margin: var(--space-4) 0;
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .kachel {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: var(--space-1);
   min-height: 64px;
-  padding: 0.9rem 1.1rem;
+  padding: var(--space-4) var(--space-5);
   background: var(--flaeche);
-  border: 2px solid var(--rand);
-  border-radius: 12px;
-  color: var(--text);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--schatten-karte);
+  color: var(--tinte);
+  font-weight: 400;
   text-decoration: none;
 }
 
 .kachel strong {
-  font-size: 1.1rem;
-  color: var(--akzent);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 28px;
+  color: var(--schulblau);
 }
 
 .tabelle {
   width: 100%;
   border-collapse: collapse;
   background: var(--flaeche);
-  margin: 1rem 0;
+  margin: var(--space-4) 0;
 }
 
 .tabelle th,
 .tabelle td {
   text-align: left;
-  padding: 0.5rem 0.6rem;
-  border-bottom: 1px solid var(--rand);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--linie);
   vertical-align: middle;
+}
+
+.tabelle th {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .aktionen {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 
 .paket-aufgaben li {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid var(--rand);
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--linie);
 }
 
 .paket-aufgaben .aktionen {
@@ -361,22 +366,25 @@ legend {
 }
 
 .zuweisungen li {
-  padding: 0.3rem 0;
+  padding: var(--space-1) 0;
 }
 
 .link-zelle {
   font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 0.8rem;
+  font-size: 14px;
+  line-height: 20px;
   word-break: break-all;
 }
 
 .marke {
   display: inline-block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: #eef3fb;
-  border-radius: 6px;
-  padding: 0.1rem 0.4rem;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 800;
+  background: var(--schulblau-hell);
+  color: var(--schulblau);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-3);
 }
 
 .nicht-umbrechen {
@@ -388,7 +396,7 @@ legend {
 }
 
 tr.ausgeblendet td {
-  color: var(--text-leise);
+  color: var(--tinte-gedaempft);
   text-decoration: line-through;
 }
 
@@ -411,163 +419,185 @@ tr.ausgeblendet .aktionen {
   break-inside: avoid;
 }
 
-/* ---------- Lehrkraft-Menü ---------- */
+/* ---------- Schüleransicht: Hintergrund ---------- */
 
-.hauptmenue {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
+/* Sonnige Wiese als Seitenhintergrund. Text steht nie direkt darauf, sondern immer auf Karten. */
+.wiese {
+  min-height: 100vh;
+  background: var(--himmel) url('./design/hintergruende/wiese-tag.svg') center bottom / cover no-repeat fixed;
+}
+
+/* ---------- Aufgabe (Schüler:in und Vorschau) ---------- */
+
+.aufgabe-kopf {
+  display: grid;
+  grid-template-columns: auto 1fr minmax(10rem, 16rem);
   align-items: center;
-  padding: 0.5rem 1rem;
-  background: var(--flaeche);
-  border-bottom: 2px solid var(--rand);
+  gap: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
-.hauptmenue a {
-  padding: 0.6rem 0.9rem;
-  min-height: 44px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
+.aufgabe-kopf__ort {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--tinte-gedaempft);
+  margin: 0;
 }
 
-.hauptmenue a[aria-current='page'] {
-  background: var(--akzent);
-  color: var(--akzent-text);
+.aufgabe-kopf__titel {
+  margin: 0;
 }
 
-.hauptmenue .abmelden {
-  margin-left: auto;
+.fortschritt__text {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 800;
+  color: var(--schulblau);
+  margin: 0 0 var(--space-2);
 }
 
-/* ---------- Aufgaben bearbeiten ---------- */
-
-.aufgabe .anweisung {
-  font-weight: 600;
+.fortschritt__spur {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--linie);
+  overflow: hidden;
 }
 
-.lueckentext {
-  font-size: 1.3rem;
-  line-height: 2.6;
-  background: var(--flaeche);
-  border: 2px solid var(--rand);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
+.fortschritt__balken {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--gruen);
+}
+
+.aufgabe-raster {
+  display: grid;
+  grid-template-columns: 1fr minmax(16rem, 22rem);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.aufgabe-raster--einspaltig {
+  grid-template-columns: 1fr;
+}
+
+.aufgabe-hauptkarte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-height: 24rem;
+}
+
+.aufgabe-anweisung {
+  font-size: 20px;
+  line-height: 30px;
+  color: var(--tinte-gedaempft);
+  margin: 0;
+}
+
+.aufgabe-text {
+  margin: 0;
 }
 
 .luecke-rahmen {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
   white-space: nowrap;
 }
 
-input.luecke {
-  display: inline-block;
-  width: auto;
-  min-height: 48px;
-  padding: 0.2rem 0.5rem;
-  font-size: 1.2rem;
-  border: 2px solid #8a8a80;
-  border-bottom-width: 3px;
-  border-radius: 8px;
-  vertical-align: middle;
-  text-align: center;
-}
-
-input.luecke:focus {
-  outline: 3px solid #8fb2ea;
-  border-color: var(--akzent);
-}
-
-input.luecke.richtig {
-  border-color: var(--gut);
-  background: var(--gut-flaeche);
-  color: var(--text);
-  opacity: 1;
-  -webkit-text-fill-color: var(--text);
-}
-
-input.luecke.nochmal {
-  border-color: var(--nochmal);
-  background: var(--nochmal-flaeche);
-}
-
+/* Kennzeichen hinter der Lücke: Bedeutung nie nur über die Farbe */
 .markierung {
-  font-weight: 700;
-  font-size: 1.2rem;
+  font-weight: 800;
+  font-size: 18px;
+  margin-right: var(--space-1);
 }
 
-.luecke.richtig + .markierung {
-  color: var(--gut);
+.aes-gap--ok + .markierung {
+  color: var(--gruen-dunkel);
 }
 
-.luecke.nochmal + .markierung {
-  color: var(--nochmal);
+.aes-gap--again + .markierung {
+  color: var(--pfirsich-dunkel);
+}
+
+/* Gesperrte (richtige) Lücke gut lesbar lassen, auch in Safari */
+.aes-gap:disabled {
+  opacity: 1;
+  -webkit-text-fill-color: var(--schulblau);
 }
 
 .loesung-anzeige {
-  font-size: 1rem;
-  background: #eef3fb;
-  border-radius: 6px;
-  padding: 0 0.4rem;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 800;
+  background: var(--schulblau-hell);
+  color: var(--schulblau);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-2);
+  margin-right: var(--space-1);
 }
 
-.rueckmeldung {
-  border-radius: 12px;
-  padding: 0.5rem 1.25rem;
-  margin: 1rem 0;
-  font-size: 1.1rem;
+.aufgabe-fuss {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  margin-top: auto;
 }
 
-.rueckmeldung.gut {
-  background: var(--gut-flaeche);
-  border: 2px solid var(--gut);
-}
-
-.rueckmeldung.weiter-ueben {
-  background: var(--nochmal-flaeche);
-  border: 2px solid var(--nochmal);
-}
-
-.tipp p {
-  background: var(--hinweis-flaeche);
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
+.aufgabe-fuss__rechts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-left: auto;
 }
 
 .vorschau-rahmen {
-  border: 3px dashed var(--akzent);
-  border-radius: 14px;
-  padding: 0.5rem 1rem;
-  background: var(--hintergrund);
+  border: 3px dashed var(--schulblau);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: var(--himmel-hell);
+}
+
+/* iPad hochkant und schmaler: Kopf und Spalten untereinander */
+@media (max-width: 900px) {
+  .aufgabe-kopf {
+    grid-template-columns: auto 1fr;
+  }
+  .aufgabe-kopf .fortschritt {
+    grid-column: 1 / -1;
+  }
+  .aufgabe-raster {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------- Klassenliste ---------- */
 
 .sortier-knopf,
 .pseudonym-knopf {
-  min-height: 44px;
-  padding: 0.3rem 0.4rem;
+  min-height: var(--tipp-min);
+  padding: var(--space-1) var(--space-2);
   border: none;
   background: transparent;
-  font: inherit;
-  font-weight: 700;
-  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--tinte);
   cursor: pointer;
   text-align: left;
 }
 
 .pseudonym-knopf {
-  color: var(--akzent);
-  border-radius: 6px;
+  color: var(--schulblau);
+  border-radius: var(--radius-sm);
 }
 
 .pseudonym-knopf span {
-  font-weight: normal;
-  font-size: 0.85rem;
-  color: var(--text-leise);
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--tinte-gedaempft);
 }
 
 .pseudonym-eingabe {
@@ -581,25 +611,26 @@ input.luecke.nochmal {
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  background: #eef3fb;
-  border-radius: 999px;
-  padding: 0.2rem 0.3rem 0.2rem 0.9rem;
+  gap: var(--space-2);
+  background: var(--schulblau-hell);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
 }
 
 .chip button {
-  min-width: 36px;
-  min-height: 36px;
+  min-width: var(--tipp-min);
+  min-height: var(--tipp-min);
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   font: inherit;
+  color: var(--schulblau);
   cursor: pointer;
 }
 
@@ -608,174 +639,219 @@ input.luecke.nochmal {
   padding: 0;
   max-height: 26rem;
   overflow-y: auto;
-  border: 1px solid var(--rand);
-  border-radius: 8px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-md);
 }
 
 .auswahl-liste li {
-  border-bottom: 1px solid var(--rand);
-  padding: 0.3rem 0.6rem;
+  border-bottom: 1px solid var(--linie);
+  padding: var(--space-1) var(--space-3);
 }
 
 .auswahl-liste .haken {
   align-items: flex-start;
 }
 
-.klein-auswahl {
-  min-height: 44px;
-  padding: 0.3rem;
+/* ---------- Lernstand (nur Lehrkraft) ---------- */
+
+/* Abendhimmel als ruhiger Kopfstreifen im Lehrkraft-Bereich */
+.lehrkraft {
+  min-height: 100vh;
+  background: var(--himmel-hell) url('./design/hintergruende/huegel-abend.svg') center top / 100% 420px no-repeat;
 }
 
-/* ---------- Lernstand (Lehrkraft) ---------- */
+.auswertung-kopf {
+  margin-top: var(--space-5);
+}
+
+.auswertung-kopf__rechts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.auswertung-raster {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(22rem, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+  margin-top: var(--space-5);
+}
+
+@media (max-width: 1100px) {
+  .auswertung-raster {
+    grid-template-columns: 1fr;
+  }
+}
 
 .stufen-feld {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
-  min-width: 2.6rem;
-  height: 2rem;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  border: 1px solid rgba(0, 0, 0, 0.25);
+  gap: 2px;
+  min-width: 56px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  font-size: 17px;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
-.stufen-feld.leer {
-  background: #f1f0ec;
-  border-style: dashed;
-}
-
 .stufen-feld.wenig {
-  background: #ffffff;
-  color: var(--text-leise);
+  background: var(--flaeche);
+  border: 2px dashed var(--linie-stark);
+  color: var(--tinte-gedaempft);
 }
 
 .stufen-feld .trend {
-  font-size: 0.75rem;
+  font-size: 13px;
 }
 
 .heatmap-rahmen {
   overflow-x: auto;
+  margin: var(--space-4) 0;
 }
 
 .heatmap {
-  border-collapse: collapse;
-  background: var(--flaeche);
+  border-collapse: separate;
+  border-spacing: var(--space-1);
 }
 
 .heatmap th,
 .heatmap td {
-  border: 1px solid var(--rand);
-  padding: 0.25rem;
+  padding: 0;
   text-align: center;
 }
 
-.heatmap tbody th {
-  text-align: left;
-  white-space: nowrap;
-  padding: 0.25rem 0.6rem;
+.heatmap-ecke {
+  text-align: left !important;
+  vertical-align: bottom;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 var(--space-3) var(--space-2) !important;
 }
 
 .heatmap-kopf {
   vertical-align: bottom;
-  height: 10rem;
+  height: 9rem;
 }
 
 .heatmap-kopf span {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   white-space: nowrap;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
 }
 
-.heatmap td a {
-  text-decoration: none;
+.heatmap-name,
+.heatmap-feld {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.heatmap-name {
+  min-height: var(--tipp-min);
+  padding: 0 var(--space-3);
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--tinte);
+  white-space: nowrap;
+  border-radius: var(--radius-pill);
+}
+
+.heatmap-feld {
+  display: block;
+  border-radius: var(--radius-sm);
+}
+
+/* Ausgewählte Zeile: dunkelblauer Rahmen um Name und Felder */
+.ist-ausgewaehlt .heatmap-name {
+  color: var(--schulblau);
+  background: var(--schulblau-hell);
+}
+
+.ist-ausgewaehlt .stufen-feld {
+  outline: 3px solid var(--schulblau);
+  outline-offset: 1px;
 }
 
 .legende {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem 1rem;
+  gap: var(--space-2) var(--space-3);
   align-items: center;
-  font-size: 0.85rem;
+  font-size: 15px;
+  margin: 0;
 }
 
-.kompetenz-zeile {
-  display: grid;
-  grid-template-columns: minmax(12rem, 1.2fr) minmax(14rem, 1.5fr) auto;
-  gap: 0.5rem 1rem;
-  align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--rand);
+.legende__titel {
+  font-weight: 800;
+}
+
+.legende .stufen-feld {
+  min-width: 44px;
+  height: 32px;
+}
+
+/* Einzelansicht */
+.einzelkarte__kopf {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.einzelkarte__bereichstitel {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--tinte-gedaempft);
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+.einzelkarte__kompetenz {
+  padding: var(--space-3) 0 var(--space-4);
+  border-bottom: 1px solid var(--linie);
   break-inside: avoid;
 }
 
-@media (max-width: 800px) {
-  .kompetenz-zeile {
-    grid-template-columns: 1fr;
-  }
+/* Stufenbalken übereinander statt in drei Spalten (schmale Karte, wie im Entwurf) */
+.aes-level.level-gestapelt {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
 }
 
-.balken {
-  position: relative;
-  height: 2.2rem;
-  border-radius: 8px;
-  overflow: visible;
-  background: #f1f0ec;
-  border: 1px solid var(--rand);
+.level-gestapelt .aes-level__label {
+  font-size: 17px;
 }
 
-.balken-bereich {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  opacity: 0.18;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
+.level-gestapelt .aes-level__track {
+  margin-top: var(--space-4);
 }
 
-.balken-fuellung {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  border-radius: 7px;
+.einzelkarte__mehr summary {
+  min-height: var(--tipp-min);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: 0.5rem;
-  font-weight: 800;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
-.balken-start {
-  position: absolute;
-  top: -0.35rem;
-  bottom: -0.35rem;
-  width: 0;
-  border-left: 3px dashed #1c1c1a;
-}
-
-.balken-start span {
-  position: absolute;
-  top: 100%;
-  left: -1rem;
-  font-size: 0.65rem;
   font-weight: 700;
+  color: var(--schulblau);
+  cursor: pointer;
 }
 
-.balken-text {
-  margin-top: 0.9rem;
-  font-size: 0.9rem;
-}
-
-.trend-pfeil {
-  font-size: 1.1rem;
+.einzelansicht__fuss {
+  margin-top: var(--space-5);
+  display: grid;
+  gap: var(--space-3);
 }
 
 .verlauf {
@@ -783,89 +859,273 @@ input.luecke.nochmal {
   max-width: 100%;
   height: auto;
   background: var(--flaeche);
-  border: 1px solid var(--rand);
-  border-radius: 6px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-sm);
 }
 
 .verlauf-grenze {
-  stroke: #d6d4cc;
+  stroke: var(--linie);
   stroke-dasharray: 3 3;
 }
 
 .verlauf-linie {
   fill: none;
-  stroke: var(--akzent);
+  stroke: var(--schulblau);
   stroke-width: 2;
 }
 
 .verlauf-punkt {
-  fill: var(--akzent);
+  fill: var(--schulblau);
 }
 
 .verlauf-strich {
-  stroke: #8a8a80;
+  stroke: var(--linie-stark);
 }
 
 .verlauf-datum {
+  font-family: var(--font-sans);
   font-size: 11px;
-  fill: #3d3d38;
+  fill: var(--tinte);
 }
 
-/* ---------- Entwicklung (Schüler:innen) ---------- */
+/* ---------- Schüleransicht: Rahmen mit Seitenleiste ---------- */
+
+.rahmen {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  align-items: start;
+}
+
+.rahmen__nav {
+  position: sticky;
+  top: var(--space-5);
+  min-height: calc(100vh - 2 * var(--space-5));
+}
+
+.rahmen__inhalt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 64rem;
+  min-width: 0;
+}
+
+/* Freier Platz für das Schullogo (folgt später) */
+.logo-platz {
+  min-height: var(--tipp-min);
+}
+
+.rahmen__name {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tipp-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--himmel-hell);
+  color: var(--schulblau);
+  font-weight: 800;
+}
+
+.rahmen__punkt {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--pflaume);
+  flex: none;
+}
+
+/* iPad hochkant: Seitenleiste wird zur Leiste am unteren Rand */
+@media (max-width: 900px) {
+  .rahmen {
+    grid-template-columns: 1fr;
+    padding: var(--space-4) var(--space-4) calc(var(--tipp-min) + var(--space-7));
+  }
+  .rahmen__nav {
+    position: fixed;
+    top: auto;
+    left: var(--space-3);
+    right: var(--space-3);
+    bottom: var(--space-3);
+    width: auto;
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    padding: var(--space-2);
+    z-index: 10;
+  }
+  .rahmen__nav .aes-nav__item {
+    flex: 1;
+    justify-content: center;
+  }
+  .rahmen__nav .aes-nav__brand,
+  .rahmen__nav .logo-platz,
+  .rahmen__name {
+    display: none;
+  }
+}
+
+.seitenkopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.seitenkopf > div:first-of-type {
+  flex: 1;
+}
+
+.seitenkopf h1 {
+  margin: 0;
+}
+
+.titel-gross {
+  font-size: 44px;
+  line-height: 50px;
+}
+
+.seitenkopf__text {
+  margin: var(--space-2) 0 0;
+  font-size: 20px;
+  line-height: 30px;
+  color: var(--tinte-gedaempft);
+}
+
+.zaehler {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--himmel-hell);
+  color: var(--schulblau);
+}
+
+.zaehler__zahl {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 50px;
+}
+
+.zaehler__text {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 800;
+}
+
+/* Wunsch der Lehrkraft: „deutlich besser“ kräftig hervorheben – dunkelgrüne Pille mit weißer Schrift
+   (Optik wie „++“, aber mit der Entwicklungsfarbe statt der Stufenfarbe, die nur Lehrkräfte sehen). */
+.aes-growth--stark .aes-growth__badge {
+  background: var(--entwicklung-stark);
+  color: var(--flaeche);
+}
+
+.karten-raster {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: var(--space-5);
+}
+
+.karten-raster > li {
+  display: flex;
+}
+
+.karten-raster > li > * {
+  flex: 1;
+}
+
+.karten-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.karten-link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--tinte);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.karten-link--zeile {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+.karten-link__nr {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tipp-min);
+  height: var(--tipp-min);
+  border-radius: 50%;
+  background: var(--himmel);
+  color: var(--schulblau);
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.karten-link__titel {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 28px;
+  color: var(--schulblau);
+}
+
+.karten-link__stand {
+  margin: var(--space-2) 0 0;
+  font-weight: 700;
+  color: var(--schulblau);
+}
 
 .naechster-schritt {
-  background: #eef3fb;
-  border-radius: 12px;
-  padding: 0.9rem 1.2rem;
-  font-size: 1.15rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
 }
 
-.entwicklung {
-  border-radius: 14px;
-  padding: 0.75rem 1.25rem;
-  margin: 1rem 0;
-  border: 2px solid var(--rand);
-  background: var(--flaeche);
-}
-
-.entwicklung h2 {
-  font-size: 1.2rem;
-}
-
-.entwicklung ul {
-  padding-left: 1.2rem;
-  margin: 0.25rem 0 0.5rem;
-}
-
-.entwicklung li {
-  margin: 0.3rem 0;
-}
-
-.entwicklung-deutlich,
-.entwicklung-besser {
-  border-color: var(--gut);
-  background: var(--gut-flaeche);
-}
-
-.entwicklung-dranbleiben {
-  border-color: #8fb2ea;
-  background: #eef3fb;
+.naechster-schritt .aes-card__title {
+  margin: 0;
 }
 
 /* ---------- Drucken ---------- */
 
 @media print {
-  :root {
+  body {
     font-size: 11pt;
-    background: #fff;
+    line-height: 1.4;
+    background: var(--flaeche);
   }
   .nicht-drucken,
-  .hauptmenue {
+  .rahmen__nav {
     display: none !important;
   }
   .seite {
     max-width: none;
     padding: 0;
+  }
+  .kasten {
+    box-shadow: none;
+    border: 1px solid var(--linie);
   }
   .tabelle tr {
     break-inside: avoid;
@@ -877,5 +1137,80 @@ input.luecke.nochmal {
   }
   @page {
     margin: 1.5cm;
+  }
+}
+
+/* ---------- Lehrkraft-Bereich: Rahmen, Seitenkarte, Anmeldung ---------- */
+
+/* Ruhiger als die Schüleransicht: nur oben ein Streifen Abendhimmel, darunter helle Fläche */
+.rahmen--lehrkraft {
+  background: var(--himmel-hell) url('./design/hintergruende/huegel-abend.svg') center top / 100% 320px no-repeat;
+}
+
+.rahmen__inhalt--breit {
+  max-width: 80rem;
+}
+
+/* Abmelden steht als letzter Eintrag unten in der Leiste */
+.rahmen__abmelden {
+  margin-top: auto;
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  text-align: left;
+}
+
+/* Eine große Karte pro Seite; Abschnitte darin sind flache Flächen statt weiterer Schattenkarten */
+.seiten-karte > h1:first-child,
+.seiten-karte > :first-child > h1:first-child {
+  margin-top: 0;
+}
+
+.seiten-karte .kasten {
+  box-shadow: none;
+  border: 2px solid var(--linie);
+  border-radius: var(--radius-md);
+}
+
+.seiten-karte .gefahrzone {
+  border-color: var(--pflaume-hell);
+}
+
+.seiten-karte .kachel {
+  box-shadow: none;
+  border: 2px solid var(--linie);
+  border-radius: var(--radius-md);
+}
+
+/* Anmeldung: Abendhimmel als ganzer Hintergrund, Formular auf einer Karte */
+.abendhimmel {
+  min-height: 100vh;
+  padding-top: var(--space-7);
+  background: var(--schulblau) url('./design/hintergruende/huegel-abend.svg') center / cover no-repeat;
+}
+
+/* iPad hochkant: Lehrkraft-Leiste unten, bei vielen Einträgen seitlich verschiebbar */
+@media (max-width: 900px) {
+  .rahmen--lehrkraft .rahmen__nav {
+    overflow-x: auto;
+  }
+  .rahmen--lehrkraft .rahmen__nav .aes-nav__item {
+    flex: none;
+    padding: 0 var(--space-3);
+  }
+  .rahmen--lehrkraft .rahmen__abmelden {
+    margin-top: 0;
+  }
+}
+
+@media print {
+  .lehrkraft,
+  .rahmen--lehrkraft {
+    background: none;
+  }
+  .aes-card {
+    box-shadow: none;
+    padding: 0;
   }
 }

@@ -83,7 +83,7 @@ export function KlassenListe() {
             ))}
           </select>
         </label>
-        <button className="knopf haupt">Anlegen</button>
+        <button className="aes-btn aes-btn--primary">Anlegen</button>
       </form>
     </>
   )

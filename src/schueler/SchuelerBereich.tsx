@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { AufgabeBearbeiten } from '../gemeinsam/AufgabeBearbeiten'
 import { fehlerText, istNetzwerkfehler } from '../lib/fehler'
 import { gehe } from '../lib/router'
@@ -15,6 +15,8 @@ import {
 } from './speicher'
 
 type Props = { token: string; pfad: string[] }
+
+const STUFEN_TEXT = { leicht: 'leichte Stufe', mittel: 'mittlere Stufe', schwer: 'schwere Stufe' } as const
 
 // Alles, was Schüler:innen sehen. Zugriff nur über die Datenbank-Funktionen mit dem Link-Token.
 export function SchuelerBereich({ token, pfad }: Props) {
@@ -67,90 +69,125 @@ export function SchuelerBereich({ token, pfad }: Props) {
 
   if (fehler && !daten) {
     return (
-      <main className="seite schueler">
-        <h1>Hallo!</h1>
-        <p className="hinweis-box">{fehler}</p>
-        <p>Wenn das Problem bleibt, frag deine Lehrkraft nach deinem Link.</p>
-        <button className="knopf" onClick={() => void laden()}>
-          Noch einmal versuchen
-        </button>
-      </main>
+      <div className="wiese">
+        <main className="seite schmal">
+          <div className="aes-card">
+            <h1>Hallo!</h1>
+            <p className="hinweis-box">{fehler}</p>
+            <p>Wenn das Problem bleibt, frag deine Lehrkraft nach deinem Link.</p>
+            <button className="aes-btn aes-btn--primary" onClick={() => void laden()}>
+              Noch einmal versuchen
+            </button>
+          </div>
+        </main>
+      </div>
     )
   }
-  if (!daten) return <main className="seite schueler"><p>Einen Moment …</p></main>
+  if (!daten)
+    return (
+      <div className="wiese">
+        <main className="seite schmal">
+          <p className="aes-card">Einen Moment …</p>
+        </main>
+      </div>
+    )
 
   const basis = `/s/${token}`
   const [bereich, paketId, , aufgabeId] = pfad
   const paket = bereich === 'p' ? daten.pakete.find((p) => p.id === paketId) : undefined
+  const geschafftGesamt = daten.pakete.reduce((summe, p) => summe + p.aufgaben.filter((a) => a.geloest).length, 0)
 
+  const wartendHinweis = wartend > 0 && (
+    <p className="hinweis-box" role="status">
+      {wartend === 1 ? '1 Antwort wartet' : `${wartend} Antworten warten`} auf Internet und wird automatisch gesendet.
+    </p>
+  )
+
+  // Übersichtsseiten: Seitenleiste + Inhalt auf Karten (Entwurf „Mein Lernweg“)
+  if (!(paket && aufgabeId)) {
+    return (
+      <SchuelerRahmen basis={basis} pseudonym={daten.pseudonym} aktiv={bereich === 'entwicklung' ? 'lernweg' : 'uebungen'}>
+        {wartendHinweis}
+
+        {bereich === 'entwicklung' && (
+          <Entwicklung token={token} pseudonym={daten.pseudonym} geschafft={geschafftGesamt} uebungen={`#${basis}`} />
+        )}
+
+        {!paket && bereich !== 'entwicklung' && (
+          <>
+            <header className="aes-card seitenkopf">
+              <div>
+                <h1 className="titel-gross">Hallo {daten.pseudonym}!</h1>
+                <p className="seitenkopf__text">
+                  {daten.pakete.length === 0 ? 'Für dich gibt es gerade keine Übungen. Schau später noch einmal vorbei.' : 'Such dir eine Übung aus.'}
+                </p>
+              </div>
+            </header>
+            <ul className="karten-raster">
+              {daten.pakete.map((p) => {
+                const geschafft = p.aufgaben.filter((a) => a.geloest).length
+                const fertig = geschafft === p.aufgaben.length && p.aufgaben.length > 0
+                return (
+                  <li key={p.id}>
+                    <a className="aes-card karten-link" href={`#${basis}/p/${p.id}`}>
+                      <h2 className="aes-card__title">{p.titel}</h2>
+                      {p.beschreibung && <p className="aes-card__hint">{p.beschreibung}</p>}
+                      <p className="karten-link__stand">
+                        {fertig ? '✓ Alle Aufgaben geschafft' : `${geschafft} von ${p.aufgaben.length} Aufgaben geschafft`}
+                      </p>
+                      <div className="fortschritt__spur" aria-hidden="true">
+                        <div
+                          className="fortschritt__balken"
+                          style={{ width: `${p.aufgaben.length ? (geschafft / p.aufgaben.length) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </>
+        )}
+
+        {paket && (
+          <>
+            <header className="aes-card seitenkopf">
+              <a className="aes-btn aes-btn--secondary" href={`#${basis}`}>
+                Zurück
+              </a>
+              <div>
+                <h1>{paket.titel}</h1>
+                {paket.beschreibung && <p className="seitenkopf__text">{paket.beschreibung}</p>}
+              </div>
+            </header>
+            <ol className="karten-liste">
+              {paket.aufgaben.map((a, i) => (
+                <li key={a.id}>
+                  <a className="aes-card karten-link karten-link--zeile" href={`#${basis}/p/${paket.id}/a/${a.id}`}>
+                    <span className="karten-link__nr" aria-hidden="true">
+                      {a.geloest ? '✓' : i + 1}
+                    </span>
+                    <span>
+                      <strong className="karten-link__titel">{a.titel}</strong>
+                      <span className="aes-card__hint">
+                        {a.geloest ? 'Geschafft – du kannst sie noch einmal üben.' : a.versuche > 0 ? 'Angefangen' : 'Neu'}
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
+      </SchuelerRahmen>
+    )
+  }
+
+  // Aufgabenseite (Entwurf „Aufgabe“): ganze Breite, Wiese als Hintergrund, Inhalte auf Karten
   return (
-    <main className="seite schueler">
-      {wartend > 0 && (
-        <p className="hinweis-box">
-          {wartend === 1 ? '1 Antwort wartet' : `${wartend} Antworten warten`} auf Internet und wird automatisch gesendet.
-        </p>
-      )}
-
-      {bereich === 'entwicklung' && <Entwicklung token={token} zurueck={`#${basis}`} />}
-
-      {!paket && bereich !== 'entwicklung' && (
-        <>
-          <h1>Hallo {daten.pseudonym}!</h1>
-          <div className="knopfleiste">
-            <a className="knopf" href={`#${basis}/entwicklung`}>
-              🌱 Meine Entwicklung
-            </a>
-          </div>
-          {daten.pakete.length === 0 ? (
-            <p>Für dich gibt es gerade keine Übungen. Schau später noch einmal vorbei.</p>
-          ) : (
-            <>
-              <p>Such dir eine Übung aus:</p>
-              <ul className="kachelliste">
-                {daten.pakete.map((p) => {
-                  const geschafft = p.aufgaben.filter((a) => a.geloest).length
-                  return (
-                    <li key={p.id}>
-                      <a className="kachel" href={`#${basis}/p/${p.id}`}>
-                        <strong>{p.titel}</strong>
-                        {p.beschreibung && <span>{p.beschreibung}</span>}
-                        <span className="klein">
-                          {geschafft === p.aufgaben.length && p.aufgaben.length > 0
-                            ? '✓ Alle Aufgaben geschafft'
-                            : `${geschafft} von ${p.aufgaben.length} Aufgaben geschafft`}
-                        </span>
-                      </a>
-                    </li>
-                  )
-                })}
-              </ul>
-            </>
-          )}
-        </>
-      )}
-
-      {paket && !aufgabeId && (
-        <>
-          <a className="zurueck" href={`#${basis}`}>
-            ← Alle Übungen
-          </a>
-          <h1>{paket.titel}</h1>
-          {paket.beschreibung && <p>{paket.beschreibung}</p>}
-          <ol className="kachelliste">
-            {paket.aufgaben.map((a) => (
-              <li key={a.id}>
-                <a className="kachel" href={`#${basis}/p/${paket.id}/a/${a.id}`}>
-                  <strong>
-                    {a.geloest ? '✓ ' : ''}
-                    {a.titel}
-                  </strong>
-                  <span className="klein">{a.geloest ? 'geschafft – du kannst sie noch einmal üben' : a.versuche > 0 ? 'angefangen' : 'neu'}</span>
-                </a>
-              </li>
-            ))}
-          </ol>
-        </>
-      )}
+    <div className="wiese">
+    <main className="seite breit">
+      {wartendHinweis}
 
       {paket && aufgabeId && (() => {
         const index = paket.aufgaben.findIndex((a) => a.id === aufgabeId)
@@ -159,15 +196,15 @@ export function SchuelerBereich({ token, pfad }: Props) {
         const naechste = paket.aufgaben[index + 1]
         return (
           <>
-            <a className="zurueck" href={`#${basis}/p/${paket.id}`}>
-              ← {paket.titel}
-            </a>
-            <p className="klein">
-              Aufgabe {index + 1} von {paket.aufgaben.length}
-            </p>
             <AufgabeBearbeiten
               key={aufgabe.id}
               aufgabe={aufgabe}
+              kopf={{
+                zurueck: `#${basis}/p/${paket.id}`,
+                ort: `${paket.titel} · ${STUFEN_TEXT[aufgabe.schwierigkeit]}`,
+                nr: index + 1,
+                gesamt: paket.aufgaben.length,
+              }}
               startAntworten={entwurfLesen(token, aufgabe.id)}
               onAntwortenGeaendert={(antworten) => entwurfSpeichern(token, aufgabe.id, antworten)}
               pruefen={async (antworten) => {
@@ -214,13 +251,50 @@ export function SchuelerBereich({ token, pfad }: Props) {
               }}
               weiter={
                 naechste
-                  ? { text: 'Nächste Aufgabe →', ziel: () => gehe(`${basis}/p/${paket.id}/a/${naechste.id}`) }
-                  : { text: 'Zurück zur Übersicht', ziel: () => gehe(`${basis}/p/${paket.id}`) }
+                  ? { text: 'Weiter', ziel: () => gehe(`${basis}/p/${paket.id}/a/${naechste.id}`) }
+                  : { text: 'Fertig', ziel: () => gehe(`${basis}/p/${paket.id}`) }
               }
             />
           </>
         )
       })()}
     </main>
+    </div>
+  )
+}
+
+// Rahmen der Übersichtsseiten: schulblaue Seitenleiste (aes-nav) mit Platz fürs Schullogo.
+// Auf dem iPad im Hochformat wird die Leiste zu einer Leiste am unteren Rand.
+function SchuelerRahmen({
+  basis,
+  pseudonym,
+  aktiv,
+  children,
+}: {
+  basis: string
+  pseudonym: string
+  aktiv: 'uebungen' | 'lernweg'
+  children: ReactNode
+}) {
+  return (
+    <div className="wiese rahmen">
+      <nav className="aes-nav rahmen__nav" aria-label="Hauptmenü">
+        <div className="logo-platz" aria-hidden="true" />
+        <div className="aes-nav__brand">Übungswiese</div>
+        <a className="aes-nav__item" href={`#${basis}`} aria-current={aktiv === 'uebungen' ? 'page' : undefined}>
+          <span className="aes-nav__dot" aria-hidden="true" />
+          Meine Übungen
+        </a>
+        <a className="aes-nav__item" href={`#${basis}/entwicklung`} aria-current={aktiv === 'lernweg' ? 'page' : undefined}>
+          <span className="aes-nav__dot" aria-hidden="true" />
+          Mein Lernweg
+        </a>
+        <div className="rahmen__name">
+          <span className="rahmen__punkt" aria-hidden="true" />
+          {pseudonym}
+        </div>
+      </nav>
+      <main className="rahmen__inhalt">{children}</main>
+    </div>
   )
 }

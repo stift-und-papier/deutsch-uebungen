@@ -38,13 +38,13 @@ export type Einstellungen = {
 
 export type RueckmeldeText = 'deutlich' | 'besser' | 'dranbleiben' | 'erste' | 'gelungen' | 'naechster_schritt'
 
-/** Die fünf Stufen: Symbol, Farbe (rot → gelb → grün) und Textfarbe */
+/** Die fünf Stufen: Symbol, Farbe (rot → gelb → grün, aus tokens.css) und geprüfte Textfarbe */
 export const STUFEN = [
-  { symbol: '--', name: 'Stufe --', farbe: '#c62828', text: '#ffffff' },
-  { symbol: '-', name: 'Stufe -', farbe: '#ef8a3a', text: '#1c1c1a' },
-  { symbol: 'o', name: 'Stufe o', farbe: '#f4d35e', text: '#1c1c1a' },
-  { symbol: '+', name: 'Stufe +', farbe: '#8cc665', text: '#1c1c1a' },
-  { symbol: '++', name: 'Stufe ++', farbe: '#2e7d32', text: '#ffffff' },
+  { symbol: '--', name: 'Stufe --', farbe: 'var(--stufe-minus2)', text: 'var(--flaeche)' },
+  { symbol: '-', name: 'Stufe -', farbe: 'var(--stufe-minus1)', text: 'var(--tinte)' },
+  { symbol: 'o', name: 'Stufe o', farbe: 'var(--stufe-null)', text: 'var(--tinte)' },
+  { symbol: '+', name: 'Stufe +', farbe: 'var(--stufe-plus1)', text: 'var(--tinte)' },
+  { symbol: '++', name: 'Stufe ++', farbe: 'var(--stufe-plus2)', text: 'var(--flaeche)' },
 ] as const
 
 /** Punkte (0–100) → Stufe 0..4, wie in der Datenbank (stufe_aus_punkte) */
@@ -78,5 +78,5 @@ export function trendText(a: Auswertung, e: Einstellungen): string {
 
 export function trendPfeil(a: Auswertung): string {
   if (!a.trend_gueltig || a.trend_punkte === null) return '→'
-  return a.trend_punkte > 0 ? '↑' : '↓'
+  return a.trend_punkte > 0 ? '↗' : '↘'
 }

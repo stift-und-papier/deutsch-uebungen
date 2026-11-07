@@ -1,6 +1,10 @@
+import { lazy, Suspense } from 'react'
 import { LehrkraftBereich } from './lehrkraft/LehrkraftBereich'
 import { usePfad } from './lib/router'
 import { SchuelerBereich } from './schueler/SchuelerBereich'
+
+// Vorschauseite mit Beispieldaten – nur beim Entwickeln auf dem eigenen Rechner, nie in der veröffentlichten App.
+const Vorschau = import.meta.env.DEV ? lazy(() => import('./entwicklung/Vorschau').then((m) => ({ default: m.Vorschau }))) : null
 
 // Startpunkt der App: entscheidet anhand der Adresse, welcher Bereich angezeigt wird.
 //   #/s/<token>/...   → Schüler:innen (persönlicher Link)
@@ -11,19 +15,28 @@ function App() {
 
   if (bereich === 's' && rest[0]) return <SchuelerBereich key={rest[0]} token={rest[0]} pfad={rest.slice(1)} />
   if (bereich === 'lehrkraft') return <LehrkraftBereich pfad={rest} />
+  if (bereich === 'vorschau' && Vorschau)
+    return (
+      <Suspense fallback={null}>
+        <Vorschau />
+      </Suspense>
+    )
 
   return (
-    <main className="seite schmal">
-      <h1>Deutsch üben</h1>
-      <p>
-        <strong>Schüler:innen:</strong> Bitte öffnet euren persönlichen Link, den ihr von eurer Lehrkraft bekommen habt.
-      </p>
-      <p>
-        <a className="knopf" href="#/lehrkraft">
-          Anmeldung für Lehrkräfte
-        </a>
-      </p>
-    </main>
+    <div className="wiese">
+      <main className="seite schmal">
+        <div className="aes-card">
+          <div className="logo-platz" aria-hidden="true" />
+          <h1>Übungswiese</h1>
+          <p>
+            <strong>Schüler:innen:</strong> Bitte öffnet euren persönlichen Link, den ihr von eurer Lehrkraft bekommen habt.
+          </p>
+          <a className="aes-btn aes-btn--secondary" href="#/lehrkraft">
+            Anmeldung für Lehrkräfte
+          </a>
+        </div>
+      </main>
+    </div>
   )
 }
 

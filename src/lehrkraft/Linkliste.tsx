@@ -39,20 +39,22 @@ export function Linkliste({ klasseId }: { klasseId: string }) {
   if (!klasse) return <main className="seite"><p>Lädt …</p></main>
 
   return (
+    <div className="lehrkraft">
     <main className="seite breit linkliste">
+      <div className="aes-card">
       <div className="nicht-drucken">
-        <a className="zurueck" href={`#/lehrkraft/klassen/${klasse.id}`}>
-          ← Zurück zur Klasse
+        <a className="aes-btn aes-btn--ghost zurueck" href={`#/lehrkraft/klassen/${klasse.id}`}>
+          Zurück zur Klasse
         </a>
         <p className="hinweis-box">
           Diese Links und QR-Codes sind persönlich wie ein Schlüssel: Wer sie hat, kann als diese Person üben. Bitte
           einzeln verteilen und nicht öffentlich aushängen.
         </p>
         <div className="knopfleiste">
-          <button className="knopf haupt" onClick={() => window.print()}>
+          <button className="aes-btn aes-btn--primary" onClick={() => window.print()}>
             Drucken / als PDF speichern
           </button>
-          <button className="knopf" onClick={alsTabelleSpeichern}>
+          <button className="aes-btn aes-btn--secondary" onClick={alsTabelleSpeichern}>
             Als Tabelle speichern (CSV)
           </button>
         </div>
@@ -83,7 +85,9 @@ export function Linkliste({ klasseId }: { klasseId: string }) {
           ))}
         </tbody>
       </table>
+      </div>
     </main>
+    </div>
   )
 }
 

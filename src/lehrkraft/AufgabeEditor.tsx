@@ -110,7 +110,7 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
 
   return (
     <>
-      <a className="zurueck" href="#/lehrkraft/aufgaben">
+      <a className="aes-btn aes-btn--ghost zurueck" href="#/lehrkraft/aufgaben">
         ← Alle Aufgaben
       </a>
       <h1>{aufgabeId ? 'Lückentext bearbeiten' : 'Neuer Lückentext'}</h1>
@@ -192,7 +192,7 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
                   </p>
                   <p>
                     Beispiel: <code>{BEISPIEL}</code>{' '}
-                    <button type="button" className="knopf klein-knopf leise" onClick={() => setText(BEISPIEL)}>
+                    <button type="button" className="aes-btn aes-btn--ghost aes-btn--klein" onClick={() => setText(BEISPIEL)}>
                       Beispiel einfügen
                     </button>
                   </p>
@@ -244,9 +244,9 @@ export function AufgabeEditor({ aufgabeId }: { aufgabeId: string | null }) {
 
           {fehler && <p className="hinweis-box">{fehler}</p>}
           <div className="knopfleiste">
-            <button className="knopf haupt">{gespeichert ? '✓ Gespeichert' : 'Speichern'}</button>
+            <button className="aes-btn aes-btn--primary">{gespeichert ? '✓ Gespeichert' : 'Speichern'}</button>
             {aufgabeId && (
-              <button type="button" className="knopf gefahr" onClick={() => void loeschen()}>
+              <button type="button" className="aes-btn aes-btn--secondary knopf-gefahr" onClick={() => void loeschen()}>
                 Aufgabe löschen
               </button>
             )}
@@ -289,16 +289,16 @@ function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange
               <input value={z.roh} onChange={(e) => aendern(i, { art: 'luecke', roh: e.target.value })} spellCheck={false} />
             </label>
           )}
-          <button type="button" className="knopf klein-knopf leise" onClick={() => setzen(zeilen.filter((_, j) => j !== i))} aria-label="Entfernen">
+          <button type="button" className="aes-btn aes-btn--ghost aes-btn--klein" onClick={() => setzen(zeilen.filter((_, j) => j !== i))} aria-label="Entfernen">
             ✕
           </button>
         </div>
       ))}
       <div className="knopfleiste">
-        <button type="button" className="knopf klein-knopf" onClick={() => setzen([...zeilen, { art: 'text', v: ' ' }])}>
+        <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setzen([...zeilen, { art: 'text', v: ' ' }])}>
           + Text
         </button>
-        <button type="button" className="knopf klein-knopf" onClick={() => setzen([...zeilen, { art: 'luecke', roh: '' }])}>
+        <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setzen([...zeilen, { art: 'luecke', roh: '' }])}>
           + Lücke
         </button>
       </div>

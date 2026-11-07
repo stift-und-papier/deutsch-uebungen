@@ -91,7 +91,7 @@ export function Kompetenzen() {
       </div>
 
       <div className="knopfleiste">
-        <button className="knopf" onClick={() => setBearbeitet('neu')}>
+        <button className="aes-btn aes-btn--secondary" onClick={() => setBearbeitet('neu')}>
           + Eigene Kompetenz hinzufügen
         </button>
       </div>
@@ -131,10 +131,10 @@ export function Kompetenzen() {
                         {k.ausgeblendet && <div className="klein">(ausgeblendet)</div>}
                       </td>
                       <td className="aktionen">
-                        <button className="knopf klein-knopf leise" onClick={() => setBearbeitet(k)}>
+                        <button className="aes-btn aes-btn--ghost aes-btn--klein" onClick={() => setBearbeitet(k)}>
                           Ändern
                         </button>
-                        <button className="knopf klein-knopf leise" onClick={() => void umschalten(k)}>
+                        <button className="aes-btn aes-btn--ghost aes-btn--klein" onClick={() => void umschalten(k)}>
                           {k.ausgeblendet ? 'Einblenden' : 'Ausblenden'}
                         </button>
                       </td>
@@ -231,8 +231,8 @@ function KompetenzFormular({
       </label>
       {fehler && <p className="hinweis-box">{fehler}</p>}
       <div className="knopfleiste">
-        <button className="knopf haupt">Speichern</button>
-        <button type="button" className="knopf leise" onClick={() => onFertig(false)}>
+        <button className="aes-btn aes-btn--primary">Speichern</button>
+        <button type="button" className="aes-btn aes-btn--ghost" onClick={() => onFertig(false)}>
           Abbrechen
         </button>
       </div>

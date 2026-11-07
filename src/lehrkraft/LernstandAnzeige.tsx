@@ -2,8 +2,12 @@ import { datum, STUFEN, trendPfeil, trendText, type Auswertung, type Einstellung
 
 // Feld in der Heatmap: Farbe UND Symbol (für Farbsehschwäche und Schwarz-Weiß-Druck).
 export function StufenFeld({ a }: { a: Auswertung | undefined }) {
-  if (!a) return <span className="stufen-feld leer" aria-label="keine Daten" />
-  if (a.stufe === null) return <span className="stufen-feld wenig" title="noch nicht genug Daten">·</span>
+  if (!a || a.stufe === null)
+    return (
+      <span className="stufen-feld wenig" title="noch nicht genug Daten" aria-label="noch nicht genug Daten">
+        –
+      </span>
+    )
   const s = STUFEN[a.stufe]
   return (
     <span className="stufen-feld" style={{ background: s.farbe, color: s.text }} title={s.name}>
@@ -13,35 +17,41 @@ export function StufenFeld({ a }: { a: Auswertung | undefined }) {
   )
 }
 
-// Balken mit Stufe, Startmarke, Trendpfeil und Textzeile.
-export function StufenBalken({ a, e }: { a: Auswertung; e: Einstellungen }) {
-  const grenzen = [e.grenze_minus, e.grenze_o, e.grenze_plus, e.grenze_plusplus]
-  const s = a.stufe !== null ? STUFEN[a.stufe] : null
+// Endpunkt der Stufe im Balken (20 % … 100 %), wie im Baustein LevelBar.
+const stufenBreite = (stufe: number) => (stufe + 1) * 20
+const STUFEN_KLASSE = ['m2', 'm1', 'o', 'p1', 'p2']
+
+// Stufenbalken (Baustein aes-level): Symbol im Balken, Startmarke, Trend mit Text.
+export function StufenStreifen({ a, e, name }: { a: Auswertung; e: Einstellungen; name: string }) {
+  if (a.stufe === null) {
+    return (
+      <div className="aes-level aes-level--nodata level-gestapelt">
+        <span className="aes-level__label">{name}</span>
+        <div className="aes-level__track" role="img" aria-label={`${name}: noch nicht genug Daten`}>
+          <div className="aes-level__fill">noch nicht genug Daten</div>
+        </div>
+        <span className="aes-level__trend">{trendText(a, e)}</span>
+      </div>
+    )
+  }
+  const s = STUFEN[a.stufe]
   return (
-    <div className="balken-block">
-      <div className="balken" role="img" aria-label={s ? `Stufe ${s.symbol}` : 'noch nicht genug Daten'}>
-        {/* Hintergrund: Stufenbereiche hell eingefärbt */}
-        {[0, ...grenzen].map((von, i) => (
+    <div className={`aes-level aes-level--${STUFEN_KLASSE[a.stufe]} level-gestapelt`}>
+      <span className="aes-level__label">{name}</span>
+      <div className="aes-level__track" role="img" aria-label={`${name}: Stufe ${s.symbol}. ${trendText(a, e)}`}>
+        <div className="aes-level__fill">{s.symbol}</div>
+        {a.start_stufe !== null && (
           <div
-            key={i}
-            className="balken-bereich"
-            style={{ left: `${von}%`, width: `${(grenzen[i] ?? 100) - von}%`, background: STUFEN[i].farbe }}
+            className="aes-level__start"
+            style={{ left: `calc(${stufenBreite(a.start_stufe)}% - 4px)` }}
+            title={`Startstand ${STUFEN[a.start_stufe].symbol}`}
           />
-        ))}
-        {a.punkte !== null && s && (
-          <div className="balken-fuellung" style={{ width: `${Math.max(a.punkte, 8)}%`, background: s.farbe, color: s.text }}>
-            <span>{s.symbol}</span>
-          </div>
-        )}
-        {a.start_punkte !== null && (
-          <div className="balken-start" style={{ left: `${a.start_punkte}%` }} title={`Startstand ${STUFEN[a.start_stufe ?? 0].symbol}`}>
-            <span>Start</span>
-          </div>
         )}
       </div>
-      <div className="balken-text">
-        {a.punkte !== null && <strong className="trend-pfeil">{trendPfeil(a)}</strong>} {trendText(a, e)}
-      </div>
+      <span className="aes-level__trend">
+        <b aria-hidden="true">{trendPfeil(a)}</b>
+        {trendText(a, e)}
+      </span>
     </div>
   )
 }
@@ -97,21 +107,20 @@ export function Verlauf({ a, e }: { a: Auswertung; e: Einstellungen }) {
 export function Legende() {
   return (
     <p className="legende">
+      <span className="legende__titel">Stufen:</span>
       {STUFEN.map((s) => (
-        <span key={s.symbol}>
-          <span className="stufen-feld" style={{ background: s.farbe, color: s.text }}>
-            {s.symbol}
-          </span>
+        <span key={s.symbol} className="stufen-feld" style={{ background: s.farbe, color: s.text }}>
+          {s.symbol}
         </span>
       ))}
       <span>
-        <span className="stufen-feld" style={{ background: STUFEN[3].farbe }}>
-          + <small className="trend">↑</small>
-        </span>{' '}
-        mit Trend
+        <span className="stufen-feld wenig">–</span> noch nicht genug Daten
       </span>
       <span>
-        <span className="stufen-feld wenig">·</span> noch nicht genug Daten
+        <span className="stufen-feld" style={{ background: STUFEN[3].farbe, color: STUFEN[3].text }}>
+          + <small className="trend">↗</small>
+        </span>{" "}
+        mit Trend
       </span>
     </p>
   )

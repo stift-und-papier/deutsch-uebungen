@@ -26,3 +26,6 @@ claude-code-prompt.md
 !.vscode/extensions.json
 .idea
 .DS_Store
+
+# Design-Quelle (enthält Schulname und Entwürfe) – nur lokal; die App nutzt src/design/
+/design/

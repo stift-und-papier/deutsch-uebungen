@@ -61,7 +61,7 @@ export function PaketListe() {
           Neues Paket
           <input value={titel} onChange={(e) => setTitel(e.target.value)} placeholder="z. B. das oder dass – Übung 1" required maxLength={120} />
         </label>
-        <button className="knopf haupt">Anlegen</button>
+        <button className="aes-btn aes-btn--primary">Anlegen</button>
       </form>
     </>
   )

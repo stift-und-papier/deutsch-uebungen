@@ -142,7 +142,7 @@ export function EinstellungenSeite() {
 
       {fehler && <p className="hinweis-box">{fehler}</p>}
       <div className="knopfleiste">
-        <button className="knopf haupt">{gespeichert ? '✓ Gespeichert' : 'Speichern'}</button>
+        <button className="aes-btn aes-btn--primary">{gespeichert ? '✓ Gespeichert' : 'Speichern'}</button>
       </div>
     </form>
   )

@@ -1,0 +1,87 @@
+/* Übungswiese – Bausteine. Alle Werte kommen aus tokens.css (Variablen). */
+.aes-page { font-family: var(--font-sans); color: var(--tinte); font-size: 17px; line-height: 26px; }
+.aes-page * { box-sizing: border-box; }
+
+/* Buttons: Pille wie auf der Schulwebsite */
+.aes-btn { font-family: var(--font-sans); font-weight: 800; font-size: 18px; line-height: 22px; min-height: var(--tipp-min); min-width: var(--tipp-min);
+  padding: 12px 28px; border-radius: var(--radius-pill); border: 2px solid transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); }
+.aes-btn:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
+.aes-btn--primary { background: var(--schulblau); color: var(--flaeche); }
+.aes-btn--primary:active { background: var(--schulblau-dunkel); }
+.aes-btn--secondary { background: var(--flaeche); color: var(--schulblau); border-color: var(--schulblau); }
+.aes-btn--soft { background: var(--pflaume-hell); color: var(--pflaume-dunkel); }
+.aes-btn--ghost { background: transparent; color: var(--schulblau); }
+.aes-btn[disabled] { background: var(--linie); color: var(--tinte-gedaempft); cursor: not-allowed; }
+
+/* Karten */
+.aes-card { background: var(--flaeche); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--schatten-karte); }
+.aes-card--warm { background: var(--flaeche-warm); }
+.aes-card__title { font-family: var(--font-display); font-weight: 600; font-size: 24px; line-height: 30px; color: var(--schulblau); margin: 0 0 var(--space-3); }
+.aes-card__hint { color: var(--tinte-gedaempft); font-size: 15px; line-height: 22px; margin: 0; }
+
+/* Seitenleiste */
+.aes-nav { background: var(--schulblau); color: var(--flaeche); border-radius: var(--radius-lg); padding: var(--space-4); width: 240px; display: flex; flex-direction: column; gap: var(--space-2); }
+.aes-nav__brand { font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 26px; padding: var(--space-3) var(--space-3) var(--space-4); }
+.aes-nav__item { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tipp-min); padding: 0 var(--space-4); border-radius: var(--radius-pill);
+  color: var(--flaeche); font-weight: 700; font-size: 17px; text-decoration: none; }
+.aes-nav__item[aria-current="page"] { background: var(--himmel-hell); color: var(--schulblau); }
+.aes-nav__item:focus-visible { outline: 2px solid var(--himmel); outline-offset: 2px; }
+.aes-nav__dot { width: 20px; height: 20px; border-radius: 50%; background: var(--himmel); flex: none; }
+.aes-nav__item[aria-current="page"] .aes-nav__dot { background: var(--schulblau); }
+
+/* Aufgaben-Bausteine */
+.aes-task { font-size: 20px; line-height: 40px; }
+.aes-gap { font-family: var(--font-sans); font-size: 20px; font-weight: 700; color: var(--schulblau); width: 7ch; min-height: 44px; text-align: center; padding: 0 var(--space-2);
+  background: var(--flaeche); border: 2px solid var(--linie-stark); border-radius: var(--radius-sm); margin: 0 4px; vertical-align: middle; }
+.aes-gap:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
+.aes-gap--ok { border-color: var(--gruen-dunkel); background: var(--erfolg-flaeche); }
+.aes-gap--again { border-color: var(--pfirsich-dunkel); background: var(--pfirsich-hell); }
+.aes-choice { font-family: var(--font-sans); font-size: 18px; font-weight: 700; min-height: var(--tipp-min); padding: 8px 20px; color: var(--schulblau);
+  background: var(--flaeche); border: 2px solid var(--linie-stark); border-radius: var(--radius-md); cursor: pointer; }
+.aes-choice[aria-pressed="true"] { background: var(--schulblau); color: var(--flaeche); border-color: var(--schulblau); }
+.aes-choice:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
+.aes-word { font-family: var(--font-sans); font-size: 18px; font-weight: 700; min-height: var(--tipp-min); padding: 8px 18px; display: inline-flex; align-items: center;
+  color: var(--tinte); background: var(--himmel); border-radius: var(--radius-md); box-shadow: var(--schatten-klein); cursor: grab; touch-action: none; }
+.aes-word--target { background: transparent; box-shadow: none; border: 2px dashed var(--linie-stark); color: var(--tinte-gedaempft); min-width: 96px; justify-content: center; cursor: default; }
+
+/* Rückmeldung */
+.aes-fb { display: flex; gap: var(--space-3); align-items: flex-start; border-radius: var(--radius-md); padding: var(--space-4); font-size: 17px; line-height: 26px; }
+.aes-fb__icon { flex: none; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; }
+.aes-fb--ok { background: var(--erfolg-flaeche); color: var(--gruen-dunkel); }
+.aes-fb--ok .aes-fb__icon { background: var(--gruen-dunkel); color: var(--flaeche); }
+.aes-fb--again { background: var(--pfirsich-hell); color: var(--pfirsich-dunkel); }
+.aes-fb--again .aes-fb__icon { background: var(--pfirsich-dunkel); color: var(--flaeche); }
+.aes-fb__title { font-weight: 800; display: block; }
+
+/* Schüleransicht: Entwicklungskachel (KEIN absoluter Stand) */
+.aes-growth { background: var(--flaeche); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--schatten-karte); display: grid; gap: var(--space-3); }
+.aes-growth__topic { font-weight: 800; font-size: 14px; line-height: 18px; letter-spacing: 0.02em; color: var(--tinte-gedaempft); text-transform: none; }
+.aes-growth__title { font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 28px; color: var(--schulblau); margin: 0; }
+.aes-growth__badge { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 800; font-size: 16px; padding: 6px 14px; border-radius: var(--radius-pill); width: fit-content; }
+.aes-growth--stark .aes-growth__badge { background: var(--erfolg-flaeche); color: var(--gruen-dunkel); }
+.aes-growth--gut .aes-growth__badge { background: var(--wiese); color: var(--gruen-dunkel); }
+.aes-growth--dran .aes-growth__badge { background: var(--pfirsich-hell); color: var(--pfirsich-dunkel); }
+.aes-growth--sammeln .aes-growth__badge { background: var(--schulblau-hell); color: var(--schulblau); }
+.aes-growth__steps { display: flex; gap: var(--space-2); }
+.aes-growth__step { height: 10px; flex: 1; border-radius: var(--radius-pill); background: var(--linie); }
+.aes-growth--stark .aes-growth__step.is-on { background: var(--entwicklung-stark); }
+.aes-growth--gut .aes-growth__step.is-on { background: var(--entwicklung-gut); }
+.aes-growth--dran .aes-growth__step.is-on { background: var(--pfirsich); }
+.aes-growth--sammeln .aes-growth__step.is-on { background: var(--schulblau-hell); }
+.aes-growth__next { margin: 0; font-size: 17px; line-height: 26px; }
+
+/* Lehrkraft-Ansicht: Stufenbalken (--, -, o, +, ++) mit Symbol, Startmarke und Trend */
+.aes-level { display: grid; grid-template-columns: 200px 1fr 230px; align-items: center; gap: var(--space-4); }
+.aes-level__label { font-weight: 800; font-size: 14px; line-height: 18px; letter-spacing: 0.02em; }
+.aes-level__track { position: relative; height: 32px; border-radius: var(--radius-pill); background: var(--linie); overflow: visible; }
+.aes-level__fill { height: 100%; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; font-weight: 800; font-size: 16px; min-width: 44px; }
+.aes-level--m2 .aes-level__fill { background: var(--stufe-minus2); color: var(--flaeche); width: 20%; }
+.aes-level--m1 .aes-level__fill { background: var(--stufe-minus1); color: var(--tinte); width: 40%; }
+.aes-level--o  .aes-level__fill { background: var(--stufe-null); color: var(--tinte); width: 60%; }
+.aes-level--p1 .aes-level__fill { background: var(--stufe-plus1); color: var(--tinte); width: 80%; }
+.aes-level--p2 .aes-level__fill { background: var(--stufe-plus2); color: var(--flaeche); width: 100%; }
+.aes-level__start { position: absolute; top: -6px; bottom: -6px; width: 4px; border-radius: 2px; background: var(--schulblau); }
+.aes-level__start::after { content: "Start"; position: absolute; top: -18px; left: -14px; font-size: 12px; font-weight: 800; color: var(--schulblau); }
+.aes-level__trend { font-weight: 800; font-size: 14px; white-space: nowrap; color: var(--tinte-gedaempft); }
+.aes-level__trend b { color: var(--tinte); font-size: 20px; margin-right: 4px; }
+.aes-level--nodata .aes-level__fill { width: 100%; background: transparent; color: var(--tinte-gedaempft); font-weight: 700; justify-content: center; padding: 0; border: 2px dashed var(--linie-stark); }

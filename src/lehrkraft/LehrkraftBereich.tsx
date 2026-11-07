@@ -1,5 +1,5 @@
 import type { Session } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { fehlerText } from '../lib/fehler'
 import { supabase } from '../lib/supabase'
 import { AufgabeEditor } from './AufgabeEditor'
@@ -24,7 +24,14 @@ export function LehrkraftBereich({ pfad }: { pfad: string[] }) {
     return () => data.subscription.unsubscribe()
   }, [])
 
-  if (sitzung === undefined) return <main className="seite"><p>Einen Moment …</p></main>
+  if (sitzung === undefined)
+    return (
+      <div className="abendhimmel">
+        <main className="seite schmal">
+          <p className="aes-card">Einen Moment …</p>
+        </main>
+      </div>
+    )
   if (!sitzung) return <Anmeldung />
 
   const [bereich = 'klassen', id, unter] = pfad
@@ -38,39 +45,65 @@ export function LehrkraftBereich({ pfad }: { pfad: string[] }) {
       </main>
     )
 
+  // Seiten, die schon aus eigenen Karten bestehen (Auswertung, Einzelansicht, Paket-Vorschau)
+  const eigeneKarten =
+    (bereich === 'klassen' && unter === 'lernstand') || bereich === 'schueler' || (bereich === 'pakete' && unter === 'vorschau')
+  const inhalt = (
+    <>
+      {bereich === 'klassen' && !id && <KlassenListe />}
+      {bereich === 'klassen' && id && !unter && <KlasseDetail klasseId={id} />}
+      {bereich === 'klassen' && id && unter === 'lernstand' && <KlassenLernstand klasseId={id} />}
+      {bereich === 'schueler' && id && <SchuelerLernstand schuelerId={id} />}
+      {bereich === 'einstellungen' && <EinstellungenSeite />}
+      {bereich === 'aufgaben' && !id && <AufgabenListe />}
+      {bereich === 'aufgaben' && id && <AufgabeEditor aufgabeId={id === 'neu' ? null : id} />}
+      {bereich === 'pakete' && !id && <PaketListe />}
+      {bereich === 'pakete' && id && <PaketDetail paketId={id} vorschau={unter === 'vorschau'} />}
+      {bereich === 'kompetenzen' && <Kompetenzen />}
+    </>
+  )
+
   return (
-    <div className="lehrkraft">
-      <nav className="hauptmenue">
-        <a href="#/lehrkraft/klassen" aria-current={bereich === 'klassen' ? 'page' : undefined}>
-          Klassen
-        </a>
-        <a href="#/lehrkraft/aufgaben" aria-current={bereich === 'aufgaben' ? 'page' : undefined}>
-          Aufgaben
-        </a>
-        <a href="#/lehrkraft/pakete" aria-current={bereich === 'pakete' ? 'page' : undefined}>
-          Aufgabenpakete
-        </a>
-        <a href="#/lehrkraft/kompetenzen" aria-current={bereich === 'kompetenzen' ? 'page' : undefined}>
-          Kompetenzen
-        </a>
-        <a href="#/lehrkraft/einstellungen" aria-current={bereich === 'einstellungen' ? 'page' : undefined}>
-          Einstellungen
-        </a>
-        <button className="knopf leise abmelden" onClick={() => void supabase.auth.signOut()}>
+    <LehrkraftRahmen bereich={bereich} eigeneKarten={eigeneKarten}>
+      {inhalt}
+    </LehrkraftRahmen>
+  )
+}
+
+const MENUE: [string, string][] = [
+  ['klassen', 'Klassen'],
+  ['aufgaben', 'Aufgaben'],
+  ['pakete', 'Aufgabenpakete'],
+  ['kompetenzen', 'Kompetenzen'],
+  ['einstellungen', 'Einstellungen'],
+]
+
+// Lehrkraft-Bereich: schulblaue Seitenleiste (aes-nav) mit Platz fürs Schullogo, ruhiger Abendhimmel oben,
+// Inhalte auf großen weißen Karten mit viel Fläche für Tabellen und Formulare.
+export function LehrkraftRahmen({ bereich, eigeneKarten, children }: { bereich: string; eigeneKarten: boolean; children: ReactNode }) {
+  return (
+    <div className="lehrkraft rahmen rahmen--lehrkraft">
+      <nav className="aes-nav rahmen__nav" aria-label="Hauptmenü">
+        <div className="logo-platz" aria-hidden="true" />
+        <div className="aes-nav__brand">Übungswiese</div>
+        {MENUE.map(([ziel, text]) => (
+          <a
+            key={ziel}
+            className="aes-nav__item"
+            href={`#/lehrkraft/${ziel}`}
+            aria-current={bereich === ziel || (ziel === 'klassen' && bereich === 'schueler') ? 'page' : undefined}
+          >
+            <span className="aes-nav__dot" aria-hidden="true" />
+            {text}
+          </a>
+        ))}
+        <button className="aes-nav__item rahmen__abmelden" onClick={() => void supabase.auth.signOut()}>
+          <span className="aes-nav__dot" aria-hidden="true" />
           Abmelden
         </button>
       </nav>
-      <main className="seite breit">
-        {bereich === 'klassen' && !id && <KlassenListe />}
-        {bereich === 'klassen' && id && !unter && <KlasseDetail klasseId={id} />}
-        {bereich === 'klassen' && id && unter === 'lernstand' && <KlassenLernstand klasseId={id} />}
-        {bereich === 'schueler' && id && <SchuelerLernstand schuelerId={id} />}
-        {bereich === 'einstellungen' && <EinstellungenSeite />}
-        {bereich === 'aufgaben' && !id && <AufgabenListe />}
-        {bereich === 'aufgaben' && id && <AufgabeEditor aufgabeId={id === 'neu' ? null : id} />}
-        {bereich === 'pakete' && !id && <PaketListe />}
-        {bereich === 'pakete' && id && <PaketDetail paketId={id} vorschau={unter === 'vorschau'} />}
-        {bereich === 'kompetenzen' && <Kompetenzen />}
+      <main className="rahmen__inhalt rahmen__inhalt--breit">
+        {eigeneKarten ? children : <div className="aes-card seiten-karte">{children}</div>}
       </main>
     </div>
   )
@@ -83,7 +116,9 @@ function Anmeldung() {
   const [beschaeftigt, setBeschaeftigt] = useState(false)
 
   return (
+    <div className="abendhimmel">
     <main className="seite schmal">
+      <div className="aes-card">
       <h1>Anmeldung für Lehrkräfte</h1>
       <form
         className="formular"
@@ -110,13 +145,15 @@ function Anmeldung() {
           />
         </label>
         {fehler && <p className="hinweis-box">{fehler}</p>}
-        <button className="knopf haupt" disabled={beschaeftigt}>
+        <button className="aes-btn aes-btn--primary" disabled={beschaeftigt}>
           {beschaeftigt ? 'Anmelden …' : 'Anmelden'}
         </button>
       </form>
-      <p className="klein">
+      <p className="aes-card__hint">
         Schüler:innen brauchen keine Anmeldung. Sie öffnen ihren persönlichen Link.
       </p>
+      </div>
     </main>
+    </div>
   )
 }

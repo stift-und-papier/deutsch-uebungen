@@ -72,7 +72,7 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
 
   return (
     <>
-      <a className="zurueck" href="#/lehrkraft/pakete">
+      <a className="aes-btn aes-btn--ghost zurueck" href="#/lehrkraft/pakete">
         ← Alle Pakete
       </a>
       <PaketKopf paket={paket} onGeaendert={laden} onFehler={setFehler} />
@@ -92,11 +92,11 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
                   · {TYP_NAMEN[e.aufgabe.typ]} · {e.aufgabe.schwierigkeit}
                 </span>
                 <span className="aktionen">
-                  <button className="knopf klein-knopf leise" disabled={i === 0} onClick={() => void verschieben(i, -1)} aria-label="nach oben">
+                  <button className="aes-btn aes-btn--ghost aes-btn--klein" disabled={i === 0} onClick={() => void verschieben(i, -1)} aria-label="nach oben">
                     ↑
                   </button>
                   <button
-                    className="knopf klein-knopf leise"
+                    className="aes-btn aes-btn--ghost aes-btn--klein"
                     disabled={i === inhalt.length - 1}
                     onClick={() => void verschieben(i, 1)}
                     aria-label="nach unten"
@@ -104,7 +104,7 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
                     ↓
                   </button>
                   <button
-                    className="knopf klein-knopf leise"
+                    className="aes-btn aes-btn--ghost aes-btn--klein"
                     onClick={() =>
                       void ausfuehren(supabase.from('paket_aufgaben').delete().eq('paket_id', paket.id).eq('aufgabe_id', e.aufgabe_id))
                     }
@@ -135,7 +135,7 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
                 ))}
               </select>
             </label>
-            <button className="knopf">Hinzufügen</button>
+            <button className="aes-btn aes-btn--secondary">Hinzufügen</button>
           </form>
         ) : (
           <p className="klein">
@@ -143,7 +143,7 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
           </p>
         )}
         {inhalt.length > 0 && (
-          <a className="knopf" href={`#/lehrkraft/pakete/${paket.id}/vorschau`}>
+          <a className="aes-btn aes-btn--secondary" href={`#/lehrkraft/pakete/${paket.id}/vorschau`}>
             Vorschau: Paket wie Schüler:innen durcharbeiten
           </a>
         )}
@@ -168,7 +168,7 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
                       <strong>{s?.pseudonym}</strong> ({klassenName(s?.klasse_id ?? null)})
                     </>
                   )}{' '}
-                  <button className="knopf klein-knopf leise" onClick={() => void ausfuehren(supabase.from('zuweisungen').delete().eq('id', z.id))}>
+                  <button className="aes-btn aes-btn--ghost aes-btn--klein" onClick={() => void ausfuehren(supabase.from('zuweisungen').delete().eq('id', z.id))}>
                     Zuweisung entfernen
                   </button>
                 </li>
@@ -205,7 +205,7 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
               ))}
             </select>
           </label>
-          <button className="knopf haupt" disabled={klassen.length === 0}>
+          <button className="aes-btn aes-btn--primary" disabled={klassen.length === 0}>
             Zuweisen
           </button>
         </form>
@@ -213,7 +213,7 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
 
       <section className="kasten gefahrzone">
         <button
-          className="knopf gefahr"
+          className="aes-btn aes-btn--secondary knopf-gefahr"
           onClick={async () => {
             if (!window.confirm(`Paket „${paket.titel}“ löschen?\n\nDie Aufgaben selbst bleiben erhalten. Schüler:innen sehen das Paket danach nicht mehr.`))
               return
@@ -239,7 +239,7 @@ function PaketKopf({ paket, onGeaendert, onFehler }: { paket: Paket; onGeaendert
       <>
         <h1>{paket.titel}</h1>
         {paket.beschreibung && <p>{paket.beschreibung}</p>}
-        <button className="knopf klein-knopf leise" onClick={() => setBearbeiten(true)}>
+        <button className="aes-btn aes-btn--ghost aes-btn--klein" onClick={() => setBearbeiten(true)}>
           Titel/Beschreibung ändern
         </button>
       </>
@@ -267,7 +267,7 @@ function PaketKopf({ paket, onGeaendert, onFehler }: { paket: Paket; onGeaendert
         Beschreibung für Schüler:innen (optional)
         <input value={beschreibung} onChange={(e) => setBeschreibung(e.target.value)} />
       </label>
-      <button className="knopf haupt">Speichern</button>
+      <button className="aes-btn aes-btn--primary">Speichern</button>
     </form>
   )
 }
@@ -282,7 +282,7 @@ function PaketVorschau({ daten }: { daten: Daten }) {
   let versuche = 0
   return (
     <>
-      <a className="zurueck" href={`#/lehrkraft/pakete/${daten.paket.id}`}>
+      <a className="aes-btn aes-btn--ghost zurueck" href={`#/lehrkraft/pakete/${daten.paket.id}`}>
         ← Vorschau beenden
       </a>
       <p className="hinweis-box">Vorschau – so sehen Schüler:innen das Paket. Es wird nichts gespeichert.</p>
@@ -321,10 +321,10 @@ function PaketVorschau({ daten }: { daten: Daten }) {
         />
       </div>
       <div className="knopfleiste">
-        <button className="knopf leise" disabled={index === 0} onClick={() => setIndex(index - 1)}>
+        <button className="aes-btn aes-btn--ghost" disabled={index === 0} onClick={() => setIndex(index - 1)}>
           ← Vorherige
         </button>
-        <button className="knopf leise" disabled={index + 1 >= daten.inhalt.length} onClick={() => setIndex(index + 1)}>
+        <button className="aes-btn aes-btn--ghost" disabled={index + 1 >= daten.inhalt.length} onClick={() => setIndex(index + 1)}>
           Überspringen →
         </button>
       </div>

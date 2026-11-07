@@ -1,0 +1,55 @@
+/* Übungswiese – aus tokens.json erzeugt. Schriften liegen in fonts/ (kein Google Fonts, kein CDN). */
+@font-face{font-family:'Fraunces';src:url('fonts/fraunces-latin-600-normal.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Fraunces';src:url('fonts/fraunces-latin-700-normal.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Nunito';src:url('fonts/nunito-latin-400-normal.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Nunito';src:url('fonts/nunito-latin-700-normal.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Nunito';src:url('fonts/nunito-latin-800-normal.woff2') format('woff2');font-weight:800;font-style:normal;font-display:swap}
+:root {
+  --schulblau: #003466;
+  --schulblau-dunkel: #00264d;
+  --schulblau-hell: #dce8f5;
+  --pflaume: #a86b87;
+  --pflaume-dunkel: #6e3558;
+  --pflaume-hell: #f4e6ee;
+  --himmel: #bdebe3;
+  --himmel-hell: #e6f7f3;
+  --wiese: #cfeab8;
+  --gruen: #5fa37a;
+  --gruen-dunkel: #2f6b4a;
+  --pfirsich: #f7c9a0;
+  --pfirsich-dunkel: #8a4516;
+  --pfirsich-hell: #fdebdd;
+  --erfolg-flaeche: #e3f3e8;
+  --flaeche: #ffffff;
+  --flaeche-warm: #fbf8f2;
+  --linie: #d9e2ec;
+  --linie-stark: #7a8ca3;
+  --tinte: #14243a;
+  --tinte-gedaempft: #44566c;
+  --fokus: var(--schulblau);
+  --stufe-minus2: #b3261e;
+  --stufe-minus1: #e8762b;
+  --stufe-null: #f2c230;
+  --stufe-plus1: #8fc24a;
+  --stufe-plus2: #2e7d32;
+  --entwicklung-stark: var(--gruen-dunkel);
+  --entwicklung-gut: var(--gruen);
+  --entwicklung-dranbleiben: var(--pfirsich-dunkel);
+  --entwicklung-sammeln: var(--tinte-gedaempft);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --tipp-min: 48px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --schatten-karte: 0 2px 0 rgba(0,52,102,0.08), 0 10px 24px rgba(0,52,102,0.10);
+  --schatten-klein: 0 2px 6px rgba(0,52,102,0.14);
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}

@@ -11,26 +11,26 @@ type Props = {
   gesperrt?: boolean
 }
 
-// Zeigt einen Lückentext mit Eingabefeldern.
-// Nach dem Prüfen: richtige Lücken grün mit ✓ (gesperrt), andere orange mit ↻ zum erneuten Bearbeiten.
+// Zeigt einen Lückentext mit Eingabefeldern (Baustein aes-gap aus dem Design-System).
+// Nach dem Prüfen: richtige Lücken grün mit ✓ (gesperrt), andere warm (Pfirsich) mit ↻ – nie rot.
 export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loesungen, gesperrt }: Props) {
   const status = new Map(ergebnis?.luecken.map((l) => [l.id, l.richtig]))
 
   return (
-    <p className="lueckentext">
+    <p className="aes-task aufgabe-text">
       {inhalt.teile.map((teil, index) => {
         if (teil.t === 'text') return <span key={index}>{teil.v}</span>
         const richtig = status.get(teil.id)
         const wert = antworten[teil.id] ?? ''
         const breite = lueckenBreite(Math.max(wert.length, 4))
-        const klasse = richtig === true ? 'luecke richtig' : richtig === false ? 'luecke nochmal' : 'luecke'
+        const klasse = richtig === true ? 'aes-gap aes-gap--ok' : richtig === false ? 'aes-gap aes-gap--again' : 'aes-gap'
         return (
           <span key={index} className="luecke-rahmen">
             <input
               className={klasse}
+              style={{ width: `${breite}ch` }}
               aria-label={`Lücke ${teil.id + 1}`}
               value={wert}
-              size={breite}
               disabled={gesperrt || richtig === true}
               onChange={(e) => onAntwort(teil.id, e.target.value)}
               // Wichtig für Rechtschreibübungen: keine automatische Korrektur durch das iPad
@@ -42,7 +42,7 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
               enterKeyHint="next"
             />
             {richtig === true && <span className="markierung" aria-label="richtig">✓</span>}
-            {richtig === false && <span className="markierung" aria-label="noch einmal ansehen">↻</span>}
+            {richtig === false && <span className="markierung" aria-label="schau nochmal hin">↻</span>}
             {loesungen?.[teil.id] && <span className="loesung-anzeige">{loesungen[teil.id].join(' / ')}</span>}
           </span>
         )

@@ -24,7 +24,7 @@ export function AufgabenListe() {
     <>
       <h1>Aufgaben</h1>
       <div className="knopfleiste">
-        <a className="knopf haupt" href="#/lehrkraft/aufgaben/neu">
+        <a className="aes-btn aes-btn--primary" href="#/lehrkraft/aufgaben/neu">
           + Neuer Lückentext
         </a>
       </div>

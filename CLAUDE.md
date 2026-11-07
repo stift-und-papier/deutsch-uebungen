@@ -45,6 +45,33 @@
   Lösungen (`inhalt_ohne_loesung` – Achtung: Feld `text` enthält Lösungen und muss immer entfernt werden).
   Jedes neue Aufgabenformat braucht Zweige in `pruefe_aufgabe`, `inhalt_ohne_loesung`, `nur_loesung`.
 - Ansprache: Lehrkraft-Oberfläche „Sie“, Schüleransicht „du“, einfache Sprache.
+- `src/entwicklung/Vorschau.tsx`: nur im Entwicklungsmodus (`npm run dev`, `#/vorschau`, `#/vorschau/klassen`,
+  `#/vorschau/aufgabe`) – Lehrkraft-Ansichten mit Beispieldaten ohne Anmeldung prüfen. Nicht im veröffentlichten Paket.
+
+## Design „Übungswiese“
+- **Quelle:** Ordner `design/` (nur lokal, nicht im Repo – enthält Schulname und Entwürfe; README, `tokens.json`,
+  Baustein-Anleitungen unter `design/components/*/README.md`, PNG-Entwürfe in `design/entwuerfe/`).
+- **In der App:** `src/design/` – `tokens.css` (Farben, Abstände, Radien, Schriften als Variablen), `bundle.css`
+  (Bausteine `aes-btn`, `aes-card`, `aes-nav`, `aes-gap`, `aes-choice`, `aes-word`, `aes-fb`, `aes-growth`, `aes-level`),
+  `fonts/` (Fraunces, Nunito, lokal), `hintergruende/` (SVG). Eingebunden in `src/main.tsx`; App-eigene Regeln in
+  `src/index.css` – dort nur Variablen aus `tokens.css`, **keine neuen Farbwerte**.
+- **Neue Oberflächen immer zuerst aus den vorhandenen Bausteinen bauen.** Fehlt ein Baustein: der Lehrkraft einen
+  vorschlagen und im gleichen Stil (Tokens, Pillen, große Radien) bauen, nichts Eigenes erfinden.
+- **Regeln:**
+  - Text steht nie direkt auf dem Hintergrundbild, immer auf einer Karte (`aes-card`). Kein Maskottchen, keine Figuren.
+  - Buttons sind Pillen; Tippflächen ≥ 48 × 48 px (`--tipp-min`); Fließtext ≥ 17 px; keine Hover-Funktionen.
+  - Schüleransicht: Fehler nie rot – „nochmal“ ist Pfirsich (`aes-fb--again`, `aes-gap--again`), richtig ist Grün.
+  - Schüler:innen sehen Lernstand **nur** über `aes-growth` (vier Zustände, Entwicklung, nie absolute Stufen).
+    `--stufe-*` und `aes-level` (`--` bis `++`) nur in der Lehrkraft-Ansicht, immer mit Symbol im Balken/Feld.
+  - Kontrast ≥ 4,5:1 (bei neuen Farbpaaren nachrechnen). Bedeutung nie nur über Farbe (immer Symbol oder Text).
+  - Alle Texte Deutsch, einfache Sprache.
+- **Aufbau:** Schüler-Übersichten mit Seitenleiste (`SchuelerRahmen`) auf `wiese-tag.svg`; Aufgabenseite ohne Leiste;
+  Lehrkraft mit Seitenleiste (`LehrkraftRahmen`), ruhigem Streifen `huegel-abend.svg` oben und einer großen
+  `aes-card` pro Seite (`seiten-karte`). Im Hochformat (≤ 900 px) wird die Seitenleiste zur Leiste unten.
+- **Bewusste Abweichungen (Lehrkraft-Wunsch):** „deutlich besser“ (`aes-growth--stark`) mit kräftig dunkelgrüner Pille
+  und weißer Schrift (Entwicklungsfarbe, nicht `--stufe-plus2`). Auswertungs-Knöpfe grün (`knopf-auswertung`).
+  Löschen-Knöpfe in Pflaume statt Rot.
+- **Offen:** Schullogo fehlt noch – Platz `logo-platz` oben in den Seitenleisten und auf der Startseite ist reserviert.
 
 ## Tests
 - `npm test` – Logik (Lückentext, Pseudonyme) + Zugriff über das Netzwerk ohne Anmeldung (`supabase/tests/netzwerk.test.ts`).
@@ -60,8 +87,9 @@
 ## Etappen
 0. Einrichtung ✓
 1. Kern: Login, Klassen/Pseudonyme, Links, Linkliste, Lückentext, Pakete, Bearbeitung, Antworten speichern ✓
-2. Lernstand: Kompetenzen importieren, Zuordnung, KC pro Schüler:in, Lehrkraft- und Schüleransichten ← **aktuell**
-3. Weitere Aufgabenformate + Schwierigkeitsstufe pro Schüler:in
+2. Lernstand: Kompetenzen importieren, Zuordnung, KC pro Klasse, Lehrkraft- und Schüleransichten ✓
+   – Design „Übungswiese“ eingebaut ✓
+3. Weitere Aufgabenformate + Schwierigkeitsstufe pro Schüler:in ← **als Nächstes** (nach „Design ist ok“)
 4. Politur: Druck/PDF, Offline-Speicher, `DATENSCHUTZ.md`, Löschfunktionen
 5. Später: mehrere Lehrkräfte, Aufgaben teilen, PDF/Word-Import
 

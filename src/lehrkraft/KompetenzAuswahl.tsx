@@ -62,7 +62,7 @@ export function KompetenzAuswahl({ ausgewaehlt, onChange }: Props) {
           ))}
         </ul>
       )}
-      <button type="button" className="knopf klein-knopf" onClick={() => setOffen(!offen)}>
+      <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setOffen(!offen)}>
         {offen ? 'Auswahl schließen' : '+ Kompetenzen auswählen'}
       </button>
 

@@ -131,7 +131,7 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
 
   return (
     <>
-      <a className="zurueck" href="#/lehrkraft/klassen">
+      <a className="aes-btn aes-btn--ghost zurueck" href="#/lehrkraft/klassen">
         ← Alle Klassen
       </a>
       <h1>Klasse {klasse.name}</h1>
@@ -139,10 +139,10 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
       {meldung && <p className="erfolg-box">{meldung}</p>}
 
       <div className="knopfleiste">
-        <a className="knopf haupt" href={`#/lehrkraft/klassen/${klasse.id}/links`}>
+        <a className="aes-btn aes-btn--primary" href={`#/lehrkraft/klassen/${klasse.id}/links`}>
           Linkliste mit QR-Codes
         </a>
-        <a className="knopf auswertung" href={`#/lehrkraft/klassen/${klasse.id}/lernstand`}>
+        <a className="aes-btn knopf-auswertung" href={`#/lehrkraft/klassen/${klasse.id}/lernstand`}>
           📊 Lernstand der Klasse
         </a>
       </div>
@@ -273,19 +273,19 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
                 </td>
                 <td>{s.versuche[0]?.count ?? 0}</td>
                 <td className="aktionen">
-                  <a className="knopf klein-knopf auswertung" href={`#/lehrkraft/schueler/${s.id}`}>
+                  <a className="aes-btn knopf-auswertung aes-btn--klein" href={`#/lehrkraft/schueler/${s.id}`}>
                     📊 Lernstand
                   </a>
-                  <button className="knopf klein-knopf" onClick={() => void linkKopieren(s)}>
+                  <button className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => void linkKopieren(s)}>
                     Link kopieren
                   </button>
-                  <a className="knopf klein-knopf" href={schuelerLink(s.token)} target="_blank" rel="noreferrer">
+                  <a className="aes-btn aes-btn--secondary aes-btn--klein" href={schuelerLink(s.token)} target="_blank" rel="noreferrer">
                     Als Schüler:in ansehen
                   </a>
-                  <a className="knopf klein-knopf auswertung-rand" href={`#/lehrkraft/schueler/${s.id}/drucken`}>
+                  <a className="aes-btn aes-btn--secondary knopf-auswertung-rand aes-btn--klein" href={`#/lehrkraft/schueler/${s.id}/drucken`}>
                     🖨 Entwicklung drucken
                   </a>
-                  <button className="knopf klein-knopf gefahr" onClick={() => void loeschen(s)}>
+                  <button className="aes-btn aes-btn--secondary knopf-gefahr aes-btn--klein" onClick={() => void loeschen(s)}>
                     Löschen
                   </button>
                 </td>
@@ -324,7 +324,7 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
               Anzahl
               <input type="number" min={1} max={40} value={anzahl} onChange={(e) => setAnzahl(Number(e.target.value))} />
             </label>
-            <button className="knopf haupt">Pseudonyme erzeugen (z. B. Fuchs-07)</button>
+            <button className="aes-btn aes-btn--primary">Pseudonyme erzeugen (z. B. Fuchs-07)</button>
           </form>
         ) : (
           <form
@@ -340,7 +340,7 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
               Ein Pseudonym pro Zeile
               <textarea rows={6} value={liste} onChange={(e) => setListe(e.target.value)} placeholder={'Komet-1\nKomet-2\nKomet-3'} />
             </label>
-            <button className="knopf haupt">Hinzufügen</button>
+            <button className="aes-btn aes-btn--primary">Hinzufügen</button>
           </form>
         )}
       </section>
@@ -348,7 +348,7 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
       <section className="kasten gefahrzone">
         <h2>Klasse löschen</h2>
         <p className="klein">Löscht die Klasse, alle Schüler:innen und alle Ergebnisse endgültig.</p>
-        <button className="knopf gefahr" onClick={() => void klasseLoeschen()}>
+        <button className="aes-btn aes-btn--secondary knopf-gefahr" onClick={() => void klasseLoeschen()}>
           Klasse „{klasse.name}“ löschen
         </button>
       </section>
