@@ -60,7 +60,7 @@ export function LehrkraftBereich({ pfad }: { pfad: string[] }) {
         <AufgabeEditor
           key={id}
           aufgabeId={id.startsWith('neu') ? null : id}
-          neuerTyp={id === 'neu-auswahl' ? 'auswahl' : 'lueckentext'}
+          neuerTyp={id === 'neu-auswahl' ? 'auswahl' : id === 'neu-zuordnen' ? 'zuordnen' : 'lueckentext'}
         />
       )}
       {bereich === 'pakete' && !id && <PaketListe />}

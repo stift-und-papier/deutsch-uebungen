@@ -32,12 +32,16 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
   const [beschaeftigt, setBeschaeftigt] = useState(false)
   const [meldung, setMeldung] = useState<string | null>(null)
 
-  // Alle Stellen (Lücken und Auswahl) – jede muss beantwortet sein, bevor geprüft werden kann
-  const luecken = aufgabe.inhalt.teile.filter((t) => t.t !== 'text')
-  const alleAusgefuellt = luecken.every((l) => {
-    const a = antworten[l.id]
+  // Lücken und Auswahl müssen alle beantwortet sein; beim Zuordnen muss mindestens ein Wort markiert sein
+  // (die übrigen Wörter dürfen unmarkiert bleiben – manche gehören zu keiner Kategorie).
+  const luecken = aufgabe.inhalt.teile.filter((t) => t.t === 'luecke' || t.t === 'auswahl')
+  const einheiten = aufgabe.inhalt.teile.filter((t) => t.t === 'einheit')
+  const beantwortet = (id: number) => {
+    const a = antworten[id]
     return Array.isArray(a) ? a.length > 0 : (a ?? '').trim() !== ''
-  })
+  }
+  const alleAusgefuellt =
+    luecken.every((l) => beantwortet(l.id)) && (einheiten.length === 0 || einheiten.some((e) => beantwortet(e.id)))
   const allesRichtig = ergebnis?.ergebnis.richtig === true
 
   async function beimPruefen() {
@@ -92,19 +96,26 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
   }
 
   // Wie die Stellen heißen: „Lücke“, „Auswahl“ oder – gemischt – „Stelle“
-  const arten = new Set(luecken.map((l) => l.t))
-  const wort = arten.size > 1 ? { eins: 'Stelle', viele: 'Stellen' } : arten.has('auswahl') ? { eins: 'Auswahl', viele: 'Antworten' } : { eins: 'Lücke', viele: 'Lücken' }
+  const arten = new Set<string>([...luecken, ...einheiten].map((l) => l.t))
+  const wort = arten.has('einheit')
+    ? { eins: 'Wort', viele: 'Zuordnungen' }
+    : arten.size > 1 ? { eins: 'Stelle', viele: 'Stellen' } : arten.has('auswahl') ? { eins: 'Auswahl', viele: 'Antworten' } : { eins: 'Lücke', viele: 'Lücken' }
 
   // Rückmeldung in der Sprache des Design-Systems: klar, ermutigend, nie „falsch“.
   const nochmalNummern = ergebnis?.ergebnis.luecken.filter((l) => !l.richtig).map((l) => l.id + 1) ?? []
   const anzahlRichtig = ergebnis?.ergebnis.luecken.filter((l) => l.richtig).length ?? 0
+  const gezaehlt = ergebnis?.ergebnis.luecken.length ?? 0
   const nochmalTitel =
     anzahlRichtig === 0 || nochmalNummern.length === 0
       ? 'Schau nochmal hin.'
+      : arten.has('einheit')
+        ? 'Fast! Schau bei den Wörtern mit ↻ nochmal hin.'
       : `Fast! Schau bei ${wort.eins} ${nochmalNummern.slice(0, -1).join(', ')}${nochmalNummern.length > 1 ? ' und ' : ''}${nochmalNummern[nochmalNummern.length - 1]} nochmal hin.`
   const nochmalText =
     ergebnis?.rueckmeldung ??
-    (anzahlRichtig === 0 ? 'Lies den Satz noch einmal in Ruhe – du schaffst das!' : `Schon ${anzahlRichtig} von ${luecken.length} ${wort.viele} stimmen.`)
+    (anzahlRichtig === 0
+      ? 'Lies den Satz noch einmal in Ruhe – du schaffst das!'
+      : `Schon ${anzahlRichtig} von ${gezaehlt} ${wort.viele} stimmen.`)
 
   const mitTipp = Boolean(aufgabe.hinweis)
 
@@ -209,7 +220,12 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
             </div>
           </div>
           {!alleAusgefuellt && !allesRichtig && <p className="aes-card__hint">
-              {arten.has('luecke') ? 'Fülle alles aus' : 'Wähle überall eine Antwort'}, dann kannst du prüfen.
+              {arten.has('einheit')
+                ? 'Markiere die passenden Wörter'
+                : arten.has('luecke')
+                  ? 'Fülle alles aus'
+                  : 'Wähle überall eine Antwort'}
+              , dann kannst du prüfen.
             </p>}
           {loesungAngesehen && !loesungen && <p className="aes-card__hint">Du hast dir die Lösung schon einmal angesehen.</p>}
         </form>

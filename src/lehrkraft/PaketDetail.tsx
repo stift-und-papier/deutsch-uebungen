@@ -301,7 +301,7 @@ function PaketVorschau({ daten }: { daten: Daten }) {
             anweisung: a.anweisung,
             hinweis: a.hinweis,
             schwierigkeit: a.schwierigkeit,
-            inhalt: ohneLoesung(a.inhalt.teile, a.inhalt.darstellung),
+            inhalt: ohneLoesung(a.inhalt.teile, a.inhalt.darstellung, a.inhalt.kategorien),
             versuche: 0,
             geloest: false,
             loesung_angesehen: false,
@@ -316,7 +316,13 @@ function PaketVorschau({ daten }: { daten: Daten }) {
           loesungHolen={async () =>
             Object.fromEntries(
               a.inhalt.teile.flatMap((t) =>
-                t.t === 'luecke' ? [[t.id, t.loesungen]] : t.t === 'auswahl' ? [[t.id, t.richtig.map((nr) => t.optionen[nr])]] : [],
+                t.t === 'luecke'
+                  ? [[t.id, t.loesungen]]
+                  : t.t === 'auswahl'
+                    ? [[t.id, t.richtig.map((nr) => t.optionen[nr])]]
+                    : t.t === 'einheit' && t.kategorie
+                      ? [[t.id, [t.kategorie]]]
+                      : [],
               ),
             )
           }

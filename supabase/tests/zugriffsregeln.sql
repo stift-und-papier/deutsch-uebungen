@@ -27,6 +27,7 @@ declare
   c_pak_a2 constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000b2';
   c_pak_b constant uuid := 'bbbbbbbb-0000-4000-8000-0000000000b1';
   c_auf_c constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a3';
+  c_auf_d constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a4';
   c_kom_a constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000d1';
   c_kom_b constant uuid := 'bbbbbbbb-0000-4000-8000-0000000000d1';
   c_inhalt constant jsonb := '{"text":"Ich weiß, [dass] du kommst.","gross_klein_beachten":true,"teile":[{"t":"text","v":"Ich weiß, "},{"t":"luecke","id":0,"loesungen":["dass"]},{"t":"text","v":" du kommst."}]}';
@@ -53,8 +54,11 @@ begin
   -- Auswahl-Aufgabe: Einfachauswahl im Satz und Mehrfachauswahl als eigene Frage
   insert into public.aufgaben (id, owner, typ, titel, inhalt) values
     (c_auf_c, c_lk_a, 'auswahl', 'Auswahl A', '{"text":"Ich weiß, [das | *dass] du kommst. [*Hund | laufen | *Baum]","darstellung":"antippen","teile":[{"t":"text","v":"Ich weiß, "},{"t":"auswahl","id":0,"optionen":["das","dass"],"richtig":[1]},{"t":"text","v":" du kommst. "},{"t":"auswahl","id":1,"optionen":["Hund","laufen","Baum"],"richtig":[0,2]}]}');
+  -- Zuordnen-Aufgabe: zwei Wörter mit Kategorie, zwei Ablenker ohne Kategorie
+  insert into public.aufgaben (id, owner, typ, titel, inhalt) values
+    (c_auf_d, c_lk_a, 'zuordnen', 'Zuordnen A', '{"text":"Der [Hund = Nomen] [bellt = Verb] laut.","kategorien":["Nomen","Verb","Adjektiv"],"teile":[{"t":"einheit","id":0,"v":"Der","kategorie":null},{"t":"text","v":" "},{"t":"einheit","id":1,"v":"Hund","kategorie":"Nomen"},{"t":"text","v":" "},{"t":"einheit","id":2,"v":"bellt","kategorie":"Verb"},{"t":"text","v":" "},{"t":"einheit","id":3,"v":"laut","kategorie":null},{"t":"text","v":"."}]}');
   insert into public.paket_aufgaben (paket_id, aufgabe_id) values
-    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b), (c_pak_a1, c_auf_c);
+    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b), (c_pak_a1, c_auf_c), (c_pak_a1, c_auf_d);
   insert into public.zuweisungen (owner, paket_id, klasse_id, schueler_id) values
     (c_lk_a, c_pak_a1, c_kl_a1, null),      -- Paket A1 an Klasse 7a
     (c_lk_a, c_pak_a2, null, c_sch_a2),     -- Paket A2 nur an Eule-02
@@ -221,6 +225,27 @@ begin
   if v -> 'luecken' -> 1 -> 'loesungen' <> '["Hund","Baum"]'::jsonb then raise exception 'FEHLGESCHLAGEN: Auswahl-Lösung: %', v; end if;
   ok := ok || '1.10b Format Auswahl geprüft und ohne Lösung ausgeliefert'::text;
 
+  -- 1.10c Format Zuordnen: Kategorien sichtbar, Zuordnung nicht; Ablenker zählen nur, wenn markiert
+  v := public.schueler_start(c_tok_a1);
+  select a into v from jsonb_array_elements(v -> 'pakete' -> 0 -> 'aufgaben') a where a ->> 'id' = c_auf_d::text;
+  if v is null or v::text like '%"kategorie"%' or (v -> 'inhalt') ? 'text'
+     or v -> 'inhalt' -> 'kategorien' <> '["Nomen","Verb","Adjektiv"]'::jsonb then
+    raise exception 'FEHLGESCHLAGEN: Zuordnen-Aufgabe verrät Lösung oder Kategorien fehlen: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_d, '{"1":"Nomen","2":"Verb"}', gen_random_uuid());
+  if not (v -> 'ergebnis' ->> 'richtig')::boolean then raise exception 'FEHLGESCHLAGEN: richtige Zuordnung abgelehnt: %', v; end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_d, '{"0":"Nomen","1":"Nomen","2":"Verb"}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'richtig')::boolean or (v -> 'ergebnis' ->> 'anteil')::numeric <> 0.667 then
+    raise exception 'FEHLGESCHLAGEN: markierter Ablenker falsch bewertet: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_d, '{"1":"Verb","2":5}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'anteil')::numeric <> 0 then raise exception 'FEHLGESCHLAGEN: falsche Zuordnung gewertet: %', v; end if;
+  v := public.loesung_anzeigen(c_tok_a1, c_pak_a1, c_auf_d);
+  if v -> 'luecken' <> '[{"id":1,"loesungen":["Nomen"]},{"id":2,"loesungen":["Verb"]}]'::jsonb then
+    raise exception 'FEHLGESCHLAGEN: Zuordnen-Lösung: %', v;
+  end if;
+  ok := ok || '1.10c Format Zuordnen geprüft und ohne Lösung ausgeliefert'::text;
+
   -- 1.11 Token von A1 gibt keine Lösung von B heraus
   begin
     perform public.loesung_anzeigen(c_tok_a1, c_pak_b, c_auf_b);
@@ -282,7 +307,7 @@ begin
   select count(*) into n from public.aufgaben where owner = c_lk_b;
   if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Aufgaben von B'; end if;
   select count(*) into n from public.versuche;
-  if n <> 16 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 16', n; end if;
+  if n <> 19 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 19', n; end if;
   ok := ok || '2.1 Lehrkraft sieht nur eigene Daten'::text;
 
   update public.aufgaben set titel = 'gehackt' where id = c_auf_b;

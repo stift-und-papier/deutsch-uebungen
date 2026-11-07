@@ -3,7 +3,7 @@ import { fehlerText } from '../lib/fehler'
 import { supabase } from '../lib/supabase'
 import type { Aufgabe } from '../lib/typen'
 
-export const TYP_NAMEN: Record<Aufgabe['typ'], string> = { lueckentext: 'Lückentext', auswahl: 'Auswahl' }
+export const TYP_NAMEN: Record<Aufgabe['typ'], string> = { lueckentext: 'Lückentext', auswahl: 'Auswahl', zuordnen: 'Zuordnen' }
 
 export function AufgabenListe() {
   const [aufgaben, setAufgaben] = useState<Aufgabe[] | null>(null)
@@ -29,6 +29,9 @@ export function AufgabenListe() {
         </a>
         <a className="aes-btn aes-btn--secondary" href="#/lehrkraft/aufgaben/neu-auswahl">
           + Neue Auswahl
+        </a>
+        <a className="aes-btn aes-btn--secondary" href="#/lehrkraft/aufgaben/neu-zuordnen">
+          + Neues Zuordnen
         </a>
       </div>
       {fehler && <p className="hinweis-box">{fehler}</p>}

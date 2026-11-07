@@ -102,10 +102,10 @@ export function Vorschau() {
         <KlassenListe />
       </LehrkraftRahmen>
     )
-  if (seite === 'aufgabe' || seite === 'auswahl')
+  if (seite === 'aufgabe' || seite === 'auswahl' || seite === 'zuordnen')
     return (
       <LehrkraftRahmen bereich="aufgaben" eigeneKarten={false}>
-        <AufgabeEditor aufgabeId={null} neuerTyp={seite === 'auswahl' ? 'auswahl' : 'lueckentext'} />
+        <AufgabeEditor aufgabeId={null} neuerTyp={seite === 'auswahl' || seite === 'zuordnen' ? seite : 'lueckentext'} />
       </LehrkraftRahmen>
     )
   return (

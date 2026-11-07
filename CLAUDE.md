@@ -44,7 +44,8 @@
 - Antworten werden **in der Datenbank** geprüft (`pruefe_aufgabe`, plpgsql). Schüler:innen bekommen Aufgaben ohne
   Lösungen (`inhalt_ohne_loesung` – Achtung: Feld `text` enthält Lösungen und muss immer entfernt werden).
   Jedes neue Aufgabenformat braucht Zweige in `pruefe_aufgabe`, `inhalt_ohne_loesung`, `nur_loesung`.
-  Aufgabeninhalt = Liste `teile` aus `text`, `luecke` und `auswahl` (gemischt möglich; Parser `src/lib/lueckentext.ts`).
+  Aufgabeninhalt = Liste `teile` aus `text`, `luecke`, `auswahl` und `einheit` (Parser `src/lib/lueckentext.ts`;
+  bei `zuordnen` werden alle Wörter zu Einheiten).
   Antworten: Text je Lücke, Liste der gewählten Nummern je Auswahl.
 - Ansprache: Lehrkraft-Oberfläche „Sie“, Schüleransicht „du“, einfache Sprache.
 - `src/entwicklung/Vorschau.tsx`: nur im Entwicklungsmodus (`npm run dev`, `#/vorschau`, `#/vorschau/klassen`,
@@ -104,6 +105,10 @@
   Anzahl gelöster Aufgaben, nächster Schritt. **Nie Punkte/Stufen** – Test 1.13 prüft das.
 
 ## Entscheidungen (Protokoll)
+- 2026-11-08 (didaktisch, Lehrkraft): Format **Zuordnen**: Schreibweise `[Der kleine Hund = Subjekt]` (auch Wortgruppen).
+  Bedienung wie Textmarker: erst Kategorie („Stift“) wählen, dann Wörter antippen; Name der Kategorie steht unter dem Wort.
+  Alle übrigen Wörter sind ebenfalls antippbar (Ablenker, `kategorie: null`); bewertet werden alle Einheiten mit
+  Kategorie und markierte Ablenker. Kategorien = im Text verwendete + selbst eingetragene (`inhalt.kategorien`).
 - 2026-11-08: Versionsprüfung (`src/lib/version.ts`): Safari auf dem iPad zeigte nach einer Veröffentlichung noch die
   alte App (GitHub Pages: max-age=600). Die App vergleicht beim Öffnen, alle 5 Minuten und beim Zurückkehren den
   Namen der Programmdatei; beim Öffnen wird einmal automatisch neu geladen, danach nur Hinweis „Neu laden“.

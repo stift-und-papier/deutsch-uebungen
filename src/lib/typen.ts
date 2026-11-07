@@ -10,13 +10,15 @@ export const SCHWIERIGKEITEN: { wert: Schwierigkeit; text: string }[] = [
 
 // ---- Aufgabeninhalt: Textstücke, Lücken und Auswahl-Stellen (dürfen gemischt vorkommen) ----
 
-export type AufgabenTyp = 'lueckentext' | 'auswahl'
+export type AufgabenTyp = 'lueckentext' | 'auswahl' | 'zuordnen'
 
 export type TextTeil = { t: 'text'; v: string }
 export type LueckenTeil = { t: 'luecke'; id: number; loesungen: string[] }
 /** Auswahl-Stelle: Möglichkeiten und die Nummern der richtigen (mehrere = Mehrfachauswahl) */
 export type AuswahlTeil = { t: 'auswahl'; id: number; optionen: string[]; richtig: number[] }
-export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil
+/** Antippbare Einheit beim Zuordnen (ein Wort oder eine Wortgruppe); kategorie null = gehört zu keiner Kategorie */
+export type EinheitTeil = { t: 'einheit'; id: number; v: string; kategorie: string | null }
+export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil | EinheitTeil
 
 export type Darstellung = 'antippen' | 'dropdown'
 
@@ -26,18 +28,22 @@ export type LueckentextInhalt = {
   gross_klein_beachten: boolean
   /** Wie Auswahl-Stellen bedient werden (Standard: antippen) */
   darstellung?: Darstellung
+  /** Kategorien beim Zuordnen (z. B. Nomen, Verb, Adjektiv) */
+  kategorien?: string[]
   teile: LueckentextTeil[]
 }
 
 /** Was Schüler:innen bekommen: Stellen ohne Lösungen */
 export type LueckenTeilOhneLoesung = { t: 'luecke'; id: number }
 export type AuswahlTeilOhneLoesung = { t: 'auswahl'; id: number; optionen: string[]; mehrfach: boolean }
+export type EinheitOhneLoesung = { t: 'einheit'; id: number; v: string }
 export type LueckentextInhaltSchueler = {
   darstellung?: Darstellung
-  teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung)[]
+  kategorien?: string[]
+  teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung | EinheitOhneLoesung)[]
 }
 
-/** Antworten je Stelle: Text bei Lücken, Liste der angetippten Möglichkeiten bei Auswahl */
+/** Antworten je Stelle: Text bei Lücken, Liste der angetippten Möglichkeiten bei Auswahl, Kategorie beim Zuordnen */
 export type Antworten = Record<string, string | number[]>
 
 // ---- Tabellen ----

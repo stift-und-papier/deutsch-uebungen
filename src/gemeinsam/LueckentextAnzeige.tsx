@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Antworten, AuswahlTeilOhneLoesung, LueckentextInhaltSchueler, Pruefergebnis } from '../lib/typen'
 import { lueckenBreite } from '../lib/lueckentext'
 
@@ -11,12 +12,39 @@ type Props = {
   gesperrt?: boolean
 }
 
-// Zeigt den Aufgabentext mit Lücken (Baustein aes-gap) und Auswahl-Stellen (Baustein aes-choice).
+// Zeigt den Aufgabentext mit Lücken (Baustein aes-gap), Auswahl-Stellen (aes-choice) und – beim Zuordnen –
+// antippbaren Wörtern mit „Stiften“ für die Kategorien.
 // Nach dem Prüfen: richtige Stellen grün mit ✓ (gesperrt), andere warm (Pfirsich) mit ↻ – nie rot.
 export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loesungen, gesperrt }: Props) {
   const status = new Map(ergebnis?.luecken.map((l) => [l.id, l.richtig]))
+  const kategorien = inhalt.kategorien ?? []
+  const mitStiften = kategorien.length > 0 && inhalt.teile.some((t) => t.t === 'einheit')
+  // Gewählter „Stift“ (Kategorie); zu Beginn der erste
+  const [stift, setStift] = useState<string>(kategorien[0] ?? '')
+  const farbe = (kategorie: string) => `kat-${Math.max(0, kategorien.indexOf(kategorie)) % 5}`
 
   return (
+    <>
+    {mitStiften && (
+      <div className="stifte" role="group" aria-label="Kategorie wählen">
+        <span className="stifte__text">Wähle eine Kategorie und tippe die passenden Wörter an:</span>
+        <span className="stifte__liste">
+          {kategorien.map((k) => (
+            <button
+              key={k}
+              type="button"
+              className={`aes-choice stift ${farbe(k)}`}
+              aria-pressed={stift === k}
+              disabled={gesperrt}
+              onClick={() => setStift(k)}
+            >
+              <span className="stift__punkt" aria-hidden="true" />
+              {k}
+            </button>
+          ))}
+        </span>
+      </div>
+    )}
     <p className="aes-task aufgabe-text">
       {inhalt.teile.map((teil, index) => {
         if (teil.t === 'text') return <span key={index}>{teil.v}</span>
@@ -28,6 +56,28 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
             {loesungen?.[teil.id] && <span className="loesung-anzeige">{loesungen[teil.id].join(' / ')}</span>}
           </>
         )
+
+        if (teil.t === 'einheit') {
+          const wahl = typeof antworten[teil.id] === 'string' ? (antworten[teil.id] as string) : ''
+          const zustand = richtig === true ? ' einheit--ok' : richtig === false ? ' einheit--again' : ''
+          return (
+            <span key={index} className="luecke-rahmen">
+              <button
+                type="button"
+                className={`einheit${wahl ? ` einheit--markiert ${farbe(wahl)}` : ''}${zustand}`}
+                aria-pressed={Boolean(wahl)}
+                aria-label={wahl ? `${teil.v}, markiert als ${wahl}` : teil.v}
+                disabled={gesperrt || richtig === true}
+                // Gleicher Stift nimmt die Markierung wieder weg, anderer Stift ersetzt sie
+                onClick={() => onAntwort(teil.id, wahl === stift ? '' : stift)}
+              >
+                <span className="einheit__wort">{teil.v}</span>
+                {wahl && <span className="einheit__kat">{wahl}</span>}
+              </button>
+              {zeichen}
+            </span>
+          )
+        }
 
         if (teil.t === 'auswahl') {
           return (
@@ -69,6 +119,7 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
         )
       })}
     </p>
+    </>
   )
 }
 

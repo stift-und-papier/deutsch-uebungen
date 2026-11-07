@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AufgabeBearbeiten } from '../gemeinsam/AufgabeBearbeiten'
 import { fehlerText } from '../lib/fehler'
-import { ohneLoesung, stelleZuText, teileZuText, textZuTeilen } from '../lib/lueckentext'
+import { kategorienAus, ohneLoesung, stelleZuText, teileZuText, textZuTeilen } from '../lib/lueckentext'
 import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import {
@@ -28,12 +28,19 @@ const FORMATE: Record<AufgabenTyp, { name: string; anweisung: string; beispiel: 
     anweisung: 'Tippe die richtige Antwort an.',
     beispiel: 'Ich weiß, [das | *dass] du kommst.\n\nWelche Wörter sind Nomen?\n[*Hund | laufen | *Baum | schnell]',
   },
+  zuordnen: {
+    name: 'Zuordnen',
+    anweisung: 'Wähle oben eine Kategorie und tippe die passenden Wörter an.',
+    beispiel: 'Der [Hund = Nomen] [läuft = Verb] [schnell = Adjektiv] über die [Wiese = Nomen].',
+  },
 }
 
 // Aufgabe anlegen oder bearbeiten (Lückentext oder Auswahl) – wahlweise als Text mit [Klammern] oder per Formular.
 export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabeId: string | null; neuerTyp?: AufgabenTyp }) {
   const [typ, setTyp] = useState<AufgabenTyp>(neuerTyp)
   const [darstellung, setDarstellung] = useState<Darstellung>('antippen')
+  // Zuordnen: selbst eingetragene Kategorien (z. B. zusätzliche „Ablenker-Kategorien“), mit Komma getrennt
+  const [kategorienText, setKategorienText] = useState('')
   const [titel, setTitel] = useState('')
   const [anweisung, setAnweisung] = useState(FORMATE[neuerTyp].anweisung)
   const [hinweis, setHinweis] = useState('')
@@ -70,6 +77,7 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
         const a = data as Aufgabe
         setTyp(a.typ)
         setDarstellung(a.inhalt.darstellung ?? 'antippen')
+        setKategorienText((a.inhalt.kategorien ?? []).join(', '))
         setTitel(a.titel)
         setAnweisung(a.anweisung)
         setHinweis(a.hinweis ?? '')
@@ -81,8 +89,9 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
       })
   }, [aufgabeId])
 
-  const { teile, fehler: textFehler } = useMemo(() => textZuTeilen(text), [text])
-  const inhalt = { text, gross_klein_beachten: grossKlein, darstellung, teile }
+  const { teile, fehler: textFehler } = useMemo(() => textZuTeilen(text, typ === 'zuordnen'), [text, typ])
+  const kategorien = typ === 'zuordnen' ? kategorienAus(teile, kategorienText.split(',')) : undefined
+  const inhalt = { text, gross_klein_beachten: grossKlein, darstellung, kategorien, teile }
   const format = FORMATE[typ]
   const BEISPIEL = format.beispiel
   const hatLuecke = teile.some((t) => t.t === 'luecke')
@@ -164,7 +173,7 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
               anweisung,
               hinweis: hinweis || null,
               schwierigkeit,
-              inhalt: ohneLoesung(teile, darstellung),
+              inhalt: ohneLoesung(teile, darstellung, kategorien),
               versuche: 0,
               geloest: false,
               loesung_angesehen: false,
@@ -215,7 +224,13 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
             {modus === 'text' ? (
               <>
                 <div className="erklaerung">
-                  {typ === 'auswahl' ? (
+                  {typ === 'zuordnen' ? (
+                    <p>
+                      Schreiben Sie den Satz und setzen Sie jedes Wort oder jede Wortgruppe, die zugeordnet werden soll, so in
+                      Klammern: <strong>[Wort = Kategorie]</strong>, z. B. <code>[Der kleine Hund = Subjekt]</code>. Alle
+                      übrigen Wörter sind für Schüler:innen ebenfalls antippbar, gehören aber zu keiner Kategorie.
+                    </p>
+                  ) : typ === 'auswahl' ? (
                     <p>
                       Setzen Sie jede Auswahl in <strong>[eckige Klammern]</strong>, trennen Sie die Möglichkeiten mit{' '}
                       <strong>|</strong> und markieren Sie die richtige mit <strong>*</strong>. Mehrere <strong>*</strong> ergeben
@@ -268,6 +283,17 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
                 Groß-/Kleinschreibung wird bewertet
               </label>
             )}
+            {typ === 'zuordnen' && (
+              <label>
+                Kategorien („Stifte“) – die im Text verwendeten kommen automatisch dazu. Weitere als Ablenker mit Komma trennen:
+                <input
+                  value={kategorienText}
+                  onChange={(e) => setKategorienText(e.target.value)}
+                  placeholder="z. B. Nomen, Verb, Adjektiv, Artikel"
+                />
+                {kategorien && kategorien.length > 0 && <span className="klein">Schüler:innen sehen: {kategorien.join(' · ')}</span>}
+              </label>
+            )}
             {hatAuswahl && (
               <div>
                 <p className="klein" style={{ margin: 0 }}>
@@ -315,14 +341,28 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
   )
 }
 
-// Formular: Textstücke, Lücken und Auswahl-Stellen nacheinander.
-// Lücken und Auswahl werden als Rohtext gehalten (z. B. "a/" oder "das | *dass"), damit man beim Tippen nichts verliert.
-type Zeile = { art: 'text'; v: string } | { art: 'luecke' | 'auswahl'; roh: string }
+// Formular: Textstücke, Lücken, Auswahl-Stellen und Zuordnungen nacheinander.
+// Sie werden als Rohtext gehalten (z. B. "a/", "das | *dass", "Hund = Nomen"), damit man beim Tippen nichts verliert.
+type Zeile = { art: 'text'; v: string } | { art: 'luecke' | 'auswahl' | 'einheit'; roh: string }
+
+// Wörter ohne Kategorie (Ablenker) gehören im Formular zum normalen Text; benachbarte Textstücke werden zusammengefasst.
+function zeilenAus(teile: LueckentextTeil[]): Zeile[] {
+  const zeilen: Zeile[] = []
+  for (const t of teile) {
+    const text = t.t === 'text' ? t.v : t.t === 'einheit' && !t.kategorie ? t.v : null
+    const letzte = zeilen[zeilen.length - 1]
+    if (text !== null) {
+      if (letzte && letzte.art === 'text') zeilen[zeilen.length - 1] = { art: 'text', v: letzte.v + text }
+      else zeilen.push({ art: 'text', v: text })
+    } else if (t.t !== 'text') {
+      zeilen.push({ art: t.t, roh: stelleZuText(t) })
+    }
+  }
+  return zeilen
+}
 
 function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange: (text: string) => void }) {
-  const [zeilen, setZeilen] = useState<Zeile[]>(() =>
-    teile.map((t) => (t.t === 'text' ? { art: 'text', v: t.v } : { art: t.t, roh: stelleZuText(t) })),
-  )
+  const [zeilen, setZeilen] = useState<Zeile[]>(() => zeilenAus(teile))
 
   function setzen(neu: Zeile[]) {
     setZeilen(neu)
@@ -345,6 +385,16 @@ function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange
             <label>
               Lücke {++stellenNr}: richtige Lösung(en), mehrere mit / trennen
               <input value={z.roh} onChange={(e) => aendern(i, { art: 'luecke', roh: e.target.value })} spellCheck={false} />
+            </label>
+          ) : z.art === 'einheit' ? (
+            <label>
+              Zuordnung {++stellenNr}: Wort oder Wortgruppe = Kategorie
+              <input
+                value={z.roh}
+                onChange={(e) => aendern(i, { art: 'einheit', roh: e.target.value })}
+                spellCheck={false}
+                placeholder="Der kleine Hund = Subjekt"
+              />
             </label>
           ) : (
             <label>
@@ -371,6 +421,9 @@ function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange
         </button>
         <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setzen([...zeilen, { art: 'auswahl', roh: '' }])}>
           + Auswahl
+        </button>
+        <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setzen([...zeilen, { art: 'einheit', roh: '' }])}>
+          + Zuordnung
         </button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { neuNummerieren, ohneLoesung, teileZuText, textZuTeilen } from './lueckentext'
+import { kategorienAus, neuNummerieren, ohneLoesung, teileZuText, textZuTeilen } from './lueckentext'
 
 describe('textZuTeilen', () => {
   it('erkennt eine Lücke', () => {
@@ -78,6 +78,60 @@ describe('Auswahl-Stellen', () => {
     expect(json).not.toContain('richtig')
     expect(json).not.toContain('Lösung')
     expect(inhalt.teile.filter((t) => t.t === 'auswahl').map((t) => (t.t === 'auswahl' ? t.mehrfach : null))).toEqual([false, true])
+  })
+})
+
+describe('Zuordnen', () => {
+  const einheiten = (text: string) =>
+    textZuTeilen(text, true).teile.flatMap((t) => (t.t === 'einheit' ? [[t.id, t.v, t.kategorie]] : []))
+
+  it('macht markierte Einheiten und alle übrigen Wörter antippbar', () => {
+    expect(einheiten('Der [Hund = Nomen] bellt.')).toEqual([
+      [0, 'Der', null],
+      [1, 'Hund', 'Nomen'],
+      [2, 'bellt', null],
+    ])
+  })
+
+  it('erlaubt Wortgruppen (Satzglieder) und behält Satzzeichen als Text', () => {
+    const { teile, fehler } = textZuTeilen('[Der kleine Hund = Subjekt] [bellt = Prädikat], oder?', true)
+    expect(fehler).toEqual([])
+    expect(teile.map((t) => (t.t === 'text' ? `T:${t.v}` : t.t === 'einheit' ? `E:${t.v}` : '?'))).toEqual([
+      'E:Der kleine Hund',
+      'T: ',
+      'E:bellt',
+      'T:, ',
+      'E:oder',
+      'T:?',
+    ])
+  })
+
+  it('erkennt Wörter mit Umlaut, Bindestrich und Apostroph als ein Wort', () => {
+    expect(einheiten('Übermorgen fährt’s E-Bike.').map((e) => e[1])).toEqual(['Übermorgen', 'fährt’s', 'E-Bike'])
+  })
+
+  it('meldet fehlende Kategorie und Text ohne Markierung', () => {
+    expect(textZuTeilen('[Hund = ]', true).fehler[0]).toContain('[Wort = Kategorie]')
+    expect(textZuTeilen('Der Hund bellt.', true).fehler[0]).toContain('mindestens ein Wort')
+  })
+
+  it('Hin- und Rückweg ergibt denselben Text', () => {
+    const text = 'Der [kleine Hund = Subjekt] [bellt = Prädikat] laut.'
+    expect(teileZuText(textZuTeilen(text, true).teile)).toBe(text)
+  })
+
+  it('Kategorien: eingetragene zuerst, dann die aus dem Text, ohne Doppelte', () => {
+    expect(kategorienAus(textZuTeilen('[Hund = Nomen] [rennt = Verb] [Baum = Nomen]', true).teile, ['Adjektiv', 'Nomen'])).toEqual([
+      'Adjektiv',
+      'Nomen',
+      'Verb',
+    ])
+  })
+
+  it('Schüler-Inhalt verrät die Kategorie nicht', () => {
+    const inhalt = ohneLoesung(textZuTeilen('Der [Hund = Nomen] bellt.', true).teile, undefined, ['Nomen', 'Verb'])
+    expect(JSON.stringify(inhalt.teile)).not.toContain('Nomen')
+    expect(inhalt.kategorien).toEqual(['Nomen', 'Verb'])
   })
 })
 
