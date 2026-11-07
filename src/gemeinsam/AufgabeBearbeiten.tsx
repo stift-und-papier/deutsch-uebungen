@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { FORMAT_ICON, PixelIcon } from '../lib/icons'
 import type { Antworten, Pruefergebnis, SchuelerAufgabe } from '../lib/typen'
 import { LueckentextAnzeige } from './LueckentextAnzeige'
 
@@ -144,9 +145,12 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
             Zurück
           </a>
         )}
-        <div style={kopf ? undefined : { gridColumn: '1 / -1' }}>
-          {kopf && <p className="aufgabe-kopf__ort">{kopf.ort}</p>}
-          <h1 className="aufgabe-kopf__titel">{aufgabe.titel}</h1>
+        <div className="aufgabe-kopf__mitte" style={kopf ? undefined : { gridColumn: '1 / -1' }}>
+          <PixelIcon name={FORMAT_ICON[aufgabe.typ]} groesse="l" />
+          <div>
+            {kopf && <p className="aufgabe-kopf__ort">{kopf.ort}</p>}
+            <h1 className="aufgabe-kopf__titel">{aufgabe.titel}</h1>
+          </div>
         </div>
         {kopf && (
           <div className="fortschritt">

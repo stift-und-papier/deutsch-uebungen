@@ -1,0 +1,39 @@
+/* Pixel-Icons: 16 x 16 Pixel, Anzeige in ganzzahligem Vielfachen (32, 48, 64 px). Nur Schmuck: aria-hidden="true". */
+.aes-icon { display: inline-block; flex: none; width: var(--icon, 32px); height: var(--icon, 32px); background-repeat: no-repeat; background-size: 100% 100%; image-rendering: pixelated; vertical-align: middle; }
+.aes-icon--m { --icon: 48px; }
+.aes-icon--l { --icon: 64px; }
+.aes-icon--xl { --icon: 96px; }
+.aes-icon--haus { background-image: url(./icons/haus.svg); }
+.aes-icon--buch { background-image: url(./icons/buch.svg); }
+.aes-icon--flagge { background-image: url(./icons/flagge.svg); }
+.aes-icon--gluehbirne { background-image: url(./icons/gluehbirne.svg); }
+.aes-icon--luecke { background-image: url(./icons/luecke.svg); }
+.aes-icon--auswahl { background-image: url(./icons/auswahl.svg); }
+.aes-icon--zuordnen { background-image: url(./icons/zuordnen.svg); }
+.aes-icon--lupe { background-image: url(./icons/lupe.svg); }
+.aes-icon--reihenfolge { background-image: url(./icons/reihenfolge.svg); }
+.aes-icon--dokument { background-image: url(./icons/dokument.svg); }
+.aes-icon--buchstabe { background-image: url(./icons/buchstabe.svg); }
+.aes-icon--bausteine { background-image: url(./icons/bausteine.svg); }
+.aes-icon--satz { background-image: url(./icons/satz.svg); }
+.aes-icon--stift { background-image: url(./icons/stift.svg); }
+.aes-icon--zeichen { background-image: url(./icons/zeichen.svg); }
+.aes-icon--sprechblase { background-image: url(./icons/sprechblase.svg); }
+.aes-icon--blume { background-image: url(./icons/blume.svg); }
+.aes-icon--spross { background-image: url(./icons/spross.svg); }
+.aes-icon--giesskanne { background-image: url(./icons/giesskanne.svg); }
+.aes-icon--samen { background-image: url(./icons/samen.svg); }
+.aes-icon--stern { background-image: url(./icons/stern.svg); }
+.aes-icon--pokal { background-image: url(./icons/pokal.svg); }
+.aes-icon--herz { background-image: url(./icons/herz.svg); }
+.aes-icon--ziel { background-image: url(./icons/ziel.svg); }
+.aes-icon--sanduhr { background-image: url(./icons/sanduhr.svg); }
+.aes-icon--paket { background-image: url(./icons/paket.svg); }
+.aes-icon--daumen { background-image: url(./icons/daumen.svg); }
+.aes-icon--rakete { background-image: url(./icons/rakete.svg); }
+/* Einbau in vorhandene Bausteine */
+.aes-nav__icon { width: 40px; height: 40px; border-radius: 50%; background: var(--himmel-hell); display: inline-grid; place-items: center; flex: none; }
+.aes-nav__item[aria-current="page"] .aes-nav__icon { background: var(--flaeche); }
+.aes-growth__topic { display: inline-flex; align-items: center; gap: var(--space-2); }
+.aes-growth__badge .aes-icon { margin: -6px 0 -6px -10px; }
+.aes-nav__item:has(.aes-nav__icon) { gap: 10px; padding-left: 8px; padding-right: 8px; white-space: nowrap; }

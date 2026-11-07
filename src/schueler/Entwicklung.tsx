@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fehlerText } from '../lib/fehler'
+import { BEREICH_ICON, ENTWICKLUNG_ICON, PixelIcon } from '../lib/icons'
 import { supabase } from '../lib/supabase'
 
 // „Mein Lernweg“: nur die eigene Entwicklung in Worten – keine Stufen, Punkte, Prozente oder Noten.
@@ -15,11 +16,11 @@ type Daten = {
 
 // Zuordnung zu den vier Zuständen der Entwicklungskachel. Die Segmente zeigen den Weg, nicht ein Niveau.
 // „Deutlich besser“ ist zusätzlich hervorgehoben (kräftig grüne Pille, siehe index.css).
-const ZUSTAND: Record<Kategorie, { klasse: string; zeichen: string; segmente: number }> = {
-  deutlich: { klasse: 'stark', zeichen: '↗', segmente: 4 },
-  besser: { klasse: 'gut', zeichen: '↗', segmente: 3 },
-  dranbleiben: { klasse: 'dran', zeichen: '→', segmente: 2 },
-  erste: { klasse: 'sammeln', zeichen: '…', segmente: 0 },
+const ZUSTAND: Record<Kategorie, { klasse: keyof typeof ENTWICKLUNG_ICON; segmente: number }> = {
+  deutlich: { klasse: 'stark', segmente: 4 },
+  besser: { klasse: 'gut', segmente: 3 },
+  dranbleiben: { klasse: 'dran', segmente: 2 },
+  erste: { klasse: 'sammeln', segmente: 0 },
 }
 const REIHENFOLGE: Kategorie[] = ['deutlich', 'besser', 'dranbleiben', 'erste']
 
@@ -64,10 +65,13 @@ export function Entwicklung({ token, pseudonym, geschafft, uebungen }: Props) {
             return (
               <li key={k.name}>
                 <article className={`aes-growth aes-growth--${z.klasse}`}>
-                  <span className="aes-growth__topic">{k.bereich}</span>
+                  <span className="aes-growth__topic">
+                    <PixelIcon name={BEREICH_ICON[k.bereich]} />
+                    {k.bereich}
+                  </span>
                   <h2 className="aes-growth__title">{k.name}</h2>
                   <span className="aes-growth__badge">
-                    <span aria-hidden="true">{z.zeichen}</span> {daten.texte[k.kategorie]}
+                    <PixelIcon name={ENTWICKLUNG_ICON[z.klasse]} /> {daten.texte[k.kategorie]}
                   </span>
                   <div className="aes-growth__steps" aria-hidden="true">
                     {[0, 1, 2, 3].map((i) => (
