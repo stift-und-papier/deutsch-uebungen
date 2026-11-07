@@ -1,26 +1,27 @@
-import { useEffect, useState } from 'react'
-import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './lib/supabase'
+import { LehrkraftBereich } from './lehrkraft/LehrkraftBereich'
+import { usePfad } from './lib/router'
+import { SchuelerBereich } from './schueler/SchuelerBereich'
 
-// Startseite der App.
-// In Etappe 0 ist das nur ein Platzhalter, der prüft, ob die Datenbank erreichbar ist.
+// Startpunkt der App: entscheidet anhand der Adresse, welcher Bereich angezeigt wird.
+//   #/s/<token>/...   → Schüler:innen (persönlicher Link)
+//   #/lehrkraft/...   → Lehrkraft (mit Anmeldung)
 function App() {
-  const [verbindung, setVerbindung] = useState<'pruefe' | 'ok' | 'fehler'>('pruefe')
+  const pfad = usePfad()
+  const [bereich, ...rest] = pfad
 
-  useEffect(() => {
-    fetch(`${SUPABASE_URL}/auth/v1/health`, { headers: { apikey: SUPABASE_PUBLISHABLE_KEY } })
-      .then((antwort) => setVerbindung(antwort.ok ? 'ok' : 'fehler'))
-      .catch(() => setVerbindung('fehler'))
-  }, [])
+  if (bereich === 's' && rest[0]) return <SchuelerBereich key={rest[0]} token={rest[0]} pfad={rest.slice(1)} />
+  if (bereich === 'lehrkraft') return <LehrkraftBereich pfad={rest} />
 
   return (
-    <main className="seite">
+    <main className="seite schmal">
       <h1>Deutsch üben</h1>
-      <p>Die Übungsplattform wird gerade aufgebaut.</p>
       <p>
-        Datenbank:{' '}
-        {verbindung === 'pruefe' && 'wird geprüft …'}
-        {verbindung === 'ok' && '✅ verbunden'}
-        {verbindung === 'fehler' && '❌ nicht erreichbar'}
+        <strong>Schüler:innen:</strong> Bitte öffnet euren persönlichen Link, den ihr von eurer Lehrkraft bekommen habt.
+      </p>
+      <p>
+        <a className="knopf" href="#/lehrkraft">
+          Anmeldung für Lehrkräfte
+        </a>
       </p>
     </main>
   )

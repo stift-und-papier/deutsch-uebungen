@@ -34,20 +34,45 @@
     Datenbankfunktionen, die den Token prüfen und nur eigene Aufgaben/Antworten/Entwicklung liefern.
 - Datenmodell mit Lehrkraft-Besitz (`owner`-Spalte) von Anfang an, damit später mehrere Lehrkräfte möglich sind.
 
+## Aufbau
+- `src/App.tsx`: Hash-Navigation (`src/lib/router.ts`). `#/s/<token>/…` = Schüler:innen, `#/lehrkraft/…` = Lehrkraft.
+  Der Token steht hinter `#`, wird also nicht an GitHub Pages gesendet.
+- `src/schueler/`: Schüleransicht. Greift **nur** per RPC zu: `schueler_start`, `antwort_abgeben`, `loesung_anzeigen`.
+  Entwürfe und Warteschlange (offline) im localStorage (`speicher.ts`).
+- `src/lehrkraft/`: Lehrkraft-Oberfläche (Supabase Auth + direkte Tabellenzugriffe, durch RLS geschützt).
+- `src/gemeinsam/`: Aufgaben-Komponenten, genutzt von Schüleransicht **und** Vorschau.
+- Antworten werden **in der Datenbank** geprüft (`pruefe_aufgabe`, plpgsql). Schüler:innen bekommen Aufgaben ohne
+  Lösungen (`inhalt_ohne_loesung` – Achtung: Feld `text` enthält Lösungen und muss immer entfernt werden).
+  Jedes neue Aufgabenformat braucht Zweige in `pruefe_aufgabe`, `inhalt_ohne_loesung`, `nur_loesung`.
+- Ansprache: Lehrkraft-Oberfläche „Sie“, Schüleransicht „du“, einfache Sprache.
+
+## Tests
+- `npm test` – Logik (Lückentext, Pseudonyme) + Zugriff über das Netzwerk ohne Anmeldung (`supabase/tests/netzwerk.test.ts`).
+- `npm run test:datenbank` – Zugriffsregeln in der echten DB als anon und als zwei Lehrkräfte; macht alles rückgängig.
+  Erfolg = Fehlermeldung „ALLE TESTS BESTANDEN (…)“. **Nach jeder Migration ausführen und erweitern.**
+- Datenbankänderungen: neue Datei in `supabase/migrations/`, dann `npm run db:push`.
+
 ## Rechner der Lehrkraft (Windows 11)
 - Projektordner: `C:\Users\jrkug\Projekte\deutsch-uebungen` (bewusst **nicht** in OneDrive).
 - Installiert per winget: Git, Node.js LTS, GitHub CLI (`gh`, angemeldet als `stift-und-papier`).
 - Git-Identität: `stift-und-papier` mit GitHub-noreply-Adresse (keine echte E-Mail im öffentlichen Repo).
 
 ## Etappen
-0. Einrichtung ← **aktuell**
-1. Kern: Login, Klassen/Pseudonyme, Links, Linkliste, Lückentext, Pakete, Bearbeitung, Antworten speichern
+0. Einrichtung ✓
+1. Kern: Login, Klassen/Pseudonyme, Links, Linkliste, Lückentext, Pakete, Bearbeitung, Antworten speichern ← **aktuell**
 2. Lernstand: Kompetenzen importieren, Zuordnung, KC pro Schüler:in, Lehrkraft- und Schüleransichten
 3. Weitere Aufgabenformate + Schwierigkeitsstufe pro Schüler:in
 4. Politur: Druck/PDF, Offline-Speicher, `DATENSCHUTZ.md`, Löschfunktionen
 5. Später: mehrere Lehrkräfte, Aufgaben teilen, PDF/Word-Import
 
 ## Entscheidungen (Protokoll)
+- 2026-11-07 (didaktisch, Lehrkraft): Lücken-Syntax `[Lösung]`, Alternativen mit `/`. Pseudonyme automatisch
+  (Tier-Nummer) ODER eigene Liste. Lösung ansehen erst nach 2 Versuchen; danach zählen Versuche nicht für den
+  Lernstand (`zaehlt_fuer_lernstand = false`). Rückmeldung pro Lücke (✓ grün / ↻ orange, nie rot).
+- 2026-11-07: Prüfung serverseitig (Lösungen bleiben in der DB, Ergebnisse fälschungssicher). Folge: Ohne Internet
+  wird die Antwort zwischengespeichert und später geprüft.
+- 2026-11-07: Link-Token 192 Bit, im Klartext gespeichert (nur für die eigene Lehrkraft lesbar), damit die Linkliste
+  jederzeit neu gedruckt werden kann. „Neuer Link“ macht den alten ungültig.
 - 2026-11-07: React statt Svelte – bewährte Drag-&-Drop-Lösung mit Touch-Unterstützung für iPad.
 - 2026-11-07: Öffentliches Repo statt privatem (GitHub Pages bei privatem Repo nur mit Bezahlkonto).
   Unbedenklich, weil keine Daten und keine Geheimnisse im Code liegen.
