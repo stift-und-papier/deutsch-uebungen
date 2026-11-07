@@ -140,6 +140,44 @@ export function EinstellungenSeite() {
         </div>
       </section>
 
+      <section className="kasten">
+        <h2>Blumenwiese der Schüler:innen</h2>
+        <p className="klein">
+          Auf ihrer Startseite sehen Schüler:innen eine Wiese, die mit ihrer Entwicklung blüht (höchstens 80 Blumen). Die
+          Zahl hängt nur von der Entwicklung ab, nie vom Stand (-- bis ++). Die Wiese welkt nie: Gezeigt wird immer der
+          bisher höchste Wert. Schüler:innen sehen keine Zahl, nur die Wiese und einen Satz.
+        </p>
+        <p className="klein">Blumen je Kompetenz, wenn dort steht …</p>
+        <div className="formular zeile">
+          <label>
+            „deutlich besser“
+            <input type="number" min={0} max={10} value={e.wiese_stark} onChange={zahl('wiese_stark')} />
+          </label>
+          <label>
+            „wird besser“
+            <input type="number" min={0} max={10} value={e.wiese_gut} onChange={zahl('wiese_gut')} />
+          </label>
+          <label>
+            „lohnt sich noch Übung“
+            <input type="number" min={0} max={10} value={e.wiese_dran} onChange={zahl('wiese_dran')} />
+          </label>
+          <label>
+            „erste Ergebnisse“
+            <input type="number" min={0} max={10} value={e.wiese_sammeln} onChange={zahl('wiese_sammeln')} />
+          </label>
+        </div>
+        <div className="formular zeile">
+          <label>
+            Blumen je abgeschlossenem Übungspaket
+            <input type="number" min={0} max={10} value={e.wiese_je_paket} onChange={zahl('wiese_je_paket')} />
+          </label>
+          <label>
+            höchstens durch Pakete
+            <input type="number" min={0} max={80} value={e.wiese_pakete_max} onChange={zahl('wiese_pakete_max')} />
+          </label>
+        </div>
+      </section>
+
       {fehler && <p className="hinweis-box">{fehler}</p>}
       <div className="knopfleiste">
         <button className="aes-btn aes-btn--primary">{gespeichert ? '✓ Gespeichert' : 'Speichern'}</button>

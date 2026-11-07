@@ -953,9 +953,10 @@ tr.ausgeblendet .aktionen {
 
 .rahmen {
   display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: var(--space-5);
-  padding: var(--space-5);
+  grid-template-columns: 236px 1fr;
+  gap: var(--space-4);
+  /* 16 px Rand: so passt die Blumenwiese am iPad quer in 4-facher Größe (880 px) */
+  padding: var(--space-4);
   align-items: start;
 }
 
@@ -1471,4 +1472,72 @@ tr.ausgeblendet .aktionen {
 
 .fehlerwort--again ~ .markierung {
   color: var(--pfirsich-dunkel);
+}
+
+/* ---------- Pixel-Icons und Blumenwiese (Schüleransicht) ---------- */
+.aufgabe-kopf__mitte {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.zaehler--mit-icon {
+  flex-direction: row;
+  gap: var(--space-3);
+}
+
+.zaehler--mit-icon > span:last-child {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.icon-titel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.naechster-schritt > div {
+  flex: 1;
+}
+
+/* Wiese oben in einer Karte ohne Innenabstand, Text darunter */
+.wiese-karte {
+  padding: 0;
+  overflow: hidden;
+}
+
+.wiese-rahmen {
+  display: flex;
+  justify-content: center;
+  background: var(--himmel-hell);
+}
+
+.wiese-karte__platzhalter {
+  aspect-ratio: 220 / 100;
+  background: var(--himmel-hell);
+}
+
+.wiese-karte__text {
+  padding: var(--space-5) var(--space-6);
+}
+
+.wiese-karte__text .aes-card__title {
+  margin: 0 0 var(--space-2);
+}
+
+/* Blumen vom letzten Besuch blühen nicht noch einmal auf */
+.aes-wiese__blume--da {
+  animation: none;
+}
+
+@media (max-width: 900px) {
+  .rahmen__nav .aes-nav__item:has(.aes-nav__icon) {
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-1) var(--space-2);
+    line-height: 20px;
+  }
 }

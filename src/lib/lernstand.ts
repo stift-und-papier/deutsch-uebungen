@@ -34,6 +34,13 @@ export type Einstellungen = {
   trend_min_diff: number
   vergleich_wochen: number | null
   texte: Record<RueckmeldeText, string>
+  // Blumenwiese: Blumen je Kompetenz nach Entwicklungszustand + je abgeschlossenem Paket (höchstens wiese_pakete_max)
+  wiese_sammeln: number
+  wiese_dran: number
+  wiese_gut: number
+  wiese_stark: number
+  wiese_je_paket: number
+  wiese_pakete_max: number
 }
 
 export type RueckmeldeText = 'deutlich' | 'besser' | 'dranbleiben' | 'erste' | 'gelungen' | 'naechster_schritt'

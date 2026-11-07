@@ -74,7 +74,20 @@
 - **Bewusste Abweichungen (Lehrkraft-Wunsch):** „deutlich besser“ (`aes-growth--stark`) mit kräftig dunkelgrüner Pille
   und weißer Schrift (Entwicklungsfarbe, nicht `--stufe-plus2`). Auswertungs-Knöpfe grün (`knopf-auswertung`).
   Löschen-Knöpfe in Pflaume statt Rot.
-- **Offen:** Schullogo fehlt noch – Platz `logo-platz` oben in den Seitenleisten und auf der Startseite ist reserviert.
+- **Pixel-Icons** (`src/design/icons.css`, SVGs in `src/design/icons/`): nur Schüleransicht (Lehrkraft höchstens sparsam),
+  immer `aria-hidden`, Text daneben trägt die Bedeutung, keine Gesichter, nur Größen 32/48/64/96 px.
+  **Zuordnungstabelle an einer Stelle: `src/lib/icons.tsx`** (Aufgabenformat → Icon, Kompetenzbereich → Icon,
+  Entwicklungszustand → `blume`/`spross`/`giesskanne`/`samen`, Navigation). Neue Formate/Bereiche dort ergänzen.
+  Richtig/nochmal bekommt KEIN Pixel-Icon, sondern `aes-fb__icon` (✓ grün, ! Pfirsich).
+- **Blumenwiese** (Startseite der Schüler:innen, `src/gemeinsam/Blumenwiese.tsx`, `src/design/wiese.css`, Plätze in
+  `src/design/wiese/slots.json`): Blumenzahl rechnet der Server (`schueler_wiese` → nur `{"blumen": n}`) aus der
+  **Entwicklung** (je Kompetenz sammeln/dran/gut/stark = 0/1/2/3, einstellbar) + 1 je abgeschlossenem Paket (max. 20),
+  höchstens 80. Gespeichert wird der Höchststand `schueler.wiese_blumen` – die Wiese welkt nie. Keine Zahl/kein Bruch
+  in der Schüleransicht, Satz unter der Szene, Anzeige nur in ganzzahligen Vielfachen (4× quer, 3× hochkant).
+  Füllstände prüfen: `#/vorschau/wiese/<zahl>` (nur `npm run dev`).
+- **Schüler-Navigation:** Start (Wiese, `#/s/<token>`), Meine Übungen (`/uebungen`), Mein Lernweg (`/entwicklung`).
+- **Offen:** Schullogo fehlt noch – Platz `logo-platz` oben in den Seitenleisten ist reserviert. Navigationspunkt
+  „Tipps“ (`gluehbirne`) aus dem Entwurf: Inhalt mit der Lehrkraft klären, bis dahin weggelassen.
 
 ## Tests
 - `npm test` – Logik (Lückentext, Pseudonyme) + Zugriff über das Netzwerk ohne Anmeldung (`supabase/tests/netzwerk.test.ts`).

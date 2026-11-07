@@ -2,6 +2,7 @@
 // damit sie ohne Anmeldung geprüft werden können. Diese Datei landet NICHT in der veröffentlichten App
 // (sie wird nur geladen, wenn import.meta.env.DEV wahr ist).
 import { useState } from 'react'
+import { Blumenwiese, wieseSatz } from '../gemeinsam/Blumenwiese'
 import { AufgabeEditor } from '../lehrkraft/AufgabeEditor'
 import { AuswertungAnsicht } from '../lehrkraft/KlassenLernstand'
 import { KlassenListe } from '../lehrkraft/KlassenListe'
@@ -25,6 +26,12 @@ const e: Einstellungen = {
   trend_min_neue: 4,
   trend_min_diff: 15,
   vergleich_wochen: null,
+  wiese_sammeln: 0,
+  wiese_dran: 1,
+  wiese_gut: 2,
+  wiese_stark: 3,
+  wiese_je_paket: 1,
+  wiese_pakete_max: 20,
   texte: { deutlich: '', besser: '', dranbleiben: '', erste: '', gelungen: '', naechster_schritt: '' },
 }
 
@@ -94,8 +101,23 @@ const werte = schueler.flatMap((s, i) =>
 // #/vorschau/klassen    → Klassenliste (ohne Anmeldung leer)
 // #/vorschau/aufgabe    → Formular „Neuer Lückentext“
 export function Vorschau() {
-  const [, seite = 'auswertung'] = usePfad()
+  const [, seite = 'auswertung', teil] = usePfad()
   const [ausgewaehlt, setAusgewaehlt] = useState<string | null>('s2')
+  // #/vorschau/wiese/30 → Blumenwiese mit 30 Blumen (Füllstände prüfen)
+  if (seite === 'wiese') {
+    const zahl = Number(teil) || 0
+    return (
+      <div className="wiese rahmen" style={{ gridTemplateColumns: '1fr' }}>
+        <section className="aes-card wiese-karte">
+          <Blumenwiese blumen={zahl} />
+          <div className="wiese-karte__text">
+            <h2 className="aes-card__title">Vorschau: {zahl} Blumen</h2>
+            <p className="seitenkopf__text">{wieseSatz(zahl)}</p>
+          </div>
+        </section>
+      </div>
+    )
+  }
   if (seite === 'klassen')
     return (
       <LehrkraftRahmen bereich="klassen" eigeneKarten={false}>

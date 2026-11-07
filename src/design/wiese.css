@@ -1,0 +1,28 @@
+/* Blumenwiese (Pixel-Szene). Szene 220 x 100 Pixel, Anzeige am besten in ganzzahligem Vielfachen (z. B. 4x = 880 px). */
+.aes-wiese { position: relative; width: 100%; aspect-ratio: 220 / 100; overflow: hidden; image-rendering: pixelated; background-color: #74b957; }
+.aes-wiese__szene { position: absolute; inset: 0; background-size: 100% 100%; image-rendering: pixelated; background-image: url(./wiese/szene.png); }
+.aes-wiese__blume, .aes-wiese__spross { position: absolute; transform: translate(-50%, -100%); background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; pointer-events: none; }
+.aes-wiese__blume { animation: aes-bluehen .6s ease-out both; }
+@keyframes aes-bluehen { from { opacity: 0; transform: translate(-50%, -90%) scale(.6); } to { opacity: 1; transform: translate(-50%, -100%) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .aes-wiese__blume { animation: none; } }
+.aes-wiese .fl-gold-S { width: 1.3636%; aspect-ratio: 3 / 6; background-image: url(./wiese/blumen/gold-S.png); }
+.aes-wiese .fl-gold-M { width: 2.2727%; aspect-ratio: 5 / 9; background-image: url(./wiese/blumen/gold-M.png); }
+.aes-wiese .fl-gold-L { width: 3.1818%; aspect-ratio: 7 / 15; background-image: url(./wiese/blumen/gold-L.png); }
+.aes-wiese .fl-mohn-S { width: 1.3636%; aspect-ratio: 3 / 6; background-image: url(./wiese/blumen/mohn-S.png); }
+.aes-wiese .fl-mohn-M { width: 2.2727%; aspect-ratio: 5 / 9; background-image: url(./wiese/blumen/mohn-M.png); }
+.aes-wiese .fl-mohn-L { width: 3.1818%; aspect-ratio: 7 / 15; background-image: url(./wiese/blumen/mohn-L.png); }
+.aes-wiese .fl-lila-S { width: 1.3636%; aspect-ratio: 3 / 6; background-image: url(./wiese/blumen/lila-S.png); }
+.aes-wiese .fl-lila-M { width: 2.2727%; aspect-ratio: 5 / 9; background-image: url(./wiese/blumen/lila-M.png); }
+.aes-wiese .fl-lila-L { width: 3.1818%; aspect-ratio: 7 / 15; background-image: url(./wiese/blumen/lila-L.png); }
+.aes-wiese .fl-blau-S { width: 1.3636%; aspect-ratio: 3 / 6; background-image: url(./wiese/blumen/blau-S.png); }
+.aes-wiese .fl-blau-M { width: 2.2727%; aspect-ratio: 5 / 10; background-image: url(./wiese/blumen/blau-M.png); }
+.aes-wiese .fl-blau-L { width: 3.1818%; aspect-ratio: 7 / 13; background-image: url(./wiese/blumen/blau-L.png); }
+.aes-wiese .fl-rosa-S { width: 1.3636%; aspect-ratio: 3 / 6; background-image: url(./wiese/blumen/rosa-S.png); }
+.aes-wiese .fl-rosa-M { width: 2.2727%; aspect-ratio: 5 / 10; background-image: url(./wiese/blumen/rosa-M.png); }
+.aes-wiese .fl-rosa-L { width: 3.1818%; aspect-ratio: 7 / 13; background-image: url(./wiese/blumen/rosa-L.png); }
+.aes-wiese .fl-weiss-S { width: 1.3636%; aspect-ratio: 3 / 6; background-image: url(./wiese/blumen/weiss-S.png); }
+.aes-wiese .fl-weiss-M { width: 2.2727%; aspect-ratio: 5 / 10; background-image: url(./wiese/blumen/weiss-M.png); }
+.aes-wiese .fl-weiss-L { width: 3.1818%; aspect-ratio: 7 / 13; background-image: url(./wiese/blumen/weiss-L.png); }
+.aes-wiese .fl-spross-S { width: 1.3636%; aspect-ratio: 3 / 2; background-image: url(./wiese/blumen/spross-S.png); }
+.aes-wiese .fl-spross-M { width: 1.3636%; aspect-ratio: 3 / 4; background-image: url(./wiese/blumen/spross-M.png); }
+.aes-wiese .fl-spross-L { width: 2.2727%; aspect-ratio: 5 / 6; background-image: url(./wiese/blumen/spross-L.png); }

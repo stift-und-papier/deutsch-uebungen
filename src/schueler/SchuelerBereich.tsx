@@ -5,7 +5,9 @@ import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import type { AbgabeAntwort, Loesung, SchuelerStart } from '../lib/typen'
 import { neueId } from '../lib/zufall'
+import { NAV_ICON, PixelIcon } from '../lib/icons'
 import { Entwicklung } from './Entwicklung'
+import { Start } from './Start'
 import {
   entwurfLesen,
   entwurfSpeichern,
@@ -106,18 +108,24 @@ export function SchuelerBereich({ token, pfad }: Props) {
   // Übersichtsseiten: Seitenleiste + Inhalt auf Karten (Entwurf „Mein Lernweg“)
   if (!(paket && aufgabeId)) {
     return (
-      <SchuelerRahmen basis={basis} pseudonym={daten.pseudonym} aktiv={bereich === 'entwicklung' ? 'lernweg' : 'uebungen'}>
+      <SchuelerRahmen
+        basis={basis}
+        pseudonym={daten.pseudonym}
+        aktiv={bereich === 'entwicklung' ? 'lernweg' : bereich === 'uebungen' || paket ? 'uebungen' : 'start'}
+      >
         {wartendHinweis}
 
+        {!bereich && <Start token={token} daten={daten} geschafft={geschafftGesamt} basis={basis} />}
+
         {bereich === 'entwicklung' && (
-          <Entwicklung token={token} pseudonym={daten.pseudonym} geschafft={geschafftGesamt} uebungen={`#${basis}`} />
+          <Entwicklung token={token} pseudonym={daten.pseudonym} geschafft={geschafftGesamt} uebungen={`#${basis}/uebungen`} />
         )}
 
-        {!paket && bereich !== 'entwicklung' && (
+        {!paket && bereich && bereich !== 'entwicklung' && (
           <>
             <header className="aes-card seitenkopf">
               <div>
-                <h1 className="titel-gross">Hallo {daten.pseudonym}!</h1>
+                <h1 className="titel-gross">Meine Übungen</h1>
                 <p className="seitenkopf__text">
                   {daten.pakete.length === 0 ? 'Für dich gibt es gerade keine Übungen. Schau später noch einmal vorbei.' : 'Such dir eine Übung aus.'}
                 </p>
@@ -152,7 +160,7 @@ export function SchuelerBereich({ token, pfad }: Props) {
         {paket && (
           <>
             <header className="aes-card seitenkopf">
-              <a className="aes-btn aes-btn--secondary" href={`#${basis}`}>
+              <a className="aes-btn aes-btn--secondary" href={`#${basis}/uebungen`}>
                 Zurück
               </a>
               <div>
@@ -281,22 +289,27 @@ function SchuelerRahmen({
 }: {
   basis: string
   pseudonym: string
-  aktiv: 'uebungen' | 'lernweg'
+  aktiv: 'start' | 'uebungen' | 'lernweg'
   children: ReactNode
 }) {
+  const eintraege = [
+    { id: 'start', text: 'Start', ziel: '' },
+    { id: 'uebungen', text: 'Meine Übungen', ziel: '/uebungen' },
+    { id: 'lernweg', text: 'Mein Lernweg', ziel: '/entwicklung' },
+  ] as const
   return (
     <div className="wiese rahmen">
       <nav className="aes-nav rahmen__nav" aria-label="Hauptmenü">
         <div className="logo-platz" aria-hidden="true" />
         <div className="aes-nav__brand">Übungswiese</div>
-        <a className="aes-nav__item" href={`#${basis}`} aria-current={aktiv === 'uebungen' ? 'page' : undefined}>
-          <span className="aes-nav__dot" aria-hidden="true" />
-          Meine Übungen
-        </a>
-        <a className="aes-nav__item" href={`#${basis}/entwicklung`} aria-current={aktiv === 'lernweg' ? 'page' : undefined}>
-          <span className="aes-nav__dot" aria-hidden="true" />
-          Mein Lernweg
-        </a>
+        {eintraege.map((e) => (
+          <a key={e.id} className="aes-nav__item" href={`#${basis}${e.ziel}`} aria-current={aktiv === e.id ? 'page' : undefined}>
+            <span className="aes-nav__icon">
+              <PixelIcon name={NAV_ICON[e.id]} />
+            </span>
+            {e.text}
+          </a>
+        ))}
         <div className="rahmen__name">
           <span className="rahmen__punkt" aria-hidden="true" />
           {pseudonym}

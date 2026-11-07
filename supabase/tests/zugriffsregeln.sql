@@ -120,7 +120,8 @@ begin
       'select public.pruefe_aufgabe(''lueckentext'', ''{}''::jsonb, ''{}''::jsonb)',
       'select public.nur_loesung(''lueckentext'', ''{}''::jsonb)',
       'select public.schueler_zum_token(''x'')',
-      'select public.neuer_token()'
+      'select public.neuer_token()',
+      'select public.wiese_zahl(1, 1, 1, 1, 1, null::public.einstellungen)'
     ] loop
       begin
         execute f;
@@ -330,6 +331,21 @@ begin
   end if;
   ok := ok || '1.13 Schüler-Entwicklung ohne absolute Werte'::text;
 
+  -- 1.13b Blumenwiese: der Schüler-Link bekommt NUR die eine Zahl
+  v := public.schueler_wiese(c_tok_a2);
+  if (select array_agg(k) from jsonb_object_keys(v) k) <> array['blumen'] or jsonb_typeof(v -> 'blumen') <> 'number' then
+    raise exception 'FEHLGESCHLAGEN: schueler_wiese liefert mehr als die Blumenzahl: %', v;
+  end if;
+  -- Eule-02: eine Kompetenz „deutlich besser“ (3 Blumen) + ein abgeschlossenes Paket (1 Blume)
+  if (v ->> 'blumen')::int <> 4 then raise exception 'FEHLGESCHLAGEN: Blumenzahl Eule-02: %', v; end if;
+  begin
+    perform public.schueler_wiese('falscher_token_xxxxxxxxxxxxxxxxxxxxxx');
+    raise exception 'FEHLGESCHLAGEN: Wiese mit falschem Token';
+  exception when others then
+    if sqlerrm like 'FEHLGESCHLAGEN%' then raise; end if;
+  end;
+  ok := ok || '1.13b Blumenwiese: nur eine Zahl, aus der Entwicklung berechnet'::text;
+
   -- 1.14 Lehrkraft-Auswertungen sind für Schüler:innen gesperrt
   declare f text;
   begin
@@ -474,6 +490,22 @@ begin
   ok := ok || '2.6 Vorschau-Prüfung funktioniert'::text;
 
   reset role;
+
+  -- 3.1 Blumenwiese welkt nie, Obergrenze 80
+  update public.schueler set wiese_blumen = 50 where id = c_sch_a2;
+  v := public.schueler_wiese(c_tok_a2);
+  if (v ->> 'blumen')::int <> 50 then raise exception 'FEHLGESCHLAGEN: Wiese ist gewelkt: %', v; end if;
+  if public.wiese_zahl(30, 0, 0, 0, 0, (select e from public.einstellungen e where owner = c_lk_a)) <> 80
+     or public.wiese_zahl(0, 0, 0, 0, 100, (select e from public.einstellungen e where owner = c_lk_a)) <> 20
+     or public.wiese_zahl(1, 1, 1, 1, 2, (select e from public.einstellungen e where owner = c_lk_a)) <> 8 then
+    raise exception 'FEHLGESCHLAGEN: Rechenregel der Blumenwiese';
+  end if;
+  begin
+    update public.schueler set wiese_blumen = 81 where id = c_sch_a2;
+    raise exception 'FEHLGESCHLAGEN: mehr als 80 Blumen gespeichert';
+  exception when check_violation then null;
+  end;
+  ok := ok || '3.1 Blumenwiese welkt nie, höchstens 80 Blumen'::text;
 
   -- Alles rückgängig machen und Ergebnis melden
   raise exception 'ALLE TESTS BESTANDEN (%): %', array_length(ok, 1), array_to_string(ok, ' | ');
