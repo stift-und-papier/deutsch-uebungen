@@ -1,0 +1,28 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Hilfsdateien und Bau-Ergebnisse (werden automatisch erzeugt)
+node_modules
+dist
+dist-ssr
+*.local
+
+# Geheime Schlüssel – NIE hochladen
+.env
+.env.*
+!.env.example
+supabase/.temp
+
+# Kerncurricula-PDFs: urheberrechtlich geschützt, nicht ins öffentliche Repo
+docs/*.pdf
+
+# Ursprünglicher Projektauftrag (nur lokal)
+claude-code-prompt.md
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store

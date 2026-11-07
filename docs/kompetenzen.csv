@@ -1,0 +1,155 @@
+﻿id;kerncurriculum;bereich;stufe_ende_jahrgang;kompetenz;hinweis
+GYM-WA-6-01;Gymnasium;Wortarten;6;Verb (und dessen Konjugation, insbesondere die Tempusformen) kennen und unterscheiden, fachsprachlich richtig bezeichnen, syntaktische Funktion sowie sprachliche Leistung erkennen und beschreiben;
+GYM-WA-6-02;Gymnasium;Wortarten;6;Substantiv/Nomen, Artikel, Personal-, Relativ-, Possessivpronomen (und deren Deklination) kennen und unterscheiden, fachsprachlich richtig bezeichnen, syntaktische Funktion sowie sprachliche Leistung erkennen und beschreiben;
+GYM-WA-6-03;Gymnasium;Wortarten;6;Adjektiv (und dessen Deklination und Komparation) kennen und unterscheiden, fachsprachlich richtig bezeichnen, syntaktische Funktion sowie sprachliche Leistung erkennen und beschreiben;
+GYM-WA-6-04;Gymnasium;Wortarten;6;Präpositionen (und deren Rektion) kennen und unterscheiden, fachsprachlich richtig bezeichnen, syntaktische Funktion sowie sprachliche Leistung erkennen und beschreiben;
+GYM-WA-6-05;Gymnasium;Wortarten;6;Konjunktionen (und deren syntaktische Funktion in einfachen Fällen) kennen und unterscheiden, fachsprachlich richtig bezeichnen, syntaktische Funktion sowie sprachliche Leistung erkennen und beschreiben;
+GYM-WA-8-01;Gymnasium;Wortarten;8;weitere Wortarten kennen, fachsprachlich richtig bezeichnen, syntaktische Funktion sowie sprachliche Leistung erkennen und beschreiben: Pronomen (Demonstrativ-, Indefinit-, Interrogativ-, Reflexivpronomen);
+GYM-WA-8-02;Gymnasium;Wortarten;8;weitere Wortarten kennen, fachsprachlich richtig bezeichnen, syntaktische Funktion sowie sprachliche Leistung erkennen und beschreiben: Numerale, Adverbien, weitere Konjunktionen und deren syntaktische Funktion;
+GYM-WA-8-03;Gymnasium;Wortarten;8;Aktiv und Passiv unterscheiden und deren sprachliche Leistung nutzen;
+GYM-WA-10-01;Gymnasium;Wortarten;10;Kenntnisse der Wortarten und ihrer stilistischen Leistung zur Untersuchung von Texten und beim Sprechen und Schreiben nutzen;
+GYM-WB-6-01;Gymnasium;Wortbildung und Wortschatz;6;Kenntnisse der Wortbildung: Wortbaustein (Morphem), Wortstamm, Kompositum, Ableitung, Substantivierung;
+GYM-WB-6-02;Gymnasium;Wortbildung und Wortschatz;6;Kenntnisse über Wortfelder und Wortfamilien zur Erweiterung des Wortschatzes und zur Ausbildung sprachlichen Differenzierungsvermögens nutzen;
+GYM-WB-8-01;Gymnasium;Wortbildung und Wortschatz;8;semantische Beziehungen von Wörtern mithilfe von Ober- und Unterbegriffen, Synonymen, Antonymen klären;
+GYM-SA-6-01;Gymnasium;Satzglieder und Sätze;6;Satzglieder mithilfe der Umstell-, Frage-, Ersatz- und Weglassprobe bestimmen: Subjekt, Prädikat, Objekte;
+GYM-SA-6-02;Gymnasium;Satzglieder und Sätze;6;Satzglieder mithilfe der Umstell-, Frage-, Ersatz- und Weglassprobe bestimmen: Adverbialbestimmungen;
+GYM-SA-6-03;Gymnasium;Satzglieder und Sätze;6;Subjekt und Prädikat als Kern eines Aussagesatzes erkennen;
+GYM-SA-6-04;Gymnasium;Satzglieder und Sätze;6;Aussage-, Frage- und Aufforderungssatz unterscheiden;
+GYM-SA-6-05;Gymnasium;Satzglieder und Sätze;6;Haupt- und Nebensatz, Satzreihe und Satzgefüge unterscheiden;
+GYM-SA-8-01;Gymnasium;Satzglieder und Sätze;8;das Attribut als Satzgliedteil erkennen – auch mithilfe von Proben;
+GYM-SA-8-02;Gymnasium;Satzglieder und Sätze;8;"Nebensatzformen erkennen, fachsprachlich korrekt bezeichnen und funktional anwenden: Subjektsatz, Objektsatz, Adverbialsatz (Konjunktionalsatz); Attributsatz (Relativsatz), Infinitivsatz";
+GYM-SA-10-01;Gymnasium;Satzglieder und Sätze;10;Kenntnisse der Syntax und ihrer stilistischen Leistung zur Untersuchung von Texten und beim Sprechen und Schreiben nutzen;
+GYM-RE-6-01;Gymnasium;Rechtschreibung;6;Regeln der Rechtschreibung, grammatisches Wissen und Strategien (z. B. Ableitung vom Wortstamm, Wortverlängerung) zur Ermittlung der richtigen Schreibung anwenden: Silben mit langem und kurzem Vokal;
+GYM-RE-6-02;Gymnasium;Rechtschreibung;6;Regeln der Rechtschreibung, grammatisches Wissen und Strategien zur Ermittlung der richtigen Schreibung anwenden: gleich und ähnlich klingende Vokale bzw. Diphthonge (Stammkonstanzschreibung);
+GYM-RE-6-03;Gymnasium;Rechtschreibung;6;Regeln der Rechtschreibung, grammatisches Wissen und Strategien zur Ermittlung der richtigen Schreibung anwenden: gleich und ähnlich klingende Konsonanten, Schreibung der s-Laute;
+GYM-RE-6-04;Gymnasium;Rechtschreibung;6;Regeln der Rechtschreibung, grammatisches Wissen und Strategien zur Ermittlung der richtigen Schreibung anwenden: Großschreibung;
+GYM-RE-6-05;Gymnasium;Rechtschreibung;6;Regeln der Rechtschreibung, grammatisches Wissen und Strategien zur Ermittlung der richtigen Schreibung anwenden: Worttrennung;
+GYM-RE-6-06;Gymnasium;Rechtschreibung;6;Sensibilität für Zweifelsfälle der Rechtschreibung zeigen;
+GYM-RE-6-07;Gymnasium;Rechtschreibung;6;unter Anleitung die eigene Rechtschreibung mithilfe von Wörterbüchern und Rechtschreibprogrammen überprüfen und korrigieren;
+GYM-RE-8-01;Gymnasium;Rechtschreibung;8;Regularitäten der Fremdwortschreibung kennen und häufig gebrauchte Fremdwörter richtig schreiben;
+GYM-RE-8-02;Gymnasium;Rechtschreibung;8;Regeln der Zusammen- und Getrenntschreibung beachten;
+GYM-RE-8-03;Gymnasium;Rechtschreibung;8;den Regelteil eines Wörterbuchs zur Rechtschreibkontrolle nutzen;
+GYM-RE-10-01;Gymnasium;Rechtschreibung;10;Rechtschreibregeln, grammatisches Wissen und Strategien der Rechtschreibung selbstständig und sicher anwenden;
+GYM-ZS-6-01;Gymnasium;Zeichensetzung;6;Zeichensetzungsregeln kennen und beachten: Satzschluss, Aufzählung;
+GYM-ZS-6-02;Gymnasium;Zeichensetzung;6;Zeichensetzungsregeln kennen und beachten: direkte Rede, Anrede;
+GYM-ZS-6-03;Gymnasium;Zeichensetzung;6;Zeichensetzungsregeln kennen und beachten: Satzreihe, einfaches Satzgefüge;
+GYM-ZS-8-01;Gymnasium;Zeichensetzung;8;weitere Zeichensetzungsregeln kennen und korrekt anwenden: Kommata in mehrgliedrigen Satzgefügen, bei Einschüben, Appositionen, nachgestellten Erläuterungen, Herausstellungen, Infinitivsätzen;
+GYM-ZS-10-01;Gymnasium;Zeichensetzung;10;die Zeichensetzung beherrschen und Doppelpunkt, Semikolon, Gedankenstrich und Klammer als weitere Satzzeichen nutzen;
+GYM-SG-6-01;Gymnasium;Sprachgebrauch;6;Stilebenen wie sachlich, höflich, derb unterscheiden und deren Wirkung kennen;
+GYM-SG-6-02;Gymnasium;Sprachgebrauch;6;den Konjunktiv II zur Gestaltung von Wunsch- und Phantasievorstellungen nutzen;
+GYM-SG-8-01;Gymnasium;Sprachgebrauch;8;den Konjunktiv in der indirekten Rede kennen und verwenden;
+GYM-SG-10-01;Gymnasium;Sprachgebrauch;10;über einen situationsangemessenen und variantenreichen Gebrauch von Modalität verfügen;
+GYM-TU-6-01;Gymnasium;Texte überarbeiten;6;erste Erfahrungen mit der Überarbeitung von Texten haben;Kompetenzbereich Schreiben
+GYM-TU-8-01;Gymnasium;Texte überarbeiten;8;Aufbau, Inhalt und sprachliche Gestaltung eigener Texte prüfen und überarbeiten;Kompetenzbereich Schreiben
+GYM-TU-10-01;Gymnasium;Texte überarbeiten;10;eigene Texte überarbeiten und fremde Texte kriteriengeleitet kommentieren;Kompetenzbereich Schreiben
+GYM-TU-6-10-01;Gymnasium;Texte überarbeiten;6-10;regelgeleitet Verstöße gegen die Sprachrichtigkeit erkennen und berichtigen unter Verwendung eines Nachschlagewerks;"Kompetenzbereich Schreiben; gilt über alle Stufen"
+RS-WA-6-01;Realschule;Wortarten;6;flektierbare und unflektierbare Wortarten unterscheiden, fachsprachlich richtig benennen und deren Funktion untersuchen: Nomen, Artikel, Personal-, Possessiv- und Relativpronomen und Adjektiv und deren Deklination mit Unterscheidung nach Kasus, Numerus, Genus;
+HS-WA-6-01;Hauptschule;Wortarten;6;flektierbare und unflektierbare Wortarten unterscheiden, fachsprachlich richtig benennen und deren Funktion untersuchen: Nomen, Artikel, Personal-, Possessiv- und Relativpronomen und Adjektiv und deren Deklination mit Unterscheidung nach Kasus, Numerus, Genus;
+RS-WA-6-02;Realschule;Wortarten;6;flektierbare und unflektierbare Wortarten unterscheiden, fachsprachlich richtig benennen und deren Funktion untersuchen: Adjektiv und dessen Komparation;
+HS-WA-6-02;Hauptschule;Wortarten;6;flektierbare und unflektierbare Wortarten unterscheiden, fachsprachlich richtig benennen und deren Funktion untersuchen: Adjektiv und dessen Komparation;
+RS-WA-6-03;Realschule;Wortarten;6;flektierbare und unflektierbare Wortarten unterscheiden, fachsprachlich richtig benennen und deren Funktion untersuchen: Verb, Hilfs- und Modalverb und dessen Konjugation;
+HS-WA-6-03;Hauptschule;Wortarten;6;flektierbare und unflektierbare Wortarten unterscheiden, fachsprachlich richtig benennen und deren Funktion untersuchen: Verb, Hilfs- und Modalverb und dessen Konjugation;
+RS-WA-6-04;Realschule;Wortarten;6;flektierbare und unflektierbare Wortarten unterscheiden, fachsprachlich richtig benennen und deren Funktion untersuchen: Präposition, Adverb;
+HS-WA-6-04;Hauptschule;Wortarten;6;flektierbare und unflektierbare Wortarten unterscheiden, fachsprachlich richtig benennen und deren Funktion untersuchen: Präposition, Adverb;
+RS-WA-6-05;Realschule;Wortarten;6;Verben untersuchen und die Tempusformen textsorten- und situationsadäquat verwenden: Präsens, Perfekt, Präteritum, Futur I;
+HS-WA-6-05;Hauptschule;Wortarten;6;Verben untersuchen und die Tempusformen textsorten- und situationsadäquat verwenden: Präsens, Perfekt, Präteritum, Futur I;
+RS-WA-6-06;Realschule;Wortarten;6;bei den Flexionsmustern zwischen starken und schwachen Verben unterscheiden, z. B. sagen - er sagte, singen - er sang;
+HS-WA-6-06;Hauptschule;Wortarten;6;bei den Flexionsmustern zwischen starken und schwachen Verben unterscheiden, z. B. sagen - er sagte, singen - er sang;
+RS-WA-6-07;Realschule;Wortarten;6;Konjunktionen als Möglichkeit der semantischen Verknüpfung von Sätzen nutzen, z. B. vergleichende, ausschließende und entgegensetzende Konjunktion;RS-Wortlaut: 'Konjunktion und Subjunktion'
+HS-WA-6-07;Hauptschule;Wortarten;6;Konjunktionen als Möglichkeit der semantischen Verknüpfung von Sätzen nutzen, z. B. vergleichende, ausschließende und entgegensetzende Konjunktion;RS-Wortlaut: 'Konjunktion und Subjunktion'
+RS-WA-8-01;Realschule;Wortarten;8;die Kasusbestimmung am Beispiel von Präposition und Verb untersuchen;
+HS-WA-8-01;Hauptschule;Wortarten;8;die Kasusbestimmung am Beispiel von Präposition und Verb untersuchen;
+RS-WA-8-02;Realschule;Wortarten;8;die Verbformen untersuchen und textsorten- und situationsadäquat nutzen: Aktiv, Passiv;
+HS-WA-8-02;Hauptschule;Wortarten;8;die Verbformen untersuchen und textsorten- und situationsadäquat nutzen: Aktiv, Passiv;
+RS-WA-8-03;Realschule;Wortarten;8;die Verbformen untersuchen und textsorten- und situationsadäquat nutzen: Imperativ;
+HS-WA-8-03;Hauptschule;Wortarten;8;die Verbformen untersuchen und textsorten- und situationsadäquat nutzen: Imperativ;
+RS-WA-8-04;Realschule;Wortarten;8;"die Funktion der Wortarten untersuchen: Konjunktion und Subjunktion; Demonstrativ-, Reflexiv-, Interrogativ- und Indefinitpronomen; Interjektion (z. B. oh, bäh, huhu); Partikel; Modalwörter";
+HS-WA-8-04;Hauptschule;Wortarten;8;"die Funktion der Wortarten untersuchen: Konjunktion; Demonstrativ- und Reflexivpronomen";
+RS-WA-8-05;Realschule;Wortarten;8;"die Verbformen untersuchen und textsorten- und situationsadäquat nutzen: Plusquamperfekt, Futur II; Indikativ, Konjunktiv I, Konjunktiv II";
+HS-WA-8-05;Hauptschule;Wortarten;8;"die Verbformen untersuchen und textsorten- und situationsadäquat nutzen: Plusquamperfekt; Indikativ, Konjunktiv I";
+RS-WA-10-01;Realschule;Wortarten;10;Kenntnisse der Wortarten und ihrer stilistischen Leistung bei der Textanalyse und Textproduktion nutzen;HS: Stufe 9/10
+HS-WA-10-01;Hauptschule;Wortarten;10;Kenntnisse der Wortarten und ihrer stilistischen Leistung bei der Textanalyse und Textproduktion nutzen;HS: Stufe 9/10
+RS-WB-6-01;Realschule;Wortbildung und Wortschatz;6;Kenntnisse über Wortbildung nutzen: Wortbaustein (Stamm, Ableitungsmorphem), Wortbildungsmuster (Zusammensetzung, Ableitung);
+HS-WB-6-01;Hauptschule;Wortbildung und Wortschatz;6;Kenntnisse über Wortbildung nutzen: Wortbaustein (Stamm, Ableitungsmorphem), Wortbildungsmuster (Zusammensetzung, Ableitung);
+RS-WB-8-01;Realschule;Wortbildung und Wortschatz;8;"Wortbildungsmuster untersuchen: Kurzwortbildung, z. B. Auto, LKW; Konversion, z. B. grün - (das) Grün, (der) Ernst – ernst";
+HS-WB-8-01;Hauptschule;Wortbildung und Wortschatz;8;"Wortbildungsmuster untersuchen: Kurzwortbildung, z. B. Auto, LKW; Konversion, z. B. grün - (das) Grün, (der) Ernst – ernst";
+RS-WB-6-02;Realschule;Wortbildung und Wortschatz;6;Wörter untersuchen und ihre Bedeutung mithilfe von Wortfamilien und Wortfeldern erschließen;
+HS-WB-6-02;Hauptschule;Wortbildung und Wortschatz;6;Wörter untersuchen und ihre Bedeutung mithilfe von Wortfamilien und Wortfeldern erschließen;
+RS-WB-8-02;Realschule;Wortbildung und Wortschatz;8;Fremdwörter untersuchen und ihre Bedeutung erschließen;
+HS-WB-8-02;Hauptschule;Wortbildung und Wortschatz;8;Fremdwörter untersuchen und ihre Bedeutung erschließen;
+RS-WB-6-10-01;Realschule;Wortbildung und Wortschatz;6-10;die Bedeutung von Redewendungen und Sprichwörtern zur Erweiterung des Wortschatzes untersuchen;gilt über alle Stufen
+HS-WB-6-10-01;Hauptschule;Wortbildung und Wortschatz;6-10;die Bedeutung von Redewendungen und Sprichwörtern zur Erweiterung des Wortschatzes untersuchen;gilt über alle Stufen
+RS-SA-6-01;Realschule;Satzglieder und Sätze;6;ausgehend vom Prädikat mithilfe syntaktischer Proben (z. B. Vorfeldprobe im Rahmen des Feldermodells) die Funktionen von Wortgruppen in Sätzen unterscheiden: Subjekt, Objekt (Akkusativobjekt, Dativobjekt), adverbiale Bestimmung;
+HS-SA-6-01;Hauptschule;Satzglieder und Sätze;6;ausgehend vom Prädikat mithilfe syntaktischer Proben (z. B. Vorfeldprobe im Rahmen des Feldermodells) die Funktionen von Wortgruppen in Sätzen unterscheiden: Subjekt, Objekt (Akkusativobjekt, Dativobjekt), adverbiale Bestimmung;
+RS-SA-6-02;Realschule;Satzglieder und Sätze;6;die zentrale Bedeutung des Prädikats als Kern des Satzes nutzen;
+HS-SA-6-02;Hauptschule;Satzglieder und Sätze;6;die zentrale Bedeutung des Prädikats als Kern des Satzes nutzen;
+RS-SA-6-03;Realschule;Satzglieder und Sätze;6;die Struktur von einfachen Sätzen mithilfe syntaktischer Proben (z. B. Vorfeldprobe im Rahmen des Feldermodells) unterscheiden;
+HS-SA-6-03;Hauptschule;Satzglieder und Sätze;6;die Struktur von einfachen Sätzen mithilfe syntaktischer Proben (z. B. Vorfeldprobe im Rahmen des Feldermodells) unterscheiden;
+RS-SA-6-04;Realschule;Satzglieder und Sätze;6;die Wortgruppen bestimmen: Nominalgruppe, Verbgruppe, Präpositionalgruppe;
+HS-SA-6-04;Hauptschule;Satzglieder und Sätze;6;die Wortgruppen bestimmen: Nominalgruppe, Verbgruppe, Präpositionalgruppe;
+RS-SA-6-05;Realschule;Satzglieder und Sätze;6;den Kern der Nominalgruppe bestimmen und die Großschreibung begründen;
+HS-SA-6-05;Hauptschule;Satzglieder und Sätze;6;den Kern der Nominalgruppe bestimmen und die Großschreibung begründen;
+RS-SA-6-06;Realschule;Satzglieder und Sätze;6;Haupt- und Nebensatz sowie Aussagesatz, Fragesatz und Aufforderungssatz unterscheiden und verwenden;
+HS-SA-6-06;Hauptschule;Satzglieder und Sätze;6;Haupt- und Nebensatz sowie Aussagesatz, Fragesatz und Aufforderungssatz unterscheiden und verwenden;
+RS-SA-8-01;Realschule;Satzglieder und Sätze;8;mithilfe syntaktischer Proben die Funktionen von Nebensätzen unterscheiden: Adverbiale Bestimmung (=Adverbialsatz), Subjektsatz, Objektsatz, Relativsatz, Infinitivsatz;
+HS-SA-8-01;Hauptschule;Satzglieder und Sätze;8;mithilfe syntaktischer Proben die Funktionen von Nebensätzen unterscheiden: Adverbiale Bestimmung (=Adverbialsatz), Relativsatz, Infinitivsatz;
+RS-SA-8-02;Realschule;Satzglieder und Sätze;8;die Leistungen des Attributs und des Attributsatzes untersuchen und nutzen;
+RS-SA-8-03;Realschule;Satzglieder und Sätze;8;Haupt- und Nebensätze bzw. Satzreihen und Satzgefüge mithilfe syntaktischer Proben unterscheiden und verwenden und die Unterscheidung zur Zeichensetzung nutzen;
+HS-SA-8-02;Hauptschule;Satzglieder und Sätze;8;Haupt- und Nebensätze bzw. Satzreihen und Satzgefüge mithilfe syntaktischer Proben unterscheiden und verwenden und die Unterscheidung zur Zeichensetzung nutzen;
+RS-SA-10-01;Realschule;Satzglieder und Sätze;10;die Struktur auch komplexerer Satzmodelle (z. B. im Feldermodell) untersuchen;HS: Stufe 9/10
+HS-SA-10-01;Hauptschule;Satzglieder und Sätze;10;die Struktur auch komplexerer Satzmodelle (z. B. im Feldermodell) untersuchen;HS: Stufe 9/10
+RS-SA-10-02;Realschule;Satzglieder und Sätze;10;Kenntnisse über grammatische Strukturen auf die eigene Ausdrucksfähigkeit, Textgestaltung und Zeichensetzung anwenden;HS: Stufe 9/10
+HS-SA-10-02;Hauptschule;Satzglieder und Sätze;10;Kenntnisse über grammatische Strukturen auf die eigene Ausdrucksfähigkeit, Textgestaltung und Zeichensetzung anwenden;HS: Stufe 9/10
+RS-SA-10-03;Realschule;Satzglieder und Sätze;10;Partizipialkonstruktionen bestimmen und zur Erweiterung der stilistischen Ausdrucksmöglichkeiten verwenden;
+RS-RE-6-01;Realschule;Rechtschreibung;6;beim Schreiben die Kenntnis über den Aufbau von Wörtern aus Silben und über die Vokaldauer anwenden;
+HS-RE-6-01;Hauptschule;Rechtschreibung;6;beim Schreiben die Kenntnis über den Aufbau von Wörtern aus Silben und über die Vokaldauer anwenden;
+RS-RE-6-02;Realschule;Rechtschreibung;6;beim Schreiben den Aufbau von Wörtern aus Wortbausteinen beachten: Zusammensetzungen, Endungen für Nomen, Adjektivendung;
+HS-RE-6-02;Hauptschule;Rechtschreibung;6;beim Schreiben den Aufbau von Wörtern aus Wortbausteinen beachten: Zusammensetzungen, Endungen für Nomen, Adjektivendung;
+RS-RE-6-03;Realschule;Rechtschreibung;6;"einen zunehmend erweiterten Wortschatz von Merkwörtern richtig schreiben: häufige und wichtige Fremdwörter/Fachwörter; besondere Buchstaben und Buchstabenfolgen; Häufigkeitswörter; gebräuchliche Abkürzungen";
+HS-RE-6-03;Hauptschule;Rechtschreibung;6;"einen zunehmend erweiterten Wortschatz von Merkwörtern richtig schreiben: häufige und wichtige Fremdwörter/Fachwörter; besondere Buchstaben und Buchstabenfolgen; Häufigkeitswörter; gebräuchliche Abkürzungen";
+RS-RE-6-04;Realschule;Rechtschreibung;6;die Regeln der Großschreibung anwenden bei: Nomen mit Endungen (-heit, -keit, -ung, -nis, -schaft), Nominalisierungen, Abstrakta, Anredepronomen, Satzanfängen;
+HS-RE-6-04;Hauptschule;Rechtschreibung;6;die Regeln der Großschreibung anwenden bei: Nomen mit Endungen (-heit, -keit, -ung, -nis, -schaft), Nominalisierungen, Abstrakta, Anredepronomen, Satzanfängen;
+RS-RE-6-05;Realschule;Rechtschreibung;6;den Satzbau für die Großschreibung des Kerns einer Nominalgruppe beachten und nutzen (syntaktische Analyse);
+HS-RE-6-05;Hauptschule;Rechtschreibung;6;den Satzbau für die Großschreibung des Kerns einer Nominalgruppe beachten und nutzen (syntaktische Analyse);
+RS-RE-6-06;Realschule;Rechtschreibung;6;Fremdwörter von nativen Wörtern unterscheiden;
+HS-RE-6-06;Hauptschule;Rechtschreibung;6;Fremdwörter von nativen Wörtern unterscheiden;
+RS-RE-8-01;Realschule;Rechtschreibung;8;beachten, dass die Schreibung von Fremdwörtern eigenen orthografischen Gesetzmäßigkeiten folgt;
+HS-RE-8-01;Hauptschule;Rechtschreibung;8;beachten, dass die Schreibung von Fremdwörtern eigenen orthografischen Gesetzmäßigkeiten folgt;
+RS-RE-6-07;Realschule;Rechtschreibung;6;bei der Getrennt- und Zusammenschreibung das Wortbildungsprinzip (z. B. Haustür, (jemanden) freisprechen) und das syntaktische Prinzip (z. B. Man kann hier frei sprechen.) beachten;
+HS-RE-6-07;Hauptschule;Rechtschreibung;6;bei der Getrennt- und Zusammenschreibung das Wortbildungsprinzip (z. B. Haustür, (jemanden) freisprechen) und das syntaktische Prinzip (z. B. Man kann hier frei sprechen.) beachten;
+RS-RE-6-08;Realschule;Rechtschreibung;6;Rechtschreibstrategien einsetzen: silbische Analyse und Vokaldauer (Dehnungs- und Schärfungsschreibung, Schreibungen mit s, ss und ß);
+HS-RE-6-08;Hauptschule;Rechtschreibung;6;Rechtschreibstrategien einsetzen: silbische Analyse und Vokaldauer (Dehnungs- und Schärfungsschreibung, Schreibungen mit s, ss und ß);
+RS-RE-6-09;Realschule;Rechtschreibung;6;Rechtschreibstrategien einsetzen: morphologische Analyse (Verlängern, Ableiten);
+HS-RE-6-09;Hauptschule;Rechtschreibung;6;Rechtschreibstrategien einsetzen: morphologische Analyse (Verlängern, Ableiten);
+RS-RE-6-10;Realschule;Rechtschreibung;6;Rechtschreibstrategien einsetzen: syntaktische Analyse (z. B. Erkennen des Kerns der Nominalgruppe);
+HS-RE-6-10;Hauptschule;Rechtschreibung;6;Rechtschreibstrategien einsetzen: syntaktische Analyse (z. B. Erkennen des Kerns der Nominalgruppe);
+RS-RE-6-11;Realschule;Rechtschreibung;6;Rechtschreibhilfen zielführend einsetzen, z. B. Wörterbuch, Rechtschreibhilfen des Textverarbeitungsprogramms und anderer digitaler Medien;
+HS-RE-6-11;Hauptschule;Rechtschreibung;6;Rechtschreibhilfen zielführend einsetzen, z. B. Wörterbuch, Rechtschreibhilfen des Textverarbeitungsprogramms und anderer digitaler Medien;
+RS-RE-6-10-01;Realschule;Rechtschreibung;6-10;Rechtschreibbewusstsein und Fehlersensibilität entwickeln;gilt über alle Stufen
+HS-RE-6-10-01;Hauptschule;Rechtschreibung;6-10;Rechtschreibbewusstsein und Fehlersensibilität entwickeln;gilt über alle Stufen
+RS-RE-6-10-02;Realschule;Rechtschreibung;6-10;beim Schreiben und Lesen orthografische Gesetzmäßigkeiten beachten und benennen;gilt über alle Stufen
+HS-RE-6-10-02;Hauptschule;Rechtschreibung;6-10;beim Schreiben und Lesen orthografische Gesetzmäßigkeiten beachten und benennen;gilt über alle Stufen
+RS-RE-6-10-03;Realschule;Rechtschreibung;6-10;das Wissen über orthografische Gesetzmäßigkeiten zur Fehlerkorrektur nutzen;gilt über alle Stufen
+HS-RE-6-10-03;Hauptschule;Rechtschreibung;6-10;das Wissen über orthografische Gesetzmäßigkeiten zur Fehlerkorrektur nutzen;gilt über alle Stufen
+RS-RE-10-01;Realschule;Rechtschreibung;10;erworbenes Regelwissen, Rechtschreibhilfen und Rechtschreibstrategien auf individuelle Fehlerschwerpunkte und Spezialfälle im Peripheriebereich anwenden;
+HS-RE-10-01;Hauptschule;Rechtschreibung;10;erworbenes Regelwissen, Rechtschreibhilfen und Rechtschreibstrategien auf individuelle Fehlerschwerpunkte anwenden;Stufe 9/10
+RS-ZS-6-01;Realschule;Zeichensetzung;6;den Satzbau für die richtige Zeichensetzung beachten: Satzschlusszeichen;
+HS-ZS-6-01;Hauptschule;Zeichensetzung;6;den Satzbau für die richtige Zeichensetzung beachten: Satzschlusszeichen;
+RS-ZS-6-02;Realschule;Zeichensetzung;6;den Satzbau für die richtige Zeichensetzung beachten: Komma bei Aufzählungen (zwischen Wortteilen, Wörtern und gleichrangigen Sätzen) und zwischen Haupt- und Nebensätzen;
+HS-ZS-6-02;Hauptschule;Zeichensetzung;6;den Satzbau für die richtige Zeichensetzung beachten: Komma bei Aufzählungen (zwischen Wortteilen, Wörtern und gleichrangigen Sätzen) und zwischen Haupt- und Nebensätzen;
+RS-ZS-6-03;Realschule;Zeichensetzung;6;den Satzbau für die richtige Zeichensetzung beachten: Unterscheiden von das als Artikel oder Relativpronomen und dass als Konjunktion;
+HS-ZS-6-03;Hauptschule;Zeichensetzung;6;den Satzbau für die richtige Zeichensetzung beachten: Unterscheiden von das als Artikel oder Relativpronomen und dass als Konjunktion;
+RS-ZS-6-04;Realschule;Zeichensetzung;6;den Satzbau für die richtige Zeichensetzung beachten: Zeichen der wörtlichen Rede;
+HS-ZS-6-04;Hauptschule;Zeichensetzung;6;den Satzbau für die richtige Zeichensetzung beachten: Zeichen der wörtlichen Rede;
+RS-ZS-8-01;Realschule;Zeichensetzung;8;den Satzbau für die richtige Zeichensetzung beachten: erweiterter Infinitiv mit zu;
+HS-ZS-8-01;Hauptschule;Zeichensetzung;8;den Satzbau für die richtige Zeichensetzung beachten: erweiterter Infinitiv mit zu;
+RS-ZS-8-02;Realschule;Zeichensetzung;8;Regelwissen der Zeichensetzung in Satzreihen und in zunehmend komplexeren Satzgefügen anwenden;
+HS-ZS-8-02;Hauptschule;Zeichensetzung;8;Regelwissen der Zeichensetzung in Satzreihen und in zunehmend komplexeren Satzgefügen anwenden;
+RS-SG-6-10-01;Realschule;Sprachgebrauch;6-10;situationsangemessen verschiedene Sprachebenen unterscheiden: Standardsprache, Umgangssprache, Jugendsprache, Fachsprache;gilt über alle Stufen
+HS-SG-6-10-01;Hauptschule;Sprachgebrauch;6-10;situationsangemessen verschiedene Sprachebenen unterscheiden: Standardsprache, Umgangssprache, Jugendsprache, Fachsprache;gilt über alle Stufen
+RS-TU-6-10-01;Realschule;Texte überarbeiten;6-10;zunehmend selbstständig eigene und fremde Texte prüfen und überarbeiten in Bezug auf: Aufbau, Inhalt, sprachliche Gestaltung;"Kompetenzbereich Schreiben; gilt über alle Stufen"
+HS-TU-6-10-01;Hauptschule;Texte überarbeiten;6-10;zunehmend selbstständig eigene und fremde Texte prüfen und überarbeiten in Bezug auf: Aufbau, Inhalt, sprachliche Gestaltung;"Kompetenzbereich Schreiben; gilt über alle Stufen"
+RS-TU-6-10-02;Realschule;Texte überarbeiten;6-10;zunehmend selbstständig eigene und fremde Texte angeleitet und mithilfe von Nachschlagewerken berichtigen in Bezug auf: Rechtschreibung und Zeichensetzung;"Kompetenzbereich Schreiben; gilt über alle Stufen"
+HS-TU-6-10-02;Hauptschule;Texte überarbeiten;6-10;zunehmend selbstständig eigene und fremde Texte angeleitet und mithilfe von Nachschlagewerken berichtigen in Bezug auf: Rechtschreibung und Zeichensetzung;"Kompetenzbereich Schreiben; gilt über alle Stufen"
+RS-TU-6-10-03;Realschule;Texte überarbeiten;6-10;zunehmend selbstständig eigene und fremde Texte angeleitet und mithilfe von Nachschlagewerken berichtigen in Bezug auf: Grammatik;"Kompetenzbereich Schreiben; gilt über alle Stufen"
+HS-TU-6-10-03;Hauptschule;Texte überarbeiten;6-10;zunehmend selbstständig eigene und fremde Texte angeleitet und mithilfe von Nachschlagewerken berichtigen in Bezug auf: Grammatik;"Kompetenzbereich Schreiben; gilt über alle Stufen"
