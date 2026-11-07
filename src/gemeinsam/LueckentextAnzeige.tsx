@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import type { Antworten, AuswahlTeilOhneLoesung, LueckentextInhaltSchueler, Pruefergebnis } from '../lib/typen'
+import type { Antwort, Antworten, AuswahlTeilOhneLoesung, LueckentextInhaltSchueler, Pruefergebnis } from '../lib/typen'
 import { lueckenBreite } from '../lib/lueckentext'
+import { ReiheAnzeige } from './ReiheAnzeige'
 
 type Props = {
   inhalt: LueckentextInhaltSchueler
   antworten: Antworten
-  onAntwort: (id: number, wert: string | number[] | boolean) => void
+  onAntwort: (id: number, wert: Antwort) => void
   ergebnis?: Pruefergebnis | null
   /** Lösungen pro Stelle (nur nach "Lösung ansehen") */
   loesungen?: Record<number, string[]> | null
@@ -24,6 +25,32 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
   const farbe = (kategorie: string) => `kat-${Math.max(0, kategorien.indexOf(kategorie)) % 5}`
 
   const mitWoertern = inhalt.teile.some((t) => t.t === 'wort')
+
+  // Format „Reihenfolge“: jeder Satz ist eine eigene Reihe zum Ordnen
+  const reihen = inhalt.teile.flatMap((t) => (t.t === 'reihe' ? [t] : []))
+  if (reihen.length > 0)
+    return (
+      <div className="reihen">
+        {reihen.map((teil, nr) => {
+          const e = ergebnis?.luecken.find((l) => l.id === teil.id)
+          const a = antworten[teil.id]
+          return (
+            <ReiheAnzeige
+              key={teil.id}
+              teil={teil}
+              nr={nr}
+              anzahlSaetze={reihen.length}
+              gelegt={Array.isArray(a) ? a.map(String) : []}
+              onAenderung={(neu) => onAntwort(teil.id, neu)}
+              positionen={e?.positionen}
+              richtig={e?.richtig}
+              loesung={loesungen?.[teil.id]}
+              gesperrt={Boolean(gesperrt)}
+            />
+          )
+        })}
+      </div>
+    )
 
   return (
     <>
@@ -138,7 +165,7 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
               key={index}
               teil={teil}
               dropdown={inhalt.darstellung === 'dropdown' && !teil.mehrfach}
-              gewaehlt={Array.isArray(antworten[teil.id]) ? (antworten[teil.id] as number[]) : []}
+              gewaehlt={Array.isArray(antworten[teil.id]) ? (antworten[teil.id] as number[]).map(Number) : []}
               onWahl={(neu) => onAntwort(teil.id, neu)}
               richtig={richtig}
               gesperrt={gesperrt || richtig === true}

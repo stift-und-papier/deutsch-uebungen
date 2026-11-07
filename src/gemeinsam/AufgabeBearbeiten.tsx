@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FORMAT_ICON, PixelIcon } from '../lib/icons'
-import type { Antworten, Pruefergebnis, SchuelerAufgabe } from '../lib/typen'
+import type { Antwort, Antworten, Pruefergebnis, SchuelerAufgabe } from '../lib/typen'
 import { LueckentextAnzeige } from './LueckentextAnzeige'
 
 export type PruefAntwort = { ergebnis: Pruefergebnis; rueckmeldung: string | null; versuche: number }
@@ -35,12 +35,15 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
 
   // Lücken und Auswahl müssen alle beantwortet sein; beim Zuordnen muss mindestens ein Wort markiert sein
   // (die übrigen Wörter dürfen unmarkiert bleiben – manche gehören zu keiner Kategorie).
-  const luecken = aufgabe.inhalt.teile.filter((t) => t.t === 'luecke' || t.t === 'auswahl')
+  const luecken = aufgabe.inhalt.teile.filter((t) => t.t === 'luecke' || t.t === 'auswahl' || t.t === 'reihe')
   // Antippbare Einheiten (Zuordnen) und Wörter (Fehler finden): mindestens eins muss markiert sein
   const einheiten = aufgabe.inhalt.teile.filter((t) => t.t === 'einheit' || t.t === 'wort')
   const beantwortet = (id: number) => {
     const a = antworten[id]
     if (a === true) return true
+    // Reihenfolge: alle Bausteine müssen in der Reihe liegen
+    const reihe = aufgabe.inhalt.teile.find((t) => t.t === 'reihe' && t.id === id)
+    if (reihe && reihe.t === 'reihe') return Array.isArray(a) && a.length === reihe.bausteine.length
     return Array.isArray(a) ? a.length > 0 : typeof a === 'string' && a.trim() !== ''
   }
   const alleAusgefuellt =
@@ -66,7 +69,7 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
     }
   }
 
-  function beiEingabe(id: number, wert: string | number[] | boolean) {
+  function beiEingabe(id: number, wert: Antwort) {
     // Leere Antworten (gelöschte Eingabe, aufgehobene Markierung) ganz entfernen
     const neu: Antworten = { ...antworten, [id]: wert }
     if (wert === '' || wert === false || (Array.isArray(wert) && wert.length === 0)) delete neu[id]
@@ -79,7 +82,8 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
             ...alt,
             ergebnis: {
               ...alt.ergebnis,
-              luecken: alt.ergebnis.luecken.filter((l) => l.richtig || l.id !== id),
+              // Reihenfolge: nach jeder Änderung verschwinden die ✓/↻ dieses Satzes
+              luecken: alt.ergebnis.luecken.filter((l) => l.id !== id || (l.richtig && !l.positionen)),
             },
           }
         : alt,
@@ -102,7 +106,9 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
 
   // Wie die Stellen heißen: „Lücke“, „Auswahl“ oder – gemischt – „Stelle“
   const arten = new Set<string>([...luecken, ...einheiten].map((l) => l.t))
-  const wort = arten.has('wort')
+  const wort = arten.has('reihe')
+    ? { eins: 'Satz', viele: 'Bausteine' }
+    : arten.has('wort')
     ? { eins: 'Wort', viele: 'Fehler' }
     : arten.has('einheit')
     ? { eins: 'Wort', viele: 'Zuordnungen' }
@@ -115,14 +121,26 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
   // Fehler finden: nicht gefundene Fehler kommen ohne Nummer zurück – es wird nur ihre Anzahl genannt
   const fehlend = ergebnis?.ergebnis.luecken.filter((l) => l.id === null).length ?? 0
   const falschMarkiert = ergebnis?.ergebnis.luecken.filter((l) => l.id !== null && !l.richtig).length ?? 0
-  const nochmalTitel = arten.has('wort')
+  // Reihenfolge: gezählt werden die richtig liegenden Bausteine
+  const plaetze = ergebnis?.ergebnis.luecken.flatMap((l) => l.positionen ?? []) ?? []
+  const plaetzeRichtig = plaetze.filter(Boolean).length
+  const nochmalTitel = arten.has('reihe')
+    ? plaetzeRichtig > 0
+      ? 'Fast! Schau bei den Bausteinen mit ↻ nochmal hin.'
+      : 'Schau nochmal hin.'
+    : arten.has('wort')
     ? 'Fast! Schau nochmal genau hin.'
     : anzahlRichtig === 0 || nochmalNummern.length === 0
       ? 'Schau nochmal hin.'
       : arten.has('einheit')
         ? 'Fast! Schau bei den Wörtern mit ↻ nochmal hin.'
       : `Fast! Schau bei ${wort.eins} ${nochmalNummern.slice(0, -1).join(', ')}${nochmalNummern.length > 1 ? ' und ' : ''}${nochmalNummern[nochmalNummern.length - 1]} nochmal hin.`
-  const nochmalText = arten.has('wort')
+  const nochmalText = arten.has('reihe')
+    ? ergebnis?.rueckmeldung ??
+      (plaetzeRichtig > 0
+        ? `Schon ${plaetzeRichtig} von ${plaetze.length} Bausteinen stehen an der richtigen Stelle.`
+        : 'Lies den Satz laut: Was passt an den Anfang?')
+    : arten.has('wort')
     ? [
         fehlend > 0 ? `Es fehlen noch ${fehlend} Fehler.` : '',
         falschMarkiert > 0 ? 'Bei den Wörtern mit ↻ stimmt etwas noch nicht.' : '',
@@ -241,7 +259,9 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
             </div>
           </div>
           {!alleAusgefuellt && !allesRichtig && <p className="aes-card__hint">
-              {arten.has('wort')
+              {arten.has('reihe')
+                ? 'Lege alle Bausteine in die Reihe'
+                : arten.has('wort')
                 ? 'Tippe die Fehlerwörter an'
                 : arten.has('einheit')
                 ? 'Markiere die passenden Wörter'

@@ -10,7 +10,7 @@ export const SCHWIERIGKEITEN: { wert: Schwierigkeit; text: string }[] = [
 
 // ---- Aufgabeninhalt: Textstücke, Lücken und Auswahl-Stellen (dürfen gemischt vorkommen) ----
 
-export type AufgabenTyp = 'lueckentext' | 'auswahl' | 'zuordnen' | 'fehler'
+export type AufgabenTyp = 'lueckentext' | 'auswahl' | 'zuordnen' | 'fehler' | 'reihenfolge'
 
 export type TextTeil = { t: 'text'; v: string }
 export type LueckenTeil = { t: 'luecke'; id: number; loesungen: string[] }
@@ -20,7 +20,11 @@ export type AuswahlTeil = { t: 'auswahl'; id: number; optionen: string[]; richti
 export type EinheitTeil = { t: 'einheit'; id: number; v: string; kategorie: string | null }
 /** Antippbares Wort beim Fehlerfinden (mit anhängenden Satzzeichen); korrekturen null = fehlerfrei */
 export type WortTeil = { t: 'wort'; id: number; v: string; korrekturen: string[] | null }
-export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil | EinheitTeil | WortTeil
+/** Baustein zum Ordnen: k = zufällige Kennung (verrät die Reihenfolge nicht), v = Text */
+export type Baustein = { k: string; v: string }
+/** Satz zum Ordnen: Bausteine in richtiger Reihenfolge, loesungen = alle richtigen Reihenfolgen (als Texte) */
+export type ReiheTeil = { t: 'reihe'; id: number; bausteine: Baustein[]; loesungen: string[][] }
+export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil | EinheitTeil | WortTeil | ReiheTeil
 
 export type Darstellung = 'antippen' | 'dropdown'
 
@@ -44,17 +48,21 @@ export type LueckenTeilOhneLoesung = { t: 'luecke'; id: number }
 export type AuswahlTeilOhneLoesung = { t: 'auswahl'; id: number; optionen: string[]; mehrfach: boolean }
 export type EinheitOhneLoesung = { t: 'einheit'; id: number; v: string }
 export type WortOhneLoesung = { t: 'wort'; id: number; v: string }
+/** Bausteine nach Kennung sortiert, also gemischt */
+export type ReiheOhneLoesung = { t: 'reihe'; id: number; bausteine: Baustein[] }
 export type LueckentextInhaltSchueler = {
   darstellung?: Darstellung
   kategorien?: string[]
   korrigieren?: boolean
   /** Anzahl der Fehler (nur wenn die Lehrkraft sie anzeigen lässt) */
   anzahl_fehler?: number | null
-  teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung | EinheitOhneLoesung | WortOhneLoesung)[]
+  teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung | EinheitOhneLoesung | WortOhneLoesung | ReiheOhneLoesung)[]
 }
 
-/** Antworten je Stelle: Text bei Lücken, Liste der angetippten Möglichkeiten bei Auswahl, Kategorie beim Zuordnen */
-export type Antworten = Record<string, string | number[] | boolean>
+/** Antworten je Stelle: Text bei Lücken, Liste der angetippten Möglichkeiten bei Auswahl, Kategorie beim Zuordnen,
+ *  Liste der Baustein-Kennungen in gelegter Reihenfolge beim Ordnen */
+export type Antwort = string | number[] | boolean | string[]
+export type Antworten = Record<string, Antwort>
 
 // ---- Tabellen ----
 
@@ -119,7 +127,7 @@ export type Zuweisung = {
 
 export type Pruefergebnis = {
   /** id null = nicht gefundener Fehler (Stelle wird bewusst nicht verraten) */
-  luecken: { id: number | null; richtig: boolean }[]
+  luecken: { id: number | null; richtig: boolean; positionen?: boolean[] }[]
   anteil: number
   richtig: boolean
 }

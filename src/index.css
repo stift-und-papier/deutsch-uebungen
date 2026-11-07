@@ -1541,3 +1541,89 @@ tr.ausgeblendet .aktionen {
     line-height: 20px;
   }
 }
+
+/* ---------- Reihenfolge (Wortkarten aes-word zum Ziehen und Antippen) ---------- */
+.reihen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin: var(--space-4) 0;
+}
+
+.reihe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.reihe__nr {
+  margin: 0;
+  font-weight: 800;
+  color: var(--schulblau);
+}
+
+.reihe__vorrat,
+.reihe__ablage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: calc(var(--tipp-min) + 2 * var(--space-3));
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+}
+
+.reihe__vorrat {
+  background: var(--himmel-hell);
+}
+
+/* Die Reihe, in die gelegt wird */
+.reihe__ablage {
+  border: 2px solid var(--linie);
+  background: var(--flaeche);
+}
+
+.reihe__bereich--ueber {
+  outline: 3px solid var(--schulblau);
+  outline-offset: 2px;
+}
+
+.reihe__leer {
+  color: var(--tinte-gedaempft);
+}
+
+.reihe__karte {
+  gap: var(--space-2);
+}
+
+.reihe__karte--ok {
+  background: var(--erfolg-flaeche);
+  border: 2px solid var(--gruen-dunkel);
+}
+
+.reihe__karte--ok .markierung {
+  color: var(--gruen-dunkel);
+}
+
+.reihe__karte--again {
+  background: var(--pfirsich-hell);
+  border: 2px solid var(--pfirsich-dunkel);
+}
+
+.reihe__karte--again .markierung {
+  color: var(--pfirsich-dunkel);
+}
+
+.reihe__karte:disabled {
+  cursor: default;
+  color: var(--tinte);
+}
+
+.reihe__karte--gezogen {
+  cursor: grabbing;
+  box-shadow: var(--schatten-karte);
+}
+
+.reihe__loesung {
+  margin: 0;
+}

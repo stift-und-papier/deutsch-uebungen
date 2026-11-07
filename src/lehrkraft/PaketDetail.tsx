@@ -324,7 +324,9 @@ function PaketVorschau({ daten }: { daten: Daten }) {
                       ? [[t.id, [t.kategorie]]]
                       : t.t === 'wort' && t.korrekturen
                         ? [[t.id, t.korrekturen]]
-                        : [],
+                        : t.t === 'reihe'
+                          ? [[t.id, t.loesungen.map((l) => l.join(' '))]]
+                          : [],
               ),
             )
           }

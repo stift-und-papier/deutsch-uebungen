@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AufgabeBearbeiten } from '../gemeinsam/AufgabeBearbeiten'
 import { fehlerText } from '../lib/fehler'
-import { kategorienAus, ohneLoesung, stelleZuText, teileZuText, textZuTeilen } from '../lib/lueckentext'
+import { kategorienAus, ohneLoesung, reihenZuTeilen, stelleZuText, teileZuText, textZuTeilen } from '../lib/lueckentext'
 import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import {
@@ -33,6 +33,11 @@ const FORMATE: Record<AufgabenTyp, { name: string; anweisung: string; beispiel: 
     anweisung: 'Finde die Fehler im Text.',
     beispiel: 'Ich [weis -> weiß] nicht, ob mein Bruder heute [komt -> kommt]. Wir wollen [radfahren -> Rad fahren].',
   },
+  reihenfolge: {
+    name: 'Reihenfolge',
+    anweisung: 'Bring die Bausteine in die richtige Reihenfolge.',
+    beispiel: 'Gestern | bin ich | ins Kino | gegangen.\nIns Kino | bin ich | gestern | gegangen.\n\nDer Hund | bellt | laut.',
+  },
   zuordnen: {
     name: 'Zuordnen',
     anweisung: 'Wähle oben eine Kategorie und tippe die passenden Wörter an.',
@@ -40,7 +45,7 @@ const FORMATE: Record<AufgabenTyp, { name: string; anweisung: string; beispiel: 
   },
 }
 
-// Aufgabe anlegen oder bearbeiten (Lückentext oder Auswahl) – wahlweise als Text mit [Klammern] oder per Formular.
+// Aufgabe anlegen oder bearbeiten (alle Formate) – wahlweise als Text mit [Klammern] oder per Formular.
 export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabeId: string | null; neuerTyp?: AufgabenTyp }) {
   const [typ, setTyp] = useState<AufgabenTyp>(neuerTyp)
   const [darstellung, setDarstellung] = useState<Darstellung>('antippen')
@@ -99,7 +104,10 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
       })
   }, [aufgabeId])
 
-  const { teile, fehler: textFehler } = useMemo(() => textZuTeilen(text, typ === 'fehler' ? 'fehler' : typ === 'zuordnen'), [text, typ])
+  const { teile, fehler: textFehler } = useMemo(
+    () => (typ === 'reihenfolge' ? reihenZuTeilen(text) : textZuTeilen(text, typ === 'fehler' ? 'fehler' : typ === 'zuordnen')),
+    [text, typ],
+  )
   const kategorien = typ === 'zuordnen' ? kategorienAus(teile, kategorienText.split(',')) : undefined
   const fehlerOptionen = typ === 'fehler' ? { korrigieren, anzahl_zeigen: anzahlZeigen } : {}
   const inhalt = { text, gross_klein_beachten: grossKlein, darstellung, kategorien, ...fehlerOptionen, teile }
@@ -235,7 +243,14 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
             {modus === 'text' ? (
               <>
                 <div className="erklaerung">
-                  {typ === 'fehler' ? (
+                  {typ === 'reihenfolge' ? (
+                    <p>
+                      Schreiben Sie jeden Satz in die richtige Reihenfolge und trennen Sie die Bausteine mit <strong>|</strong>.
+                      Gibt es weitere richtige Reihenfolgen, schreiben Sie sie in die Zeilen <strong>direkt darunter</strong>.
+                      Eine <strong>Leerzeile</strong> beginnt einen neuen Satz. Groß-/Kleinschreibung und Satzzeichen am Ende
+                      eines Bausteins zählen beim Vergleich nicht. Schüler:innen bekommen die Bausteine gemischt.
+                    </p>
+                  ) : typ === 'fehler' ? (
                     <p>
                       Schreiben Sie den Text und setzen Sie jedes Fehlerwort so in Klammern:{' '}
                       <strong>[Fehlerwort -&gt; Verbesserung]</strong>, z. B. <code>[weis -&gt; weiß]</code>. Mehrere richtige
@@ -278,7 +293,11 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
                 />
               </>
             ) : (
-              <FormularModus teile={teile} onChange={setText} />
+              typ === 'reihenfolge' ? (
+                <ReihenFormular text={text} onChange={setText} />
+              ) : (
+                <FormularModus teile={teile} onChange={setText} />
+              )
             )}
 
             {text && textFehler.length > 0 && (
@@ -288,7 +307,10 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
                 ))}
               </ul>
             )}
-            {text && textFehler.length === 0 && (
+            {text && textFehler.length === 0 && typ === 'reihenfolge' && (
+              <p className="klein">✓ {teile.length === 1 ? '1 Satz' : `${teile.length} Sätze`} zum Ordnen erkannt.</p>
+            )}
+            {text && textFehler.length === 0 && typ !== 'reihenfolge' && (
               <p className="klein">
                 ✓ {teile.filter((t) => t.t === 'luecke').length} Lücke(n) und {teile.filter((t) => t.t === 'auswahl').length}{' '}
                 Auswahl-Stelle(n) erkannt.
@@ -388,7 +410,7 @@ function zeilenAus(teile: LueckentextTeil[]): Zeile[] {
     if (text !== null) {
       if (letzte && letzte.art === 'text') zeilen[zeilen.length - 1] = { art: 'text', v: letzte.v + text }
       else zeilen.push({ art: 'text', v: text })
-    } else if (t.t !== 'text') {
+    } else if (t.t !== 'text' && t.t !== 'reihe') {
       zeilen.push({ art: t.t, roh: stelleZuText(t) })
     }
   }
@@ -471,6 +493,49 @@ function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange
         </button>
         <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setzen([...zeilen, { art: 'wort', roh: '' }])}>
           + Fehler
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Formular für „Reihenfolge“: ein Feld je Satz (Bausteine mit |, weitere Reihenfolgen in weiteren Zeilen).
+function ReihenFormular({ text, onChange }: { text: string; onChange: (text: string) => void }) {
+  const [saetze, setSaetze] = useState<string[]>(() => {
+    const liste = text.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean)
+    return liste.length ? liste : ['']
+  })
+  function setzen(neu: string[]) {
+    setSaetze(neu)
+    onChange(neu.map((s) => s.trim()).filter(Boolean).join('\n\n'))
+  }
+  return (
+    <div className="formular-modus">
+      {saetze.map((s, i) => (
+        <div key={i} className="teil teil-luecke">
+          <label>
+            Satz {i + 1}: Bausteine in richtiger Reihenfolge, mit | getrennt. Weitere richtige Reihenfolgen in neue Zeilen.
+            <textarea
+              rows={2}
+              value={s}
+              onChange={(e) => setzen(saetze.map((x, j) => (j === i ? e.target.value.replace(/\n\s*\n/g, '\n') : x)))}
+              spellCheck={false}
+              placeholder="Gestern | bin ich | ins Kino | gegangen."
+            />
+          </label>
+          <button
+            type="button"
+            className="aes-btn aes-btn--ghost aes-btn--klein"
+            onClick={() => setzen(saetze.filter((_, j) => j !== i))}
+            aria-label={`Satz ${i + 1} entfernen`}
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+      <div className="knopfleiste">
+        <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setSaetze([...saetze, ''])}>
+          + Satz
         </button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { kategorienAus, neuNummerieren, ohneLoesung, teileZuText, textZuTeilen } from './lueckentext'
+import { kategorienAus, neuNummerieren, ohneLoesung, reihenZuTeilen, teileZuText, textZuTeilen } from './lueckentext'
 
 describe('textZuTeilen', () => {
   it('erkennt eine Lücke', () => {
@@ -191,5 +191,49 @@ describe('neuNummerieren', () => {
       { t: 'luecke', id: 9, loesungen: ['b'] },
     ])
     expect(neu.map((t) => (t.t === 'luecke' ? t.id : null))).toEqual([0, null, 1])
+  })
+})
+
+describe('Reihenfolge', () => {
+  it('liest Bausteine, weitere Reihenfolgen und mehrere Sätze', () => {
+    const { teile, fehler } = reihenZuTeilen(
+      'Gestern | bin ich | ins Kino | gegangen.\nIns Kino | bin ich | gestern | gegangen.\n\nDer Hund | bellt.',
+    )
+    expect(fehler).toEqual([])
+    expect(teile).toHaveLength(2)
+    const [a, b] = teile
+    if (a.t !== 'reihe' || b.t !== 'reihe') throw new Error('kein Satz')
+    expect(a.id).toBe(0)
+    expect(b.id).toBe(1)
+    expect(a.bausteine.map((x) => x.v)).toEqual(['Gestern', 'bin ich', 'ins Kino', 'gegangen.'])
+    expect(a.loesungen[1]).toEqual(['Ins Kino', 'bin ich', 'gestern', 'gegangen.'])
+    // Kennungen eindeutig
+    expect(new Set(a.bausteine.map((x) => x.k)).size).toBe(4)
+  })
+
+  it('mischt: nach Kennung sortiert ist die Reihenfolge nie die richtige', () => {
+    for (let n = 0; n < 50; n++) {
+      const { teile } = reihenZuTeilen('a | b | c')
+      const t = teile[0]
+      if (t.t !== 'reihe') throw new Error('kein Satz')
+      const gemischt = ohneLoesung(teile).teile[0]
+      if (gemischt.t !== 'reihe') throw new Error('kein Satz')
+      expect(gemischt.bausteine.map((x) => x.v)).not.toEqual(['a', 'b', 'c'])
+      expect(gemischt).not.toHaveProperty('loesungen')
+    }
+  })
+
+  it('meldet Fehler in der Schreibweise', () => {
+    expect(reihenZuTeilen('Nur ein Baustein').fehler[0]).toMatch(/mit \| trennen/)
+    expect(reihenZuTeilen('a | b\nb | c').fehler[0]).toMatch(/dieselben Bausteine/)
+    expect(reihenZuTeilen('').fehler[0]).toMatch(/mindestens einen Satz/)
+    // Groß-/Kleinschreibung und Satzzeichen am Ende zählen beim Vergleich nicht
+    expect(reihenZuTeilen('Gestern | kam er.\nEr kam | gestern').fehler[0]).toMatch(/dieselben/)
+    expect(reihenZuTeilen('Gestern | kam er.\nkam er | gestern.').fehler).toEqual([])
+  })
+
+  it('wandelt zurück in die Schreibweise', () => {
+    const text = 'a | b\nb | a\n\nc | d'
+    expect(teileZuText(reihenZuTeilen(text).teile)).toBe(text)
   })
 })

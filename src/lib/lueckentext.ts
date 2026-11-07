@@ -94,6 +94,66 @@ export function textZuTeilen(text: string, woerterAntippbar: boolean | 'fehler' 
   return { teile, fehler }
 }
 
+// ---- Format „Reihenfolge“ ----
+// Schreibweise: Bausteine eines Satzes mit | trennen, in der richtigen Reihenfolge:
+//   Gestern | bin ich | ins Kino | gegangen.
+//   Ins Kino | bin ich | gestern | gegangen.      ← weitere richtige Reihenfolge (direkt darunter)
+//
+//   Der Hund | bellt | laut.                       ← Leerzeile = neuer Satz
+// Verglichen wird ohne Groß-/Kleinschreibung und ohne Satzzeichen am Ende eines Bausteins (wie in der Datenbank).
+
+/** Baustein für den Vergleich vereinheitlichen (entspricht baustein_norm in der Datenbank) */
+export function bausteinNorm(v: string): string {
+  return v.trim().replace(/\s+/g, ' ').replace(/[.,;:!?]+$/, '').toLowerCase()
+}
+
+const BUCHSTABEN = 'abcdefghijklmnopqrstuvwxyz'
+
+/** Zufällige Kennungen für die Bausteine; sortiert ergeben sie nie die richtige Reihenfolge (wenn möglich). */
+export function kennungen(anzahl: number, zufall: () => number = Math.random): string[] {
+  for (let versuch = 0; versuch < 50; versuch++) {
+    const neu = new Set<string>()
+    while (neu.size < anzahl) {
+      let k = ''
+      for (let i = 0; i < 6; i++) k += BUCHSTABEN[Math.floor(zufall() * BUCHSTABEN.length)]
+      neu.add(k)
+    }
+    const liste = [...neu]
+    const sortiert = [...liste].sort()
+    if (anzahl < 2 || sortiert.some((k, i) => k !== liste[i])) return liste
+  }
+  return Array.from({ length: anzahl }, (_, i) => BUCHSTABEN[anzahl - 1 - i].repeat(6))
+}
+
+/** Wandelt den Eingabetext der Lehrkraft in Sätze zum Ordnen um. */
+export function reihenZuTeilen(text: string, zufall: () => number = Math.random): ParseErgebnis {
+  const teile: LueckentextTeil[] = []
+  const fehler: string[] = []
+  const bloecke = text
+    .split(/\n\s*\n/)
+    .map((b) => b.split('\n').map((z) => z.trim()).filter(Boolean))
+    .filter((b) => b.length > 0)
+
+  bloecke.forEach((zeilen, nr) => {
+    const loesungen = zeilen.map((z) => z.split('|').map((s) => s.trim().replace(/\s+/g, ' ')))
+    const [erste] = loesungen
+    if (erste.length < 2) {
+      fehler.push(`Satz ${nr + 1}: Bitte die Bausteine mit | trennen, z. B. Gestern | bin ich | ins Kino | gegangen.`)
+      return
+    }
+    if (erste.some((b) => b === '')) fehler.push(`Satz ${nr + 1}: Ein Baustein ist leer. Bitte zwischen den | etwas eintragen.`)
+    const muster = erste.map(bausteinNorm).sort().join('|')
+    loesungen.slice(1).forEach((l, i) => {
+      if (l.map(bausteinNorm).sort().join('|') !== muster)
+        fehler.push(`Satz ${nr + 1}, Zeile ${i + 2}: Diese Reihenfolge muss genau dieselben Bausteine enthalten wie die erste Zeile.`)
+    })
+    const k = kennungen(erste.length, zufall)
+    teile.push({ t: 'reihe', id: nr, bausteine: erste.map((v, i) => ({ k: k[i], v })), loesungen })
+  })
+  if (bloecke.length === 0) fehler.push('Schreiben Sie mindestens einen Satz, die Bausteine mit | getrennt.')
+  return { teile, fehler }
+}
+
 // Wörter (Buchstaben, Ziffern, Bindestrich/Apostroph im Wort) werden antippbar, alles andere bleibt Text.
 const WORT = /[\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*/gu
 
@@ -133,6 +193,7 @@ export function kategorienAus(teile: LueckentextTeil[], eingetragen: string[] = 
 
 /** Eine Stelle wieder in Schreibweise umwandeln (für den Formular-Modus und die Umkehrung). */
 export function stelleZuText(t: Exclude<LueckentextTeil, { t: 'text' }>): string {
+  if (t.t === 'reihe') return t.loesungen.map((l) => l.join(' | ')).join('\n')
   if (t.t === 'luecke') return t.loesungen.join('/')
   if (t.t === 'einheit') return `${t.v} = ${t.kategorie ?? ''}`
   if (t.t === 'wort') return `${t.v} -> ${(t.korrekturen ?? []).join('/')}`
@@ -141,6 +202,8 @@ export function stelleZuText(t: Exclude<LueckentextTeil, { t: 'text' }>): string
 
 /** Umkehrung: Textstücke und Stellen wieder als Eingabetext. */
 export function teileZuText(teile: LueckentextTeil[]): string {
+  if (teile.some((t) => t.t === 'reihe'))
+    return teile.flatMap((t) => (t.t === 'reihe' ? [stelleZuText(t)] : [])).join('\n\n')
   return teile
     .map((t) =>
       t.t === 'text' || (t.t === 'einheit' && !t.kategorie) || (t.t === 'wort' && !t.korrekturen) ? t.v : `[${stelleZuText(t)}]`,
@@ -175,7 +238,9 @@ export function ohneLoesung(
             ? { t: 'einheit', id: t.id, v: t.v }
             : t.t === 'wort'
               ? { t: 'wort', id: t.id, v: t.v }
-              : t,
+              : t.t === 'reihe'
+                ? { t: 'reihe', id: t.id, bausteine: [...t.bausteine].sort((a, b) => (a.k < b.k ? -1 : 1)) }
+                : t,
     ),
   }
 }

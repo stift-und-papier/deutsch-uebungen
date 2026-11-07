@@ -44,7 +44,7 @@
 - Antworten werden **in der Datenbank** geprüft (`pruefe_aufgabe`, plpgsql). Schüler:innen bekommen Aufgaben ohne
   Lösungen (`inhalt_ohne_loesung` – Achtung: Feld `text` enthält Lösungen und muss immer entfernt werden).
   Jedes neue Aufgabenformat braucht Zweige in `pruefe_aufgabe`, `inhalt_ohne_loesung`, `nur_loesung`.
-  Aufgabeninhalt = Liste `teile` aus `text`, `luecke`, `auswahl`, `einheit` und `wort` (Parser `src/lib/lueckentext.ts`;
+  Aufgabeninhalt = Liste `teile` aus `text`, `luecke`, `auswahl`, `einheit`, `wort` und `reihe` (Parser `src/lib/lueckentext.ts`;
   bei `zuordnen` werden alle Wörter zu Einheiten).
   Antworten: Text je Lücke, Liste der gewählten Nummern je Auswahl.
 - Ansprache: Lehrkraft-Oberfläche „Sie“, Schüleransicht „du“, einfache Sprache.
@@ -122,6 +122,13 @@
   Anzahl gelöster Aufgaben, nächster Schritt. **Nie Punkte/Stufen** – Test 1.13 prüft das.
 
 ## Entscheidungen (Protokoll)
+- 2026-11-08 (didaktisch, Lehrkraft): Format **Reihenfolge** (deckt auch Überarbeitungsformat „Satzbausteine umstellen“
+  ab): Schreibweise `Gestern | bin ich | ins Kino | gegangen.` in richtiger Reihenfolge, weitere richtige Reihenfolgen
+  in den Zeilen direkt darunter, Leerzeile = neuer Satz (Parser `reihenZuTeilen`). Bausteine bekommen zufällige
+  Kennungen `k`; Schüler:innen erhalten sie nach `k` sortiert (= gemischt, nie die Lösung). Antwort = Liste der
+  Kennungen. Vergleich ohne Groß-/Kleinschreibung und ohne Satzzeichen am Bausteinende; Rückmeldung je Platz ✓/↻
+  (`positionen`), jeder Baustein zählt anteilig. Bedienung (`src/gemeinsam/ReiheAnzeige.tsx`, @dnd-kit): antippen
+  legt ans Ende der Reihe bzw. zurück; ziehen in die Reihe, innerhalb verschieben, zurück nach oben.
 - 2026-11-08 (didaktisch, Lehrkraft): Format **Fehler finden** (deckt auch Überarbeitungsformat „Fehler markieren und
   korrigieren“ ab): Schreibweise `[weis -> weiß]`, mehrere Verbesserungen mit /; alle Wörter (mit anhängenden
   Satzzeichen) antippbar. Je Aufgabe „nur finden“ oder „finden + eintippen“; „Auswählen“ bewusst weggelassen (würde
