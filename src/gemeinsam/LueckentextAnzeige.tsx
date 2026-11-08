@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Antwort, Antworten, AuswahlTeilOhneLoesung, LueckentextInhaltSchueler, Pruefergebnis } from '../lib/typen'
 import { lueckenBreite } from '../lib/lueckentext'
 import { ReiheAnzeige } from './ReiheAnzeige'
+import { VersionenAnzeige } from './VersionenAnzeige'
 
 type Props = {
   inhalt: LueckentextInhaltSchueler
@@ -25,6 +26,20 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
   const farbe = (kategorie: string) => `kat-${Math.max(0, kategorien.indexOf(kategorie)) % 5}`
 
   const mitWoertern = inhalt.teile.some((t) => t.t === 'wort')
+
+  // Format „Sätze verbessern“: Versionen untereinander
+  const versionen = inhalt.teile.flatMap((t) => (t.t === 'versionen' ? [t] : []))
+  if (versionen.length > 0)
+    return (
+      <VersionenAnzeige
+        teile={versionen}
+        antworten={antworten}
+        onAntwort={onAntwort}
+        ergebnis={ergebnis}
+        loesungen={loesungen}
+        gesperrt={gesperrt}
+      />
+    )
 
   // Format „Reihenfolge“: jeder Satz ist eine eigene Reihe zum Ordnen
   const reihen = inhalt.teile.flatMap((t) => (t.t === 'reihe' ? [t] : []))

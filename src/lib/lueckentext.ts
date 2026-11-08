@@ -235,6 +235,79 @@ export function reihenZuTeilen(text: string, zufall: () => number = Math.random)
   return { teile, fehler }
 }
 
+// ---- Format „Sätze verbessern“ ----
+// Schreibweise je Satz (Leerzeile = neuer Satz):
+//   Kontext: Gestern war ich im Zoo.                        ← optional, wird grau darüber gezeigt
+//   Dann sah ich die Löwen und dann sah ich die Affen.      ← eine Version je Zeile (2 bis 4)
+//   Hinweis: Hier steht zweimal „dann“.                     ← Begründung zur Version darüber
+//   *Zuerst sah ich die Löwen, danach die Affen.            ← * = die bessere Version
+//   Hinweis: So wiederholt sich kein Wort.
+
+export type VersionenBlock = { kontext: string; versionen: { text: string; hinweis: string; besser: boolean }[] }
+
+/** Zerlegt den Eingabetext in Sätze mit ihren Versionen (auch für das Formular). */
+export function versionenBloecke(text: string): VersionenBlock[] {
+  return text
+    .split(/\n\s*\n/)
+    .map((b) => b.split('\n').map((z) => z.trim()).filter(Boolean))
+    .filter((b) => b.length > 0)
+    .map((zeilen) => {
+      const block: VersionenBlock = { kontext: '', versionen: [] }
+      for (const z of zeilen) {
+        const kontext = /^kontext\s*:\s*(.*)$/i.exec(z)
+        const hinweis = /^hinweis\s*:\s*(.*)$/i.exec(z)
+        const letzte = block.versionen[block.versionen.length - 1]
+        if (kontext) block.kontext = kontext[1].trim()
+        else if (hinweis && letzte && !letzte.hinweis) letzte.hinweis = hinweis[1].trim()
+        // Hinweis ohne Version darüber: als leere Version merken, damit der Parser es meldet
+        else if (hinweis) block.versionen.push({ text: '', hinweis: hinweis[1].trim(), besser: false })
+        else block.versionen.push({ text: z.replace(/^\*\s*/, ''), hinweis: '', besser: z.startsWith('*') })
+      }
+      return block
+    })
+}
+
+/** Umkehrung von versionenBloecke */
+export function bloeckeZuText(bloecke: VersionenBlock[]): string {
+  return bloecke
+    .map((b) =>
+      [
+        ...(b.kontext.trim() ? [`Kontext: ${b.kontext.trim()}`] : []),
+        ...b.versionen
+          .filter((v) => v.text.trim())
+          .flatMap((v) => [`${v.besser ? '*' : ''}${v.text.trim()}`, ...(v.hinweis.trim() ? [`Hinweis: ${v.hinweis.trim()}`] : [])]),
+      ].join('\n'),
+    )
+    .filter(Boolean)
+    .join('\n\n')
+}
+
+/** Wandelt den Eingabetext der Lehrkraft in Sätze mit Versionen um. */
+export function versionenZuTeilen(text: string): ParseErgebnis {
+  const teile: LueckentextTeil[] = []
+  const fehler: string[] = []
+  const bloecke = versionenBloecke(text)
+  bloecke.forEach((b, nr) => {
+    const satz = `Satz ${nr + 1}`
+    if (b.versionen.some((v) => !v.text)) fehler.push(`${satz}: Vor jedem „Hinweis:“ muss eine Version stehen.`)
+    if (b.versionen.length < 2 || b.versionen.length > 4) fehler.push(`${satz}: Bitte 2 bis 4 Versionen schreiben, jede in eine eigene Zeile.`)
+    const besser = b.versionen.flatMap((v, i) => (v.besser ? [i] : []))
+    if (besser.length !== 1) fehler.push(`${satz}: Bitte genau eine Version mit * als die bessere markieren.`)
+    if (b.versionen.some((v) => v.text && !v.hinweis))
+      fehler.push(`${satz}: Bitte unter jede Version eine Zeile „Hinweis: …“ mit der Begründung schreiben.`)
+    teile.push({
+      t: 'versionen',
+      id: nr,
+      kontext: b.kontext,
+      optionen: b.versionen.map((v) => v.text),
+      richtig: besser,
+      hinweise: b.versionen.map((v) => v.hinweis),
+    })
+  })
+  if (bloecke.length === 0) fehler.push('Schreiben Sie mindestens einen Satz mit zwei Versionen.')
+  return { teile, fehler }
+}
+
 // Wörter (Buchstaben, Ziffern, Bindestrich/Apostroph im Wort) werden antippbar, alles andere bleibt Text.
 const WORT = /[\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*/gu
 
@@ -284,6 +357,13 @@ export function stelleZuText(t: Exclude<LueckentextTeil, { t: 'text' }>): string
         return zeile.join(' | ') + t.zeichen
       }),
     ].join('\n')
+  if (t.t === 'versionen')
+    return bloeckeZuText([
+      {
+        kontext: t.kontext,
+        versionen: t.optionen.map((o, i) => ({ text: o, hinweis: t.hinweise[i] ?? '', besser: t.richtig.includes(i) })),
+      },
+    ])
   if (t.t === 'luecke') return t.loesungen.join('/')
   if (t.t === 'einheit') return `${t.v} = ${t.kategorie ?? ''}`
   if (t.t === 'wort') return `${t.v} -> ${(t.korrekturen ?? []).join('/')}`
@@ -292,8 +372,8 @@ export function stelleZuText(t: Exclude<LueckentextTeil, { t: 'text' }>): string
 
 /** Umkehrung: Textstücke und Stellen wieder als Eingabetext. */
 export function teileZuText(teile: LueckentextTeil[]): string {
-  if (teile.some((t) => t.t === 'reihe'))
-    return teile.flatMap((t) => (t.t === 'reihe' ? [stelleZuText(t)] : [])).join('\n\n')
+  if (teile.some((t) => t.t === 'reihe' || t.t === 'versionen'))
+    return teile.flatMap((t) => (t.t === 'reihe' || t.t === 'versionen' ? [stelleZuText(t)] : [])).join('\n\n')
   return teile
     .map((t) =>
       t.t === 'text' || (t.t === 'einheit' && !t.kategorie) || (t.t === 'wort' && !t.korrekturen) ? t.v : `[${stelleZuText(t)}]`,
@@ -337,7 +417,9 @@ export function ohneLoesung(
                     varianten: t.varianten,
                     bausteine: [...t.bausteine].sort((a, b) => (a.k < b.k ? -1 : 1)),
                   }
-                : t,
+                : t.t === 'versionen'
+                  ? { t: 'versionen', id: t.id, kontext: t.kontext, optionen: t.optionen }
+                  : t,
     ),
   }
 }

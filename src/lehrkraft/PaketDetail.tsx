@@ -318,7 +318,7 @@ function PaketVorschau({ daten }: { daten: Daten }) {
               a.inhalt.teile.flatMap((t) =>
                 t.t === 'luecke'
                   ? [[t.id, t.loesungen]]
-                  : t.t === 'auswahl'
+                  : t.t === 'auswahl' || t.t === 'versionen'
                     ? [[t.id, t.richtig.map((nr) => t.optionen[nr])]]
                     : t.t === 'einheit' && t.kategorie
                       ? [[t.id, [t.kategorie]]]

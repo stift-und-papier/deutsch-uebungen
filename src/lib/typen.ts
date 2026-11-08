@@ -10,7 +10,7 @@ export const SCHWIERIGKEITEN: { wert: Schwierigkeit; text: string }[] = [
 
 // ---- Aufgabeninhalt: Textstücke, Lücken und Auswahl-Stellen (dürfen gemischt vorkommen) ----
 
-export type AufgabenTyp = 'lueckentext' | 'auswahl' | 'zuordnen' | 'fehler' | 'reihenfolge'
+export type AufgabenTyp = 'lueckentext' | 'auswahl' | 'zuordnen' | 'fehler' | 'reihenfolge' | 'ueberarbeiten'
 
 export type TextTeil = { t: 'text'; v: string }
 export type LueckenTeil = { t: 'luecke'; id: number; loesungen: string[] }
@@ -33,7 +33,10 @@ export type ReiheTeil = {
   bausteine: Baustein[]
   loesungen: string[][]
 }
-export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil | EinheitTeil | WortTeil | ReiheTeil
+/** Sätze verbessern: Versionen eines Satzes, richtig = Nummer der besseren, hinweise = Begründung je Version
+ *  (Hinweise bekommen Schüler:innen erst nach dem Prüfen) */
+export type VersionenTeil = { t: 'versionen'; id: number; kontext: string; optionen: string[]; richtig: number[]; hinweise: string[] }
+export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil | EinheitTeil | WortTeil | ReiheTeil | VersionenTeil
 
 export type Darstellung = 'antippen' | 'dropdown'
 
@@ -66,13 +69,14 @@ export type ReiheOhneLoesung = {
   varianten?: number
   bausteine: Baustein[]
 }
+export type VersionenOhneLoesung = { t: 'versionen'; id: number; kontext?: string; optionen: string[] }
 export type LueckentextInhaltSchueler = {
   darstellung?: Darstellung
   kategorien?: string[]
   korrigieren?: boolean
   /** Anzahl der Fehler (nur wenn die Lehrkraft sie anzeigen lässt) */
   anzahl_fehler?: number | null
-  teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung | EinheitOhneLoesung | WortOhneLoesung | ReiheOhneLoesung)[]
+  teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung | EinheitOhneLoesung | WortOhneLoesung | ReiheOhneLoesung | VersionenOhneLoesung)[]
 }
 
 /** Antworten je Stelle: Text bei Lücken, Liste der angetippten Möglichkeiten bei Auswahl, Kategorie beim Zuordnen,
@@ -143,7 +147,7 @@ export type Zuweisung = {
 
 export type Pruefergebnis = {
   /** id null = nicht gefundener Fehler (Stelle wird bewusst nicht verraten) */
-  luecken: { id: number | null; richtig: boolean; positionen?: boolean[]; variante?: number }[]
+  luecken: { id: number | null; richtig: boolean; positionen?: boolean[]; variante?: number; hinweise?: string[] }[]
   anteil: number
   richtig: boolean
 }

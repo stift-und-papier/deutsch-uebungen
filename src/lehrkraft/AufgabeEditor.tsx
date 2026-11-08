@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AufgabeBearbeiten } from '../gemeinsam/AufgabeBearbeiten'
 import { fehlerText } from '../lib/fehler'
-import { kategorienAus, ohneLoesung, reihenZuTeilen, stelleZuText, teileZuText, textZuTeilen } from '../lib/lueckentext'
+import {
+  bloeckeZuText,
+  kategorienAus,
+  ohneLoesung,
+  reihenZuTeilen,
+  stelleZuText,
+  teileZuText,
+  textZuTeilen,
+  versionenBloecke,
+  versionenZuTeilen,
+  type VersionenBlock,
+} from '../lib/lueckentext'
 import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import {
@@ -38,6 +49,12 @@ const FORMATE: Record<AufgabenTyp, { name: string; anweisung: string; beispiel: 
     anweisung: 'Bring die Bausteine in die richtige Reihenfolge.',
     beispiel:
       'Varianten: 2\ngestern | bin ich | ins Kino | gegangen.\nins Kino | bin ich | gestern | gegangen.\n\nder Hund | bellt | laut.',
+  },
+  ueberarbeiten: {
+    name: 'Sätze verbessern',
+    anweisung: 'Welche Version ist besser? Tippe sie an.',
+    beispiel:
+      'Kontext: Gestern war ich im Zoo.\nDann sah ich die Löwen und dann sah ich die Affen.\nHinweis: Hier steht zweimal „dann sah ich“. Das klingt eintönig.\n*Zuerst sah ich die Löwen, danach die Affen.\nHinweis: Die Wiederholung ist vermieden, der Satz ist kürzer.',
   },
   zuordnen: {
     name: 'Zuordnen',
@@ -106,7 +123,12 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
   }, [aufgabeId])
 
   const { teile, fehler: textFehler } = useMemo(
-    () => (typ === 'reihenfolge' ? reihenZuTeilen(text) : textZuTeilen(text, typ === 'fehler' ? 'fehler' : typ === 'zuordnen')),
+    () =>
+      typ === 'reihenfolge'
+        ? reihenZuTeilen(text)
+        : typ === 'ueberarbeiten'
+          ? versionenZuTeilen(text)
+          : textZuTeilen(text, typ === 'fehler' ? 'fehler' : typ === 'zuordnen'),
     [text, typ],
   )
   const kategorien = typ === 'zuordnen' ? kategorienAus(teile, kategorienText.split(',')) : undefined
@@ -244,7 +266,15 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
             {modus === 'text' ? (
               <>
                 <div className="erklaerung">
-                  {typ === 'reihenfolge' ? (
+                  {typ === 'ueberarbeiten' ? (
+                    <p>
+                      Schreiben Sie jede Version eines Satzes in eine <strong>eigene Zeile</strong> (2 bis 4 Versionen) und
+                      markieren Sie die bessere mit <strong>*</strong>. Unter jede Version gehört eine Zeile{' '}
+                      <code>Hinweis: …</code> mit der Begründung – Schüler:innen sehen die Hinweise erst nach dem Prüfen.
+                      Optional steht darüber <code>Kontext: …</code> (z. B. der Satz davor). Eine <strong>Leerzeile</strong>{' '}
+                      beginnt einen neuen Satz. Die Versionen erscheinen in der Reihenfolge, in der Sie sie schreiben.
+                    </p>
+                  ) : typ === 'reihenfolge' ? (
                     <p>
                       Schreiben Sie jeden Satz in die richtige Reihenfolge und trennen Sie die Bausteine mit <strong>|</strong>.
                       Gibt es weitere richtige Reihenfolgen, schreiben Sie sie in die Zeilen <strong>direkt darunter</strong>.
@@ -300,6 +330,8 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
             ) : (
               typ === 'reihenfolge' ? (
                 <ReihenFormular text={text} onChange={setText} />
+              ) : typ === 'ueberarbeiten' ? (
+                <VersionenFormular text={text} onChange={setText} />
               ) : (
                 <FormularModus teile={teile} onChange={setText} />
               )
@@ -312,10 +344,13 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
                 ))}
               </ul>
             )}
-            {text && textFehler.length === 0 && typ === 'reihenfolge' && (
-              <p className="klein">✓ {teile.length === 1 ? '1 Satz' : `${teile.length} Sätze`} zum Ordnen erkannt.</p>
+            {text && textFehler.length === 0 && (typ === 'reihenfolge' || typ === 'ueberarbeiten') && (
+              <p className="klein">
+                ✓ {teile.length === 1 ? '1 Satz' : `${teile.length} Sätze`} {typ === 'reihenfolge' ? 'zum Ordnen' : 'mit Versionen'}{' '}
+                erkannt.
+              </p>
             )}
-            {text && textFehler.length === 0 && typ !== 'reihenfolge' && (
+            {text && textFehler.length === 0 && typ !== 'reihenfolge' && typ !== 'ueberarbeiten' && (
               <p className="klein">
                 ✓ {teile.filter((t) => t.t === 'luecke').length} Lücke(n) und {teile.filter((t) => t.t === 'auswahl').length}{' '}
                 Auswahl-Stelle(n) erkannt.
@@ -415,7 +450,7 @@ function zeilenAus(teile: LueckentextTeil[]): Zeile[] {
     if (text !== null) {
       if (letzte && letzte.art === 'text') zeilen[zeilen.length - 1] = { art: 'text', v: letzte.v + text }
       else zeilen.push({ art: 'text', v: text })
-    } else if (t.t !== 'text' && t.t !== 'reihe') {
+    } else if (t.t !== 'text' && t.t !== 'reihe' && t.t !== 'versionen') {
       zeilen.push({ art: t.t, roh: stelleZuText(t) })
     }
   }
@@ -585,6 +620,95 @@ function ReihenFormular({ text, onChange }: { text: string; onChange: (text: str
       ))}
       <div className="knopfleiste">
         <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setSaetze([...saetze, satzFeldAus('')])}>
+          + Satz
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Formular für „Sätze verbessern“: je Satz Kontext und 2–4 Versionen mit Hinweis; die bessere per Auswahlknopf.
+const leereVersion = () => ({ text: '', hinweis: '', besser: false })
+
+function VersionenFormular({ text, onChange }: { text: string; onChange: (text: string) => void }) {
+  const [bloecke, setBloecke] = useState<VersionenBlock[]>(() => {
+    const liste = versionenBloecke(text)
+    return liste.length ? liste : [{ kontext: '', versionen: [leereVersion(), leereVersion()] }]
+  })
+  function setzen(neu: VersionenBlock[]) {
+    setBloecke(neu)
+    onChange(bloeckeZuText(neu))
+  }
+  const blockAendern = (i: number, b: VersionenBlock) => setzen(bloecke.map((x, j) => (j === i ? b : x)))
+  return (
+    <div className="formular-modus">
+      {bloecke.map((b, i) => (
+        <fieldset key={i} className="teil teil-luecke versionen-formular">
+          <legend>Satz {i + 1}</legend>
+          <label>
+            Kontext (optional, z. B. der Satz davor)
+            <input value={b.kontext} onChange={(e) => blockAendern(i, { ...b, kontext: e.target.value })} />
+          </label>
+          {b.versionen.map((v, j) => {
+            const versionAendern = (neu: Partial<typeof v>) =>
+              blockAendern(i, { ...b, versionen: b.versionen.map((x, k) => (k === j ? { ...x, ...neu } : x)) })
+            return (
+              <div key={j} className="versionen-formular__version">
+                <label className="haken">
+                  <input
+                    type="radio"
+                    name={`besser-${i}`}
+                    checked={v.besser}
+                    onChange={() => blockAendern(i, { ...b, versionen: b.versionen.map((x, k) => ({ ...x, besser: k === j })) })}
+                  />
+                  Version {j + 1} ist die bessere
+                </label>
+                <label>
+                  Version {j + 1}
+                  <input value={v.text} onChange={(e) => versionAendern({ text: e.target.value })} />
+                </label>
+                <label>
+                  Hinweis zu Version {j + 1} (erscheint nach dem Prüfen)
+                  <input value={v.hinweis} onChange={(e) => versionAendern({ hinweis: e.target.value })} />
+                </label>
+                {b.versionen.length > 2 && (
+                  <button
+                    type="button"
+                    className="aes-btn aes-btn--ghost aes-btn--klein"
+                    onClick={() => blockAendern(i, { ...b, versionen: b.versionen.filter((_, k) => k !== j) })}
+                  >
+                    Version {j + 1} entfernen
+                  </button>
+                )}
+              </div>
+            )
+          })}
+          <div className="knopfleiste">
+            {b.versionen.length < 4 && (
+              <button
+                type="button"
+                className="aes-btn aes-btn--secondary aes-btn--klein"
+                onClick={() => blockAendern(i, { ...b, versionen: [...b.versionen, leereVersion()] })}
+              >
+                + Version
+              </button>
+            )}
+            <button
+              type="button"
+              className="aes-btn aes-btn--ghost aes-btn--klein"
+              onClick={() => setzen(bloecke.filter((_, j) => j !== i))}
+            >
+              Satz {i + 1} entfernen
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <div className="knopfleiste">
+        <button
+          type="button"
+          className="aes-btn aes-btn--secondary aes-btn--klein"
+          onClick={() => setBloecke([...bloecke, { kontext: '', versionen: [leereVersion(), leereVersion()] }])}
+        >
           + Satz
         </button>
       </div>

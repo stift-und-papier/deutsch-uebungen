@@ -44,7 +44,7 @@
 - Antworten werden **in der Datenbank** geprüft (`pruefe_aufgabe`, plpgsql). Schüler:innen bekommen Aufgaben ohne
   Lösungen (`inhalt_ohne_loesung` – Achtung: Feld `text` enthält Lösungen und muss immer entfernt werden).
   Jedes neue Aufgabenformat braucht Zweige in `pruefe_aufgabe`, `inhalt_ohne_loesung`, `nur_loesung`.
-  Aufgabeninhalt = Liste `teile` aus `text`, `luecke`, `auswahl`, `einheit`, `wort` und `reihe` (Parser `src/lib/lueckentext.ts`;
+  Aufgabeninhalt = Liste `teile` aus `text`, `luecke`, `auswahl`, `einheit`, `wort`, `reihe` und `versionen` (Parser `src/lib/lueckentext.ts`;
   bei `zuordnen` werden alle Wörter zu Einheiten).
   Antworten: Text je Lücke, Liste der gewählten Nummern je Auswahl.
 - Ansprache: Lehrkraft-Oberfläche „Sie“, Schüleransicht „du“, einfache Sprache.
@@ -123,6 +123,11 @@
   Anzahl gelöster Aufgaben, nächster Schritt. **Nie Punkte/Stufen** – Test 1.13 prüft das.
 
 ## Entscheidungen (Protokoll)
+- 2026-11-08 (didaktisch, Lehrkraft): Format **Sätze verbessern** (Typ `ueberarbeiten`, Teil `versionen`, Anzeige
+  `src/gemeinsam/VersionenAnzeige.tsx`): je Satz optional `Kontext: …`, dann 2–4 Versionen (eine Zeile je Version,
+  bessere mit `*`, genau eine), unter jeder Version `Hinweis: …` (Pflicht). Versionen erscheinen in der geschriebenen
+  Reihenfolge. **Hinweise erst nach dem Prüfen**, dann für alle Versionen: `pruefe_aufgabe` liefert sie mit dem
+  Ergebnis (`hinweise`), `inhalt_ohne_loesung` schickt nur Kontext und Versionen. Antwort wie Auswahl (`[nr]`).
 - 2026-11-08 (didaktisch, Lehrkraft): **Reihenfolge überarbeitet:** Jeder Satz nennt die **Satzart** (aus `.`/`?`/`!`
   = Aussage-/Frage-/Aufforderungssatz, sonst Zeile `Satzart: …`). **Varianten:** Zeile `Varianten: N` fordert N
   verschiedene richtige Sätze aus denselben Bausteinen (jede Variante eigene Reihe; Antwort dann `string[][]`, die DB

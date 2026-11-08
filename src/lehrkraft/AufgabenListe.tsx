@@ -3,7 +3,7 @@ import { fehlerText } from '../lib/fehler'
 import { supabase } from '../lib/supabase'
 import type { Aufgabe } from '../lib/typen'
 
-export const TYP_NAMEN: Record<Aufgabe['typ'], string> = { lueckentext: 'Lückentext', auswahl: 'Auswahl', zuordnen: 'Zuordnen', fehler: 'Fehler finden', reihenfolge: 'Reihenfolge' }
+export const TYP_NAMEN: Record<Aufgabe['typ'], string> = { lueckentext: 'Lückentext', auswahl: 'Auswahl', zuordnen: 'Zuordnen', fehler: 'Fehler finden', reihenfolge: 'Reihenfolge', ueberarbeiten: 'Sätze verbessern' }
 
 export function AufgabenListe() {
   const [aufgaben, setAufgaben] = useState<Aufgabe[] | null>(null)
@@ -38,6 +38,9 @@ export function AufgabenListe() {
         </a>
         <a className="aes-btn aes-btn--secondary" href="#/lehrkraft/aufgaben/neu-reihenfolge">
           + Neue Reihenfolge
+        </a>
+        <a className="aes-btn aes-btn--secondary" href="#/lehrkraft/aufgaben/neu-ueberarbeiten">
+          + Neues Sätze verbessern
         </a>
       </div>
       {fehler && <p className="hinweis-box">{fehler}</p>}

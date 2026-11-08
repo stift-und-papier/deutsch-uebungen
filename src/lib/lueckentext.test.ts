@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { kategorienAus, neuNummerieren, ohneLoesung, reihenZuTeilen, teileZuText, textZuTeilen } from './lueckentext'
+import { kategorienAus, neuNummerieren, ohneLoesung, reihenZuTeilen, teileZuText, textZuTeilen, versionenZuTeilen } from './lueckentext'
 
 describe('textZuTeilen', () => {
   it('erkennt eine Lücke', () => {
@@ -259,5 +259,43 @@ describe('Reihenfolge', () => {
     expect(teileZuText(reihenZuTeilen(text).teile)).toBe(text)
     // großer Satzanfang wird beim Zurückwandeln zur Anzeigeform aus der anderen Zeile
     expect(teileZuText(reihenZuTeilen('A | b.\nB | a.').teile)).toBe('a | b.\nb | a.')
+  })
+})
+
+describe('Sätze verbessern', () => {
+  const text =
+    'Kontext: Im Zoo.\nDann sah ich Löwen und dann Affen.\nHinweis: Zweimal „dann“.\n*Zuerst sah ich Löwen, danach Affen.\nHinweis: Keine Wiederholung.\n\nA\nHinweis: a\nB\nHinweis: b\n*C\nHinweis: c'
+
+  it('liest Kontext, Versionen, die bessere und die Hinweise', () => {
+    const { teile, fehler } = versionenZuTeilen(text)
+    expect(fehler).toEqual([])
+    expect(teile[0]).toEqual({
+      t: 'versionen',
+      id: 0,
+      kontext: 'Im Zoo.',
+      optionen: ['Dann sah ich Löwen und dann Affen.', 'Zuerst sah ich Löwen, danach Affen.'],
+      richtig: [1],
+      hinweise: ['Zweimal „dann“.', 'Keine Wiederholung.'],
+    })
+    expect(teile[1]).toMatchObject({ id: 1, kontext: '', optionen: ['A', 'B', 'C'], richtig: [2] })
+  })
+
+  it('verrät Schüler:innen weder die bessere Version noch die Hinweise', () => {
+    const s = JSON.stringify(ohneLoesung(versionenZuTeilen(text).teile))
+    expect(s).not.toMatch(/richtig|hinweise|Wiederholung/)
+    expect(s).toMatch(/Im Zoo/)
+  })
+
+  it('meldet Fehler in der Eingabe', () => {
+    const f = (t: string) => versionenZuTeilen(t).fehler.join(' ')
+    expect(f('*A\nHinweis: a')).toMatch(/2 bis 4/)
+    expect(f('A\nHinweis: a\nB\nHinweis: b')).toMatch(/genau eine/)
+    expect(f('A\nHinweis: a\n*B')).toMatch(/unter jede Version/)
+    expect(f('Hinweis: x\nA\nHinweis: a\n*B\nHinweis: b')).toMatch(/Vor jedem/)
+    expect(f('')).toMatch(/mindestens einen Satz/)
+  })
+
+  it('wandelt zurück in die Schreibweise', () => {
+    expect(teileZuText(versionenZuTeilen(text).teile)).toBe(text)
   })
 })

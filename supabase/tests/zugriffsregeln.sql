@@ -30,6 +30,7 @@ declare
   c_auf_d constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a4';
   c_auf_e constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a5';
   c_auf_f constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a6';
+  c_auf_g constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a7';
   c_fehler_finden constant jsonb := '{"text":"Ich [weis -> weiß] es [nich -> nicht].","korrigieren":false,"anzahl_zeigen":true,"gross_klein_beachten":true,"teile":[{"t":"wort","id":0,"v":"Ich","korrekturen":null},{"t":"text","v":" "},{"t":"wort","id":1,"v":"weis","korrekturen":["weiß"]},{"t":"text","v":" "},{"t":"wort","id":2,"v":"es","korrekturen":null},{"t":"text","v":" "},{"t":"wort","id":3,"v":"nich","korrekturen":["nicht"]},{"t":"text","v":"."}]}';
   c_kom_a constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000d1';
   c_kom_b constant uuid := 'bbbbbbbb-0000-4000-8000-0000000000d1';
@@ -66,8 +67,11 @@ begin
   -- Reihenfolge-Aufgabe mit zwei richtigen Reihenfolgen
   insert into public.aufgaben (id, owner, typ, titel, inhalt) values
     (c_auf_f, c_lk_a, 'reihenfolge', 'Reihenfolge A', '{"text":"Gestern | bin ich | ins Kino | gegangen.\nIns Kino | bin ich | gestern | gegangen.","teile":[{"t":"reihe","id":0,"bausteine":[{"k":"m","v":"Gestern"},{"k":"c","v":"bin ich"},{"k":"x","v":"ins Kino"},{"k":"a","v":"gegangen."}],"loesungen":[["Gestern","bin ich","ins Kino","gegangen."],["Ins Kino","bin ich","gestern","gegangen."]]}]}');
+  -- Sätze verbessern: zwei Versionen, die zweite ist besser, je ein Begründungshinweis
+  insert into public.aufgaben (id, owner, typ, titel, inhalt) values
+    (c_auf_g, c_lk_a, 'ueberarbeiten', 'Verbessern A', '{"text":"…","teile":[{"t":"versionen","id":0,"kontext":"Im Zoo.","optionen":["Dann sah ich Löwen und dann Affen.","Zuerst sah ich Löwen, danach Affen."],"richtig":[1],"hinweise":["GEHEIM-wiederholt","GEHEIM-abwechslung"]}]}');
   insert into public.paket_aufgaben (paket_id, aufgabe_id) values
-    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b), (c_pak_a1, c_auf_c), (c_pak_a1, c_auf_d), (c_pak_a1, c_auf_e), (c_pak_a1, c_auf_f);
+    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b), (c_pak_a1, c_auf_c), (c_pak_a1, c_auf_d), (c_pak_a1, c_auf_e), (c_pak_a1, c_auf_f), (c_pak_a1, c_auf_g);
   insert into public.zuweisungen (owner, paket_id, klasse_id, schueler_id) values
     (c_lk_a, c_pak_a1, c_kl_a1, null),      -- Paket A1 an Klasse 7a
     (c_lk_a, c_pak_a2, null, c_sch_a2),     -- Paket A2 nur an Eule-02
@@ -308,6 +312,28 @@ begin
   end if;
   ok := ok || '1.10e Format Reihenfolge geprüft, Bausteine gemischt ohne Lösung'::text;
 
+  -- 1.10f Format Sätze verbessern: weder „richtig“ noch Hinweise vor dem Prüfen; danach Hinweise aller Versionen
+  v := public.schueler_start(c_tok_a1);
+  select a into v from jsonb_array_elements(v -> 'pakete' -> 0 -> 'aufgaben') a where a ->> 'id' = c_auf_g::text;
+  if v is null or v::text like '%GEHEIM%' or v::text like '%"richtig"%' or (v -> 'inhalt') ? 'text'
+     or v -> 'inhalt' -> 'teile' -> 0 ->> 'kontext' <> 'Im Zoo.' or jsonb_array_length(v -> 'inhalt' -> 'teile' -> 0 -> 'optionen') <> 2 then
+    raise exception 'FEHLGESCHLAGEN: Verbessern-Aufgabe verrät Lösung/Hinweise oder Angaben fehlen: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_g, '{"0":[0]}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'richtig')::boolean
+     or v -> 'ergebnis' -> 'luecken' -> 0 -> 'hinweise' <> '["GEHEIM-wiederholt","GEHEIM-abwechslung"]'::jsonb then
+    raise exception 'FEHLGESCHLAGEN: schlechtere Version angenommen oder Hinweise fehlen: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_g, '{"0":[1]}', gen_random_uuid());
+  if not (v -> 'ergebnis' ->> 'richtig')::boolean then raise exception 'FEHLGESCHLAGEN: bessere Version abgelehnt: %', v; end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_g, '{"0":[0,1]}', gen_random_uuid());
+  if (v -> 'ergebnis' ->> 'richtig')::boolean then raise exception 'FEHLGESCHLAGEN: beide Versionen gewertet: %', v; end if;
+  v := public.loesung_anzeigen(c_tok_a1, c_pak_a1, c_auf_g);
+  if v -> 'luecken' <> '[{"id":0,"loesungen":["Zuerst sah ich Löwen, danach Affen."]}]'::jsonb then
+    raise exception 'FEHLGESCHLAGEN: Verbessern-Lösung: %', v;
+  end if;
+  ok := ok || '1.10f Format Sätze verbessern: Hinweise erst nach dem Prüfen'::text;
+
   -- 1.11 Token von A1 gibt keine Lösung von B heraus
   begin
     perform public.loesung_anzeigen(c_tok_a1, c_pak_b, c_auf_b);
@@ -384,7 +410,7 @@ begin
   select count(*) into n from public.aufgaben where owner = c_lk_b;
   if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Aufgaben von B'; end if;
   select count(*) into n from public.versuche;
-  if n <> 28 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 28', n; end if;
+  if n <> 31 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 31', n; end if;
   ok := ok || '2.1 Lehrkraft sieht nur eigene Daten'::text;
 
   update public.aufgaben set titel = 'gehackt' where id = c_auf_b;

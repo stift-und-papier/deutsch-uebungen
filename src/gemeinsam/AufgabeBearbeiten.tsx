@@ -35,7 +35,7 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
 
   // Lücken und Auswahl müssen alle beantwortet sein; beim Zuordnen muss mindestens ein Wort markiert sein
   // (die übrigen Wörter dürfen unmarkiert bleiben – manche gehören zu keiner Kategorie).
-  const luecken = aufgabe.inhalt.teile.filter((t) => t.t === 'luecke' || t.t === 'auswahl' || t.t === 'reihe')
+  const luecken = aufgabe.inhalt.teile.filter((t) => t.t === 'luecke' || t.t === 'auswahl' || t.t === 'reihe' || t.t === 'versionen')
   // Antippbare Einheiten (Zuordnen) und Wörter (Fehler finden): mindestens eins muss markiert sein
   const einheiten = aufgabe.inhalt.teile.filter((t) => t.t === 'einheit' || t.t === 'wort')
   const beantwortet = (id: number) => {
@@ -113,6 +113,8 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
   const arten = new Set<string>([...luecken, ...einheiten].map((l) => l.t))
   const wort = arten.has('reihe')
     ? { eins: 'Satz', viele: 'Bausteine' }
+    : arten.has('versionen')
+    ? { eins: 'Satz', viele: 'Sätze' }
     : arten.has('wort')
     ? { eins: 'Wort', viele: 'Fehler' }
     : arten.has('einheit')
@@ -145,6 +147,8 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
       (plaetzeRichtig > 0
         ? `Schon ${plaetzeRichtig} von ${plaetze.length} Bausteinen stehen an der richtigen Stelle.`
         : 'Lies den Satz laut: Was passt an den Anfang?')
+    : arten.has('versionen')
+    ? ergebnis?.rueckmeldung ?? 'Lies die Hinweise unter den Versionen und entscheide noch einmal.'
     : arten.has('wort')
     ? [
         fehlend > 0 ? `Es fehlen noch ${fehlend} Fehler.` : '',
@@ -266,6 +270,8 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
           {!alleAusgefuellt && !allesRichtig && <p className="aes-card__hint">
               {arten.has('reihe')
                 ? 'Lege alle Bausteine in die Reihe'
+                : arten.has('versionen')
+                ? 'Wähle bei jedem Satz eine Version'
                 : arten.has('wort')
                 ? 'Tippe die Fehlerwörter an'
                 : arten.has('einheit')
