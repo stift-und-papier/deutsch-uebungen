@@ -102,6 +102,29 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
     else void laden()
   }
 
+  // Pseudonym, Link und fest eingestellte Stufe bleiben; Antworten, Lösungen, automatische Stufen und Wiese gehen auf Anfang
+  async function zuruecksetzen(liste: Schueler[], meldung: string) {
+    const { error } = await supabase.rpc('ergebnisse_zuruecksetzen', { p_schueler: liste.map((s) => s.id) })
+    if (error) return setFehler(fehlerText(error))
+    setMeldung(meldung)
+    void laden()
+  }
+
+  function einzelnZuruecksetzen(s: Schueler) {
+    const ok = window.confirm(
+      `Ergebnisse von ${s.pseudonym} zurücksetzen?\n\nAlle Antworten werden endgültig gelöscht, die Sterne-Stufe beginnt wieder bei 1 (außer einer fest eingestellten) und die Blumenwiese ist wieder leer. Pseudonym und Link bleiben.`,
+    )
+    if (ok) void zuruecksetzen([s], `Ergebnisse von ${s.pseudonym} zurückgesetzt.`)
+  }
+
+  function klasseZuruecksetzen() {
+    if (!klasse) return
+    const eingabe = window.prompt(
+      `Die Ergebnisse aller ${schueler.length} Schüler:innen der Klasse „${klasse.name}“ zurücksetzen?\n\nAlle Antworten werden endgültig gelöscht, die Sterne-Stufen beginnen wieder bei 1 (außer fest eingestellten) und die Blumenwiesen sind wieder leer. Pseudonyme und Links bleiben. Zur Bestätigung den Klassennamen eintippen:`,
+    )
+    if (eingabe?.trim() === klasse.name) void zuruecksetzen(schueler, `Ergebnisse der Klasse „${klasse.name}“ zurückgesetzt.`)
+  }
+
   async function klasseLoeschen() {
     if (!klasse) return
     const eingabe = window.prompt(
@@ -336,6 +359,9 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
                   <a className="aes-btn aes-btn--secondary knopf-auswertung-rand aes-btn--klein" href={`#/lehrkraft/schueler/${s.id}/drucken`}>
                     🖨 Entwicklung drucken
                   </a>
+                  <button className="aes-btn aes-btn--secondary knopf-gefahr aes-btn--klein" onClick={() => einzelnZuruecksetzen(s)}>
+                    Ergebnisse zurücksetzen
+                  </button>
                   <button className="aes-btn aes-btn--secondary knopf-gefahr aes-btn--klein" onClick={() => void loeschen(s)}>
                     Löschen
                   </button>
@@ -396,6 +422,17 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
             <button className="aes-btn aes-btn--primary">Hinzufügen</button>
           </form>
         )}
+      </section>
+
+      <section className="kasten gefahrzone">
+        <h2>Ergebnisse zurücksetzen</h2>
+        <p className="klein">
+          Zum Beispiel zum neuen Schuljahr: Pseudonyme und Links bleiben, alle Antworten werden gelöscht. Sterne-Stufen beginnen wieder
+          bei 1 (außer fest eingestellten), Blumenwiesen sind wieder leer.
+        </p>
+        <button className="aes-btn aes-btn--secondary knopf-gefahr" disabled={schueler.length === 0} onClick={klasseZuruecksetzen}>
+          Ergebnisse der Klasse „{klasse.name}“ zurücksetzen
+        </button>
       </section>
 
       <section className="kasten gefahrzone">

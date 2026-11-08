@@ -23,5 +23,5 @@ Jede Änderung auf dem Zweig `main` wird automatisch gebaut und auf GitHub Pages
 ## Weitere Dokumente
 
 - `CLAUDE.md` – Projektregeln, Aufbau und Entscheidungen
-- `DATENSCHUTZ.md` – technische Fakten zum Datenschutz (folgt in Etappe 4)
+- `DATENSCHUTZ.md` – Datenschutz: technische Fakten (für Schulleitung/DSB) und Kurzfassung in einfacher Sprache
 - `docs/kompetenzen.csv` – Kompetenzraster nach den Kerncurricula

@@ -107,7 +107,11 @@
 2. Lernstand: Kompetenzen importieren, Zuordnung, KC pro Klasse, Lehrkraft- und Schüleransichten ✓
    – Design „Übungswiese“ eingebaut ✓
 3. Weitere Aufgabenformate + Schwierigkeitsstufe pro Schüler:in ✓ (Sterne + Automatik; iPad-Test der Stufen steht aus)
-4. Politur: Druck/PDF, Offline-Speicher, `DATENSCHUTZ.md`, Löschfunktionen
+4. Politur: Druck/PDF, Offline-Speicher, `DATENSCHUTZ.md` ✓, Löschfunktionen ✓
+   – **Ergebnisse zurücksetzen** (2026-11-08, Lehrkraft): je Schüler:in und je Klasse (Klassenseite), RPC
+     `ergebnisse_zuruecksetzen(uuid[])` – löscht Versuche, angesehene Lösungen, automatische Stufen, setzt Wiese auf 0;
+     Pseudonym, Link und `stufe_manuell` bleiben. `DATENSCHUTZ.md`: Teil A Schulleitung/DSB, Teil B einfache Sprache –
+     bei neuen gespeicherten Daten oder Löschwegen **mit aktualisieren**.
 5. Später: mehrere Lehrkräfte, Aufgaben teilen, PDF/Word-Import
 
 ### To-do für weitere Etappen (Wunsch der Lehrkraft, 2026-11-08)

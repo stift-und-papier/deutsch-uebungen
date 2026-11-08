@@ -683,6 +683,36 @@ begin
     end if;
     reset role;
     ok := ok || '4.5 Stufen nur lesbar für die eigene Lehrkraft, nicht direkt schreibbar; manuell setzen nur eigene'::text;
+
+    -- 4.6 Ergebnisse zurücksetzen: nur eigene Schüler:innen; alles auf Anfang außer Pseudonym und manueller Stufe
+    update public.schueler set wiese_blumen = 5 where id = c_sch_a1;
+    insert into public.loesung_angesehen (schueler_id, aufgabe_id) values (c_sch_a1, v_mittel);
+    set local role anon;
+    perform set_config('request.jwt.claims', '{"role":"anon"}', true);
+    begin
+      perform public.ergebnisse_zuruecksetzen(array[c_sch_a1]);
+      raise exception 'FEHLGESCHLAGEN: anon darf Ergebnisse zurücksetzen';
+    exception when insufficient_privilege then null;
+    end;
+    set local role authenticated;
+    perform set_config('request.jwt.claims', json_build_object('sub', c_lk_b, 'role', 'authenticated')::text, true);
+    if public.ergebnisse_zuruecksetzen(array[c_sch_a1]) <> 0 then raise exception 'FEHLGESCHLAGEN: B setzt A zurück'; end if;
+    reset role;
+    if not exists (select 1 from public.versuche where schueler_id = c_sch_a1) then
+      raise exception 'FEHLGESCHLAGEN: Versuche von A nach Aufruf durch B weg';
+    end if;
+    set local role authenticated;
+    perform set_config('request.jwt.claims', json_build_object('sub', c_lk_a, 'role', 'authenticated')::text, true);
+    if public.ergebnisse_zuruecksetzen(array[c_sch_a1]) <> 1 then raise exception 'FEHLGESCHLAGEN: A kann nicht zurücksetzen'; end if;
+    reset role;
+    if exists (select 1 from public.versuche where schueler_id = c_sch_a1)
+       or exists (select 1 from public.loesung_angesehen where schueler_id = c_sch_a1)
+       or exists (select 1 from public.schueler_stufen where schueler_id = c_sch_a1)
+       or (select wiese_blumen from public.schueler where id = c_sch_a1) <> 0
+       or (select stufe_manuell from public.schueler where id = c_sch_a1) is distinct from 3 then
+      raise exception 'FEHLGESCHLAGEN: Zurücksetzen unvollständig oder zu viel gelöscht';
+    end if;
+    ok := ok || '4.6 Ergebnisse zurücksetzen: nur eigene, Antworten/Lösungen/Stufen/Wiese weg, manuelle Stufe bleibt'::text;
   end;
 
   -- Alles rückgängig machen und Ergebnis melden
