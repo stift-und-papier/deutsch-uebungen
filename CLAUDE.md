@@ -112,7 +112,10 @@
 
 ### To-do für weitere Etappen (Wunsch der Lehrkraft, 2026-11-08)
 - **Aufgaben erstellen verbessern und übersichtlicher machen** (Editor aufräumen, Formate leichter wählbar).
-- **Aufgaben und Aufgabenpakete filtern** nach Klassenstufe (Jahrgang) und/oder Kompetenz.
+- **Aufgaben und Aufgabenpakete filtern** ✓ (2026-11-08, Lehrkraft): Titelsuche, Jahrgang **aus den Kompetenzen**
+  (KC-Stufe Ende Jg. 6/8/10 → 5/6, 7/8, 9/10; „6-10“ passt überall; „ohne Kompetenz-Zuordnung“), Bereich, einzelne
+  Kompetenz. Alle Merkmale müssen bei derselben Kompetenz zutreffen. Logik `src/lib/filter.ts` (getestet),
+  Leiste `src/lehrkraft/ListenFilter.tsx`; Pakete erben die Kompetenzen ihrer Aufgaben.
 - **Usability-Überarbeitung (Wunsch der Lehrkraft, 2026-11-08):**
   - Lernweg entschlacken (nächster Schritt oben, nach Bereich gruppiert, schlanke Zeilen, Ungeübtes eingeklappt).
   - Editor: „+ Neue Aufgabe“ → Seite mit **anklickbaren Format-Kacheln** (Icon, ein Satz, Mini-Beispiel); Format auch im

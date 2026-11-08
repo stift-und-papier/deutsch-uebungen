@@ -1,25 +1,32 @@
 import { useEffect, useState } from 'react'
 import { fehlerText } from '../lib/fehler'
+import { LEERER_FILTER, passt } from '../lib/filter'
 import { supabase } from '../lib/supabase'
 import { stufeAus, type Aufgabe } from '../lib/typen'
 import { Sterne } from '../gemeinsam/Sterne'
+import { ListenFilter, useKompetenzen } from './ListenFilter'
 
 export const TYP_NAMEN: Record<Aufgabe['typ'], string> = { lueckentext: 'Lückentext', auswahl: 'Auswahl', zuordnen: 'Zuordnen', fehler: 'Fehler finden', reihenfolge: 'Reihenfolge', ueberarbeiten: 'Sätze verbessern', erklaerung: 'Erklärung' }
 
+type AufgabeMitKompetenzen = Aufgabe & { aufgabe_kompetenzen: { kompetenz_id: string }[] }
+
 export function AufgabenListe() {
-  const [aufgaben, setAufgaben] = useState<Aufgabe[] | null>(null)
+  const [aufgaben, setAufgaben] = useState<AufgabeMitKompetenzen[] | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
-  const [suche, setSuche] = useState('')
+  const [filter, setFilter] = useState(LEERER_FILTER)
+  const kompetenzen = useKompetenzen()
 
   useEffect(() => {
     void supabase
       .from('aufgaben')
-      .select('*')
+      .select('*, aufgabe_kompetenzen(kompetenz_id)')
       .order('geaendert_am', { ascending: false })
-      .then(({ data, error }) => (error ? setFehler(fehlerText(error)) : setAufgaben(data as Aufgabe[])))
+      .then(({ data, error }) => (error ? setFehler(fehlerText(error)) : setAufgaben(data as AufgabeMitKompetenzen[])))
   }, [])
 
-  const gefiltert = aufgaben?.filter((a) => a.titel.toLowerCase().includes(suche.toLowerCase()))
+  const ids = (a: AufgabeMitKompetenzen) => a.aufgabe_kompetenzen.map((z) => z.kompetenz_id)
+  const gefiltert = aufgaben?.filter((a) => passt(a.titel, ids(a), filter, kompetenzen))
+  const verwendet = [...new Set((aufgaben ?? []).flatMap(ids))].flatMap((id) => kompetenzen.get(id) ?? [])
 
   return (
     <>
@@ -30,16 +37,22 @@ export function AufgabenListe() {
         </a>
       </div>
       {fehler && <p className="hinweis-box">{fehler}</p>}
-      {aufgaben && aufgaben.length > 5 && (
-        <label className="formular">
-          Suchen
-          <input value={suche} onChange={(e) => setSuche(e.target.value)} placeholder="Titel …" />
-        </label>
+      {aufgaben && aufgaben.length > 0 && (
+        <ListenFilter
+          filter={filter}
+          onChange={setFilter}
+          verwendet={verwendet}
+          treffer={gefiltert?.length ?? 0}
+          gesamt={aufgaben.length}
+          suchText="Titel …"
+        />
       )}
       {gefiltert === undefined ? (
         <p>Lädt …</p>
-      ) : gefiltert.length === 0 ? (
+      ) : aufgaben?.length === 0 ? (
         <p>Noch keine Aufgaben.</p>
+      ) : gefiltert.length === 0 ? (
+        <p>Keine Aufgabe passt zu diesem Filter.</p>
       ) : (
         <table className="tabelle">
           <thead>

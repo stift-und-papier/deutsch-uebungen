@@ -2083,3 +2083,17 @@ summary.editor-abschnitt__titel,
   align-items: center;
   gap: var(--space-1);
 }
+
+/* ---------- Filter über Aufgaben- und Paketlisten ---------- */
+
+.listen-filter .formular.zeile {
+  margin-bottom: var(--space-2);
+}
+
+.listen-filter__stand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
