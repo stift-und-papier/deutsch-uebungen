@@ -1,20 +1,26 @@
 import { useEffect, useState } from 'react'
-import { DOPPELJAHRGAENGE, LEERER_FILTER, type Filter, type FilterKompetenz } from '../lib/filter'
+import { DOPPELJAHRGAENGE, LEERER_FILTER, passt, type Filter, type FilterKompetenz } from '../lib/filter'
+import { fehlerText } from '../lib/fehler'
 import { supabase } from '../lib/supabase'
 import type { Kompetenz } from '../lib/typen'
 
 export type ListenKompetenz = FilterKompetenz & Pick<Kompetenz, 'kurzname' | 'kompetenz' | 'kerncurriculum'>
 
 /** Alle Kompetenzen der Lehrkraft als Nachschlagetabelle (für passt()) */
-export function useKompetenzen() {
+export function useKompetenzen(setFehler: (text: string) => void) {
   const [kompetenzen, setKompetenzen] = useState<Map<string, ListenKompetenz>>(new Map())
   useEffect(() => {
     void supabase
       .from('kompetenzen')
       .select('id, bereich, stufe, kurzname, kompetenz, kerncurriculum')
       .order('sortierung')
-      .then(({ data }) => setKompetenzen(new Map(((data ?? []) as ListenKompetenz[]).map((k) => [k.id, k]))))
-  }, [])
+      .then(({ data, error }) =>
+        // ohne Kompetenzen wäre jeder Eintrag „ohne Zuordnung“ – das muss sichtbar sein
+        error
+          ? setFehler(`Kompetenzen konnten nicht geladen werden, der Filter stimmt deshalb nicht. ${fehlerText(error)}`)
+          : setKompetenzen(new Map(((data ?? []) as ListenKompetenz[]).map((k) => [k.id, k]))),
+      )
+  }, [setFehler])
   return kompetenzen
 }
 
@@ -31,7 +37,9 @@ type Props = {
 // Filterleiste: Titelsuche, Jahrgang (aus der KC-Stufe der Kompetenzen), Bereich, einzelne Kompetenz.
 export function ListenFilter({ filter, onChange, verwendet, treffer, gesamt, suchText }: Props) {
   const bereiche = [...new Set(verwendet.map((k) => k.bereich))].sort((a, b) => a.localeCompare(b, 'de'))
-  const imBereich = verwendet.filter((k) => k.bereich === filter.bereich)
+  const imBereich = verwendet.filter(
+    (k) => k.bereich === filter.bereich && passt('', [k.id], { ...LEERER_FILTER, jahrgang: filter.jahrgang }, new Map([[k.id, k]])),
+  )
   const mehrereKc = new Set(imBereich.map((k) => k.kerncurriculum)).size > 1
   const aktiv = JSON.stringify(filter) !== JSON.stringify(LEERER_FILTER)
 
@@ -44,7 +52,7 @@ export function ListenFilter({ filter, onChange, verwendet, treffer, gesamt, suc
         </label>
         <label>
           Jahrgang
-          <select value={filter.jahrgang} onChange={(e) => onChange({ ...filter, jahrgang: e.target.value as Filter['jahrgang'] })}>
+          <select value={filter.jahrgang} onChange={(e) => onChange({ ...filter, jahrgang: e.target.value as Filter['jahrgang'], kompetenz: '' })}>
             <option value="">alle</option>
             {DOPPELJAHRGAENGE.map((j) => (
               <option key={j} value={j}>

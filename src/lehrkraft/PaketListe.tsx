@@ -17,7 +17,7 @@ export function PaketListe() {
   const [titel, setTitel] = useState('')
   const [fehler, setFehler] = useState<string | null>(null)
   const [filter, setFilter] = useState(LEERER_FILTER)
-  const kompetenzen = useKompetenzen()
+  const kompetenzen = useKompetenzen(setFehler)
 
   const laden = useCallback(async () => {
     const { data, error } = await supabase

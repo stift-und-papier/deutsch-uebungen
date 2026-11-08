@@ -14,7 +14,7 @@ export function AufgabenListe() {
   const [aufgaben, setAufgaben] = useState<AufgabeMitKompetenzen[] | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
   const [filter, setFilter] = useState(LEERER_FILTER)
-  const kompetenzen = useKompetenzen()
+  const kompetenzen = useKompetenzen(setFehler)
 
   useEffect(() => {
     void supabase
@@ -25,7 +25,10 @@ export function AufgabenListe() {
   }, [])
 
   const ids = (a: AufgabeMitKompetenzen) => a.aufgabe_kompetenzen.map((z) => z.kompetenz_id)
-  const gefiltert = aufgaben?.filter((a) => passt(a.titel, ids(a), filter, kompetenzen))
+  // Erklärseiten haben nie Kompetenzen – bei „ohne Zuordnung“ gibt es dort nichts nachzuarbeiten
+  const gefiltert = aufgaben?.filter(
+    (a) => !(filter.jahrgang === 'ohne' && a.typ === 'erklaerung') && passt(a.titel, ids(a), filter, kompetenzen),
+  )
   const verwendet = [...new Set((aufgaben ?? []).flatMap(ids))].flatMap((id) => kompetenzen.get(id) ?? [])
 
   return (
