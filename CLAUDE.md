@@ -87,7 +87,8 @@
   Füllstände prüfen: `#/vorschau/wiese/<zahl>` (nur `npm run dev`).
 - **Schüler-Navigation:** Start (Wiese, `#/s/<token>`), Meine Übungen (`/uebungen`), Mein Lernweg (`/entwicklung`).
 - **Offen:** Schullogo fehlt noch – Platz `logo-platz` oben in den Seitenleisten ist reserviert. Navigationspunkt
-  „Tipps“ (`gluehbirne`) aus dem Entwurf: Inhalt mit der Lehrkraft klären, bis dahin weggelassen.
+  „Tipps“ aus dem Entwurf: Inhalt mit der Lehrkraft klären, bis dahin weggelassen (Icon `gluehbirne` dann aus
+  `design/assets/Icons/` holen; ungenutzte Icons sind bewusst nicht in der App).
 
 ## Tests
 - `npm test` – Logik (Lückentext, Pseudonyme) + Zugriff über das Netzwerk ohne Anmeldung (`supabase/tests/netzwerk.test.ts`).

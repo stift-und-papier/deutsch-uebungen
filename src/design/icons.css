@@ -6,7 +6,6 @@
 .aes-icon--haus { background-image: url(./icons/haus.svg); }
 .aes-icon--buch { background-image: url(./icons/buch.svg); }
 .aes-icon--flagge { background-image: url(./icons/flagge.svg); }
-.aes-icon--gluehbirne { background-image: url(./icons/gluehbirne.svg); }
 .aes-icon--luecke { background-image: url(./icons/luecke.svg); }
 .aes-icon--auswahl { background-image: url(./icons/auswahl.svg); }
 .aes-icon--zuordnen { background-image: url(./icons/zuordnen.svg); }
@@ -24,13 +23,7 @@
 .aes-icon--giesskanne { background-image: url(./icons/giesskanne.svg); }
 .aes-icon--samen { background-image: url(./icons/samen.svg); }
 .aes-icon--stern { background-image: url(./icons/stern.svg); }
-.aes-icon--pokal { background-image: url(./icons/pokal.svg); }
-.aes-icon--herz { background-image: url(./icons/herz.svg); }
-.aes-icon--ziel { background-image: url(./icons/ziel.svg); }
-.aes-icon--sanduhr { background-image: url(./icons/sanduhr.svg); }
 .aes-icon--paket { background-image: url(./icons/paket.svg); }
-.aes-icon--daumen { background-image: url(./icons/daumen.svg); }
-.aes-icon--rakete { background-image: url(./icons/rakete.svg); }
 /* Einbau in vorhandene Bausteine */
 .aes-nav__icon { width: 40px; height: 40px; border-radius: 50%; background: var(--himmel-hell); display: inline-grid; place-items: center; flex: none; }
 .aes-nav__item[aria-current="page"] .aes-nav__icon { background: var(--flaeche); }
