@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { fehlerText } from '../lib/fehler'
 import { supabase } from '../lib/supabase'
-import type { Aufgabe } from '../lib/typen'
+import { stufeAus, type Aufgabe } from '../lib/typen'
+import { Sterne } from '../gemeinsam/Sterne'
 
 export const TYP_NAMEN: Record<Aufgabe['typ'], string> = { lueckentext: 'Lückentext', auswahl: 'Auswahl', zuordnen: 'Zuordnen', fehler: 'Fehler finden', reihenfolge: 'Reihenfolge', ueberarbeiten: 'Sätze verbessern', erklaerung: 'Erklärung' }
 
@@ -55,7 +56,7 @@ export function AufgabenListe() {
                   <a href={`#/lehrkraft/aufgaben/${a.id}`}>{a.titel}</a>
                 </td>
                 <td>{TYP_NAMEN[a.typ]}</td>
-                <td>{a.schwierigkeit}</td>
+                <td>{a.typ !== 'erklaerung' && <Sterne stufe={stufeAus(a.schwierigkeit)} />}</td>
               </tr>
             ))}
           </tbody>

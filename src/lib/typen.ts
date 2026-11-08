@@ -1,12 +1,20 @@
 // Gemeinsame Datentypen der App (entsprechen den Tabellen in supabase/migrations).
 
+/** Interner Wert der Aufgabenstufe in der Datenbank (bleibt so, damit gespeicherte Daten gültig bleiben).
+ *  Angezeigt wird immer als Sterne: leicht = 1, mittel = 2, schwer = 3 (siehe stufeAus). */
 export type Schwierigkeit = 'leicht' | 'mittel' | 'schwer'
+export type Stufe = 1 | 2 | 3
 
-export const SCHWIERIGKEITEN: { wert: Schwierigkeit; text: string }[] = [
-  { wert: 'leicht', text: 'leicht' },
-  { wert: 'mittel', text: 'mittel' },
-  { wert: 'schwer', text: 'schwer' },
+export const SCHWIERIGKEITEN: { wert: Schwierigkeit; stufe: Stufe }[] = [
+  { wert: 'leicht', stufe: 1 },
+  { wert: 'mittel', stufe: 2 },
+  { wert: 'schwer', stufe: 3 },
 ]
+
+export const stufeAus = (s: Schwierigkeit): Stufe => (s === 'leicht' ? 1 : s === 'schwer' ? 3 : 2)
+
+/** Sterne als Text – nur wo keine Pixel-Icons möglich sind (z. B. in Auswahllisten) */
+export const sternText = (n: Stufe) => '★'.repeat(n) + '☆'.repeat(3 - n)
 
 // ---- Aufgabeninhalt: Textstücke, Lücken und Auswahl-Stellen (dürfen gemischt vorkommen) ----
 
@@ -108,6 +116,8 @@ export type Schueler = {
   pseudonym: string
   token: string
   kerncurriculum: Kerncurriculum | null
+  /** von der Lehrkraft gesetzte Stufe; null = automatisch (je Bereich, Tabelle schueler_stufen) */
+  stufe_manuell: Stufe | null
   erstellt_am: string
 }
 
@@ -164,7 +174,8 @@ export type SchuelerAufgabe = {
   titel: string
   anweisung: string
   hinweis: string | null
-  schwierigkeit: Schwierigkeit
+  /** Stufe der Aufgabe als Sternzahl (die Datenbank schickt Schüler:innen nur die Zahl) */
+  stufe: Stufe
   inhalt: LueckentextInhaltSchueler
   versuche: number
   geloest: boolean

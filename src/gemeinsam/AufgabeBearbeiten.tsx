@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FORMAT_ICON, PixelIcon } from '../lib/icons'
 import type { Antwort, Antworten, Pruefergebnis, SchuelerAufgabe } from '../lib/typen'
 import { LueckentextAnzeige } from './LueckentextAnzeige'
+import { Sterne } from './Sterne'
 
 export type PruefAntwort = { ergebnis: Pruefergebnis; rueckmeldung: string | null; versuche: number }
 
@@ -41,6 +42,7 @@ function KopfKarte({ aufgabe, kopf }: { aufgabe: SchuelerAufgabe; kopf?: Aufgabe
         <div>
           {kopf && <p className="aufgabe-kopf__ort">{kopf.ort}</p>}
           <h1 className="aufgabe-kopf__titel">{aufgabe.titel}</h1>
+          {aufgabe.typ !== 'erklaerung' && <Sterne stufe={aufgabe.stufe} />}
         </div>
       </div>
       {kopf && (

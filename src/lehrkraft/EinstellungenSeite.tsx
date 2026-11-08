@@ -66,7 +66,7 @@ export function EinstellungenSeite() {
         <h2>Berechnung des Stands</h2>
         <p className="klein">
           So funktioniert es: Pro Kompetenz zählen die letzten gewerteten Versuche (pro Aufgabe und Tag nur der erste,
-          nicht nach „Lösung ansehen“). Jeder Versuch bringt „Anteil richtig × Höchstpunkte der Schwierigkeit“. Neuere
+          nicht nach „Lösung ansehen“). Jeder Versuch bringt „Anteil richtig × Höchstpunkte der Aufgabenstufe (Sterne)“. Neuere
           Versuche zählen mehr. Aus dem Durchschnitt (0–100) ergibt sich die Stufe.
         </p>
         <div className="formular zeile">
@@ -85,15 +85,15 @@ export function EinstellungenSeite() {
         </div>
         <div className="formular zeile">
           <label>
-            Höchstpunkte leicht
+            Höchstpunkte bei 1 Stern
             <input type="number" min={1} max={100} value={e.punkte_leicht} onChange={zahl('punkte_leicht')} />
           </label>
           <label>
-            mittel
+            bei 2 Sternen
             <input type="number" min={1} max={100} value={e.punkte_mittel} onChange={zahl('punkte_mittel')} />
           </label>
           <label>
-            schwer
+            bei 3 Sternen
             <input type="number" min={1} max={100} value={e.punkte_schwer} onChange={zahl('punkte_schwer')} />
           </label>
         </div>

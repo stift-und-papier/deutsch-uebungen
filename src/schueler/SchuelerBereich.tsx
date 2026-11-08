@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { AufgabeBearbeiten } from '../gemeinsam/AufgabeBearbeiten'
+import { Sterne } from '../gemeinsam/Sterne'
 import { fehlerText, istNetzwerkfehler } from '../lib/fehler'
 import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
@@ -17,8 +18,6 @@ import {
 } from './speicher'
 
 type Props = { token: string; pfad: string[] }
-
-const STUFEN_TEXT = { leicht: 'leichte Stufe', mittel: 'mittlere Stufe', schwer: 'schwere Stufe' } as const
 
 // Alles, was Schüler:innen sehen. Zugriff nur über die Datenbank-Funktionen mit dem Link-Token.
 export function SchuelerBereich({ token, pfad }: Props) {
@@ -180,7 +179,9 @@ export function SchuelerBereich({ token, pfad }: Props) {
                       {a.geloest ? '✓' : i + 1}
                     </span>
                     <span>
-                      <strong className="karten-link__titel">{a.titel}</strong>
+                      <strong className="karten-link__titel">
+                        {a.titel} {a.typ !== 'erklaerung' && <Sterne stufe={a.stufe} />}
+                      </strong>
                       <span className="aes-card__hint">
                         {a.typ === 'erklaerung'
                           ? a.geloest
@@ -229,7 +230,7 @@ export function SchuelerBereich({ token, pfad }: Props) {
               aufgabe={aufgabe}
               kopf={{
                 zurueck: `#${basis}/p/${paket.id}`,
-                ort: aufgabe.typ === 'erklaerung' ? paket.titel : `${paket.titel} · ${STUFEN_TEXT[aufgabe.schwierigkeit]}`,
+                ort: paket.titel,
                 nr: index + 1,
                 gesamt: paket.aufgaben.length,
               }}

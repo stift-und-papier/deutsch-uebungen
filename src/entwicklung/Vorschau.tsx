@@ -44,6 +44,7 @@ const schueler: Schueler[] = namen.map((p, i) => ({
   pseudonym: p,
   token: '',
   kerncurriculum: 'Realschule',
+  stufe_manuell: null,
   erstellt_am: '',
 }))
 const kNamen = ['s-Laute und Vokallänge', 'Großschreibung', 'Komma bei Aufzählung und Nebensatz', 'Satzglieder', 'das oder dass']

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AufgabeBearbeiten } from '../gemeinsam/AufgabeBearbeiten'
+import { Sterne } from '../gemeinsam/Sterne'
 import { fehlerText } from '../lib/fehler'
 import {
   bloeckeZuText,
@@ -17,6 +18,7 @@ import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import {
   SCHWIERIGKEITEN,
+  stufeAus,
   type Antworten,
   type Aufgabe,
   type AufgabenTyp,
@@ -490,7 +492,7 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
                       titel: titel || format.name,
                       anweisung,
                       hinweis: hinweis || null,
-                      schwierigkeit,
+                      stufe: stufeAus(schwierigkeit),
                       inhalt: istErklaerung ? { teile: [], erklaerung } : ohneLoesung(teile, darstellung, kategorien, fehlerOptionen),
                       versuche: 0,
                       geloest: false,
@@ -518,16 +520,16 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
           {istErklaerung ? (
             <p className="klein">
               Erklärseiten zählen im Paket als erledigt, sobald Schüler:innen „Verstanden“ antippen – aber nie für den
-              Lernstand. Darum gibt es hier keine Schwierigkeit und keine Kompetenzen.
+              Lernstand. Darum gibt es hier keine Stufe und keine Kompetenzen.
             </p>
           ) : (
             <>
           <fieldset>
-            <legend>Schwierigkeit</legend>
+            <legend>Stufe</legend>
             <div className="umschalter">
               {SCHWIERIGKEITEN.map((s) => (
                 <button type="button" key={s.wert} aria-pressed={schwierigkeit === s.wert} onClick={() => setSchwierigkeit(s.wert)}>
-                  {s.text}
+                  <Sterne stufe={s.stufe} />
                 </button>
               ))}
             </div>

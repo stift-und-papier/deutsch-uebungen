@@ -2061,3 +2061,25 @@ summary.editor-abschnitt__titel,
   font-weight: 800;
   color: var(--gruen-dunkel);
 }
+
+/* ---------- Stufen als Sterne ---------- */
+
+.sterne {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.stufe-zelle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stufe-zelle__bereich {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}

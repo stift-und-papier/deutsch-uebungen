@@ -73,7 +73,7 @@ export function SchuelerLernstand({ schuelerId, drucken = false }: { schuelerId:
         <Legende />
         <p className="aes-card__hint">
           Berechnung: gewichteter Durchschnitt der letzten {einstellungen.anzahl_letzte} gewerteten Versuche (neuere zählen
-          mehr; leicht/mittel/schwer höchstens {einstellungen.punkte_leicht}/{einstellungen.punkte_mittel}/
+          mehr; Aufgaben mit 1/2/3 Sternen höchstens {einstellungen.punkte_leicht}/{einstellungen.punkte_mittel}/
           {einstellungen.punkte_schwer} Punkte). Eine Stufe gibt es ab {einstellungen.min_versuche} Versuchen. Die Startmarke
           zeigt den ersten Stand.
         </p>

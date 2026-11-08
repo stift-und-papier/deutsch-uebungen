@@ -102,7 +102,7 @@ begin
   -- 1.1 Keine Tabelle ist direkt lesbar
   declare t text;
   begin
-    foreach t in array array['klassen','schueler','aufgaben','pakete','paket_aufgaben','zuweisungen','versuche','loesung_angesehen','kompetenzen','aufgabe_kompetenzen'] loop
+    foreach t in array array['klassen','schueler','aufgaben','pakete','paket_aufgaben','zuweisungen','versuche','loesung_angesehen','kompetenzen','aufgabe_kompetenzen','schueler_stufen'] loop
       begin
         execute format('select count(*) from public.%I', t) into n;
         raise exception 'FEHLGESCHLAGEN: anon kann Tabelle % lesen', t;
@@ -131,6 +131,8 @@ begin
       'select public.pruefe_aufgabe_formate(''lueckentext'', ''{}''::jsonb, ''{}''::jsonb)',
       'select public.inhalt_ohne_loesung_formate(''lueckentext'', ''{}''::jsonb)',
       'select public.nur_loesung_formate(''lueckentext'', ''{}''::jsonb)',
+      'select public.stufen_regel()',
+      'select public.stufe_aufstieg(5, 5)',
       'select public.schueler_zum_token(''x'')',
       'select public.neuer_token()',
       'select public.wiese_zahl(1, 1, 1, 1, 1, null::public.einstellungen)'
@@ -582,6 +584,106 @@ begin
   exception when check_violation then null;
   end;
   ok := ok || '3.1 Blumenwiese welkt nie, höchstens 80 Blumen'::text;
+
+  -- =================================================================
+  -- Teil 4: Stufen (Sterne) – Automatik je Bereich, manuelle Stufe hat Vorrang
+  -- Beispielrechnung (Regel 80 %, mind. 5 Aufgaben): Fuchs-01 bearbeitet 5 Aufgaben mit 1 Stern im Bereich
+  -- Rechtschreibung. Nach 4 richtigen (4 bearbeitet < 5) bleibt 1 Stern; nach der 5. (falsch): 4 von 5 = 80 % → 2 Sterne.
+  -- =================================================================
+  declare
+    c_pak_s constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000b9';
+    v_leicht uuid[] := array[gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid()];
+    v_mittel uuid := gen_random_uuid();
+    v_ids jsonb;
+    i integer;
+  begin
+    -- 4.1 Rechenregel
+    if not public.stufe_aufstieg(5, 4) or public.stufe_aufstieg(5, 3) or public.stufe_aufstieg(4, 4) then
+      raise exception 'FEHLGESCHLAGEN: Aufstiegsregel 80 %% / mind. 5';
+    end if;
+    ok := ok || '4.1 Aufstiegsregel: 4 von 5 ja, 3 von 5 nein, 4 von 4 nein'::text;
+
+    -- Paket nur für Fuchs-01: 5 Aufgaben mit 1 Stern, 1 Aufgabe mit 2 Sternen, alle im Bereich Rechtschreibung
+    insert into public.pakete (id, owner, titel) values (c_pak_s, c_lk_a, 'Stufen-Test');
+    for i in 1 .. 5 loop
+      insert into public.aufgaben (id, owner, typ, titel, inhalt, schwierigkeit)
+      values (v_leicht[i], c_lk_a, 'lueckentext', 'Stern 1 Nr. ' || i, c_inhalt, 'leicht');
+      insert into public.paket_aufgaben (paket_id, aufgabe_id, position) values (c_pak_s, v_leicht[i], i);
+      insert into public.aufgabe_kompetenzen (aufgabe_id, kompetenz_id) values (v_leicht[i], c_kom_a);
+    end loop;
+    insert into public.aufgaben (id, owner, typ, titel, inhalt, schwierigkeit)
+    values (v_mittel, c_lk_a, 'lueckentext', 'Stern 2', c_inhalt, 'mittel');
+    insert into public.paket_aufgaben (paket_id, aufgabe_id, position) values (c_pak_s, v_mittel, 9);
+    insert into public.aufgabe_kompetenzen (aufgabe_id, kompetenz_id) values (v_mittel, c_kom_a);
+    insert into public.zuweisungen (owner, paket_id, schueler_id) values (c_lk_a, c_pak_s, c_sch_a1);
+
+    -- 4.2 Start auf 1 Stern: nur die 5 Aufgaben mit 1 Stern sichtbar
+    select p -> 'aufgaben' into v_ids from jsonb_array_elements(public.schueler_start(c_tok_a1) -> 'pakete') p
+    where p ->> 'id' = c_pak_s::text;
+    if jsonb_array_length(v_ids) <> 5 or exists (select 1 from jsonb_array_elements(v_ids) a where a ->> 'stufe' <> '1')
+       or v_ids::text like '%leicht%' or v_ids::text like '%mittel%' then
+      raise exception 'FEHLGESCHLAGEN: Start nicht auf 1 Stern: %', v_ids;
+    end if;
+    ok := ok || '4.2 neue Schüler:innen starten auf 1 Stern'::text;
+
+    -- 4.3 Automatik: 4 richtig → noch 1 Stern; 5. falsch → 4/5 = 80 % → 2 Sterne
+    for i in 1 .. 4 loop
+      perform public.antwort_abgeben(c_tok_a1, c_pak_s, v_leicht[i], '{"0":"dass"}', gen_random_uuid());
+    end loop;
+    if exists (select 1 from public.schueler_stufen where schueler_id = c_sch_a1 and bereich = 'Rechtschreibung') then
+      raise exception 'FEHLGESCHLAGEN: Aufstieg schon nach 4 Aufgaben';
+    end if;
+    perform public.antwort_abgeben(c_tok_a1, c_pak_s, v_leicht[5], '{"0":"das"}', gen_random_uuid());
+    -- später richtig ändert nichts mehr (zählt nur der erste Versuch) – und schadet nicht
+    perform public.antwort_abgeben(c_tok_a1, c_pak_s, v_leicht[5], '{"0":"dass"}', gen_random_uuid());
+    if (select stufe from public.schueler_stufen where schueler_id = c_sch_a1 and bereich = 'Rechtschreibung') <> 2 then
+      raise exception 'FEHLGESCHLAGEN: kein Aufstieg bei 4 von 5';
+    end if;
+    select p -> 'aufgaben' into v_ids from jsonb_array_elements(public.schueler_start(c_tok_a1) -> 'pakete') p
+    where p ->> 'id' = c_pak_s::text;
+    if jsonb_array_length(v_ids) <> 1 or v_ids -> 0 ->> 'id' <> v_mittel::text then
+      raise exception 'FEHLGESCHLAGEN: nach Aufstieg falsche Aufgaben: %', v_ids;
+    end if;
+    ok := ok || '4.3 Automatik: Aufstieg auf 2 Sterne bei 4 von 5 im ersten Versuch'::text;
+
+    -- 4.4 Manuell hat Vorrang und wird nicht überschrieben; Automatik stuft nie zurück
+    update public.schueler set stufe_manuell = 1 where id = c_sch_a1;
+    perform public.antwort_abgeben(c_tok_a1, c_pak_s, v_mittel, '{"0":"falsch"}', gen_random_uuid());
+    select p -> 'aufgaben' into v_ids from jsonb_array_elements(public.schueler_start(c_tok_a1) -> 'pakete') p
+    where p ->> 'id' = c_pak_s::text;
+    if jsonb_array_length(v_ids) <> 5 or (select stufe_manuell from public.schueler where id = c_sch_a1) <> 1
+       or (select stufe from public.schueler_stufen where schueler_id = c_sch_a1 and bereich = 'Rechtschreibung') <> 2 then
+      raise exception 'FEHLGESCHLAGEN: manuelle Stufe nicht vorrangig oder Automatik verändert: %', v_ids;
+    end if;
+    -- „automatisch“ hebt die manuelle Stufe auf → wieder 2 Sterne
+    update public.schueler set stufe_manuell = null where id = c_sch_a1;
+    select p -> 'aufgaben' into v_ids from jsonb_array_elements(public.schueler_start(c_tok_a1) -> 'pakete') p
+    where p ->> 'id' = c_pak_s::text;
+    if jsonb_array_length(v_ids) <> 1 then raise exception 'FEHLGESCHLAGEN: „automatisch“ wirkt nicht: %', v_ids; end if;
+    ok := ok || '4.4 manuelle Stufe hat Vorrang, „automatisch“ hebt sie auf, nie zurückgestuft'::text;
+
+    -- 4.5 Lehrkraft B sieht die Stufen von A nicht und kann sie nicht schreiben
+    set local role authenticated;
+    perform set_config('request.jwt.claims', json_build_object('sub', c_lk_b, 'role', 'authenticated')::text, true);
+    if (select count(*) from public.schueler_stufen) <> 0 then raise exception 'FEHLGESCHLAGEN: B sieht Stufen von A'; end if;
+    begin
+      insert into public.schueler_stufen (schueler_id, owner, bereich, stufe) values (c_sch_b1, c_lk_b, 'x', 3);
+      raise exception 'FEHLGESCHLAGEN: Lehrkraft kann Stufen direkt schreiben';
+    exception when insufficient_privilege then null;
+    end;
+    update public.schueler set stufe_manuell = 3 where id = c_sch_a1;
+    get diagnostics i = row_count;
+    if i <> 0 then raise exception 'FEHLGESCHLAGEN: B setzt Stufe bei A'; end if;
+    -- Lehrkraft A setzt die manuelle Stufe (so wie in der Klassenliste) und sieht die Automatik-Stufe
+    perform set_config('request.jwt.claims', json_build_object('sub', c_lk_a, 'role', 'authenticated')::text, true);
+    update public.schueler set stufe_manuell = 3 where id = c_sch_a1;
+    get diagnostics i = row_count;
+    if i <> 1 or (select count(*) from public.schueler_stufen where schueler_id = c_sch_a1) <> 1 then
+      raise exception 'FEHLGESCHLAGEN: A kann Stufe nicht setzen oder Automatik-Stufe nicht lesen';
+    end if;
+    reset role;
+    ok := ok || '4.5 Stufen nur lesbar für die eigene Lehrkraft, nicht direkt schreibbar; manuell setzen nur eigene'::text;
+  end;
 
   -- Alles rückgängig machen und Ergebnis melden
   raise exception 'ALLE TESTS BESTANDEN (%): %', array_length(ok, 1), array_to_string(ok, ' | ');

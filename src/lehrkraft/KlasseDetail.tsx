@@ -5,7 +5,8 @@ import { erzeugePseudonyme, pseudonymListeLesen } from '../lib/pseudonyme'
 import { gehe, schuelerLink } from '../lib/router'
 import { supabase } from '../lib/supabase'
 import { stufeAusPunkte, STUFEN, type Auswertung, type Einstellungen } from '../lib/lernstand'
-import type { Klasse, Schueler } from '../lib/typen'
+import { sternText, type Klasse, type Schueler, type Stufe } from '../lib/typen'
+import { Sterne } from '../gemeinsam/Sterne'
 
 type SchuelerMitVersuchen = Schueler & { versuche: { count: number }[] }
 type Mittelwert = { punkte: number; kompetenzen: number }
@@ -34,18 +35,22 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
   const [mittelwerte, setMittelwerte] = useState<Map<string, Mittelwert>>(new Map())
   const [einstellungen, setEinstellungen] = useState<Einstellungen | null>(null)
   const [sortierung, setSortierung] = useState<{ nach: 'name' | 'stand'; auf: boolean }>({ nach: 'name', auf: true })
+  // Automatische Stufen je Bereich (nur Bereiche, in denen schon aufgestiegen wurde; sonst gilt 1 Stern)
+  const [autoStufen, setAutoStufen] = useState<{ schueler_id: string; bereich: string; stufe: Stufe }[]>([])
 
   const laden = useCallback(async () => {
-    const [k, s, l, e] = await Promise.all([
+    const [k, s, l, e, st] = await Promise.all([
       supabase.from('klassen').select('*').eq('id', klasseId).single(),
       supabase.from('schueler').select('*, versuche(count)').eq('klasse_id', klasseId).order('pseudonym'),
       supabase.rpc('lernstand_klasse', { p_klasse: klasseId }),
       supabase.from('einstellungen').select('*').single(),
+      supabase.from('schueler_stufen').select('schueler_id, bereich, stufe').order('bereich'),
     ])
     if (k.error) return setFehler(fehlerText(k.error))
     if (s.error) return setFehler(fehlerText(s.error))
     setKlasse(k.data as Klasse)
     setSchueler(s.data as SchuelerMitVersuchen[])
+    if (!st.error) setAutoStufen(st.data as typeof autoStufen)
     if (!l.error && !e.error) {
       setMittelwerte(mittelwerteBerechnen(l.data as { schueler_id: string; daten: Auswertung | null }[]))
       setEinstellungen(e.data as Einstellungen)
@@ -73,6 +78,16 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
     setUmbenennenId(null)
     if (!neu || neu === s.pseudonym) return
     const { error } = await supabase.from('schueler').update({ pseudonym: neu }).eq('id', s.id)
+    if (error) setFehler(fehlerText(error))
+    else void laden()
+  }
+
+  // Manuelle Stufe setzen (1–3) oder mit „automatisch“ (null) aufheben
+  async function stufeSetzen(s: Schueler, wert: string) {
+    const { error } = await supabase
+      .from('schueler')
+      .update({ stufe_manuell: wert ? Number(wert) : null })
+      .eq('id', s.id)
     if (error) setFehler(fehlerText(error))
     else void laden()
   }
@@ -209,6 +224,7 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
                   Ø Lernstand {pfeil('stand')}
                 </button>
               </th>
+              <th>Stufe</th>
               <th>Versuche</th>
               <th>Aktionen</th>
             </tr>
@@ -271,6 +287,41 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
                     <span className="klein">noch keine Daten</span>
                   )}
                 </td>
+                <td>
+                  <div className="stufe-zelle">
+                    {s.stufe_manuell ? (
+                      <span>
+                        <Sterne stufe={s.stufe_manuell} /> <span className="klein">manuell</span>
+                      </span>
+                    ) : (
+                      <span>
+                        {autoStufen
+                          .filter((a) => a.schueler_id === s.id)
+                          .map((a) => (
+                            <span key={a.bereich} className="stufe-zelle__bereich">
+                              <span className="klein">{a.bereich || 'ohne Bereich'}</span> <Sterne stufe={a.stufe} />
+                            </span>
+                          ))}
+                        <span className="stufe-zelle__bereich">
+                          {autoStufen.some((a) => a.schueler_id === s.id) && <span className="klein">sonst</span>}{' '}
+                          <Sterne stufe={1} /> <span className="klein">automatisch</span>
+                        </span>
+                      </span>
+                    )}
+                    <select
+                      aria-label={`Stufe von ${s.pseudonym}`}
+                      value={s.stufe_manuell ?? ''}
+                      onChange={(e) => void stufeSetzen(s, e.target.value)}
+                    >
+                      <option value="">automatisch</option>
+                      {([1, 2, 3] as const).map((n) => (
+                        <option key={n} value={n}>
+                          {sternText(n)} manuell
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </td>
                 <td>{s.versuche[0]?.count ?? 0}</td>
                 <td className="aktionen">
                   <a className="aes-btn knopf-auswertung aes-btn--klein" href={`#/lehrkraft/schueler/${s.id}`}>
@@ -296,7 +347,9 @@ export function KlasseDetail({ klasseId }: { klasseId: string }) {
         </table>
       )}
       <p className="klein">
-        Pseudonym antippen zum Umbenennen. „Ø Lernstand“ ist der Durchschnitt aller Kompetenzen, für die schon eine Stufe
+        Pseudonym antippen zum Umbenennen. „Stufe“: Automatisch beginnen alle mit 1 Stern und steigen je Bereich auf,
+        wenn sie genug Aufgaben dieser Stufe im ersten Versuch richtig lösen (nie zurück). Eine manuell
+        gewählte Stufe gilt für alle Bereiche und hat Vorrang; „automatisch“ hebt sie wieder auf. „Ø Lernstand“ ist der Durchschnitt aller Kompetenzen, für die schon eine Stufe
         berechnet ist. Hinweis: Mit „Als Schüler:in ansehen“ zählen Ihre eigenen Versuche wie Versuche dieser Person. Zum Ausprobieren
         besser eine eigene Test-Person anlegen (z. B. „Test-Lehrkraft“).
       </p>

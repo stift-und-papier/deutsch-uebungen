@@ -6,7 +6,7 @@ export type IconName =
   | 'luecke' | 'auswahl' | 'zuordnen' | 'lupe' | 'reihenfolge' | 'dokument'
   | 'buchstabe' | 'bausteine' | 'satz' | 'stift' | 'zeichen' | 'sprechblase'
   | 'blume' | 'spross' | 'giesskanne' | 'samen'
-  | 'stern' | 'paket' | 'gluehbirne'
+  | 'stern' | 'stern-leer' | 'paket' | 'gluehbirne'
 
 // Aufgabenformat → Icon (Kopf der Aufgabe)
 export const FORMAT_ICON: Record<string, IconName> = {

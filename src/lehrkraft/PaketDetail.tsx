@@ -3,7 +3,8 @@ import { AufgabeBearbeiten } from '../gemeinsam/AufgabeBearbeiten'
 import { fehlerText } from '../lib/fehler'
 import { gehe } from '../lib/router'
 import { supabase } from '../lib/supabase'
-import type { Aufgabe, Klasse, Paket, PaketAufgabe, Pruefergebnis, Schueler, Zuweisung } from '../lib/typen'
+import { stufeAus, sternText, type Aufgabe, type Klasse, type Paket, type PaketAufgabe, type Pruefergebnis, type Schueler, type Zuweisung } from '../lib/typen'
+import { Sterne } from '../gemeinsam/Sterne'
 import { ohneLoesung } from '../lib/lueckentext'
 import { TYP_NAMEN } from './AufgabenListe'
 
@@ -90,7 +91,13 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
                 <a href={`#/lehrkraft/aufgaben/${e.aufgabe_id}`}>{e.aufgabe.titel}</a>
                 <span className="klein">
                   {' '}
-                  · {TYP_NAMEN[e.aufgabe.typ]} · {e.aufgabe.schwierigkeit}
+                  · {TYP_NAMEN[e.aufgabe.typ]}
+                  {e.aufgabe.typ !== 'erklaerung' && (
+                    <>
+                      {' · '}
+                      <Sterne stufe={stufeAus(e.aufgabe.schwierigkeit)} />
+                    </>
+                  )}
                 </span>
                 <span className="aktionen">
                   <button className="aes-btn aes-btn--ghost aes-btn--klein" disabled={i === 0} onClick={() => void verschieben(i, -1)} aria-label="nach oben">
@@ -131,7 +138,7 @@ export function PaketDetail({ paketId, vorschau }: { paketId: string; vorschau: 
               <select name="aufgabe">
                 {verfuegbar.map((a) => (
                   <option key={a.id} value={a.id}>
-                    {a.titel} ({a.schwierigkeit})
+                    {a.titel} ({a.typ === 'erklaerung' ? 'Erklärung' : sternText(stufeAus(a.schwierigkeit))})
                   </option>
                 ))}
               </select>
@@ -300,7 +307,7 @@ function PaketVorschau({ daten }: { daten: Daten }) {
             titel: a.titel,
             anweisung: a.anweisung,
             hinweis: a.hinweis,
-            schwierigkeit: a.schwierigkeit,
+            stufe: stufeAus(a.schwierigkeit),
             inhalt:
               a.typ === 'erklaerung'
                 ? { teile: [], erklaerung: a.inhalt.erklaerung }

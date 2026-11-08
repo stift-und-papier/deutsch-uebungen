@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Blumenwiese, wieseSatz } from '../gemeinsam/Blumenwiese'
+import { Sterne } from '../gemeinsam/Sterne'
 import { PixelIcon } from '../lib/icons'
 import { supabase } from '../lib/supabase'
 import type { SchuelerStart } from '../lib/typen'
@@ -81,6 +82,11 @@ export function Start({ token, daten, geschafft, basis }: Props) {
           <p className="seitenkopf__text">
             {paket ? `Übungspaket „${paket.titel}“.` : daten.pakete.length ? 'Du hast alle Aufgaben geschafft. Super!' : 'Gerade gibt es keine Übungen für dich.'}
           </p>
+          {aufgabe && aufgabe.typ !== 'erklaerung' && (
+            <p className="seitenkopf__text">
+              {aufgabe.titel} <Sterne stufe={aufgabe.stufe} />
+            </p>
+          )}
         </div>
         {paket && aufgabe ? (
           <a className="aes-btn aes-btn--primary" href={`#${basis}/p/${paket.id}/a/${aufgabe.id}`}>

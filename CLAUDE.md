@@ -106,7 +106,7 @@
 1. Kern: Login, Klassen/Pseudonyme, Links, Linkliste, Lückentext, Pakete, Bearbeitung, Antworten speichern ✓
 2. Lernstand: Kompetenzen importieren, Zuordnung, KC pro Klasse, Lehrkraft- und Schüleransichten ✓
    – Design „Übungswiese“ eingebaut ✓
-3. Weitere Aufgabenformate + Schwierigkeitsstufe pro Schüler:in ← **als Nächstes** (nach „Design ist ok“)
+3. Weitere Aufgabenformate + Schwierigkeitsstufe pro Schüler:in ✓ (Sterne + Automatik; iPad-Test der Stufen steht aus)
 4. Politur: Druck/PDF, Offline-Speicher, `DATENSCHUTZ.md`, Löschfunktionen
 5. Später: mehrere Lehrkräfte, Aufgaben teilen, PDF/Word-Import
 
@@ -136,6 +136,16 @@
   Anzahl gelöster Aufgaben, nächster Schritt. **Nie Punkte/Stufen** – Test 1.13 prüft das.
 
 ## Entscheidungen (Protokoll)
+- 2026-11-08 (didaktisch, Lehrkraft): **Stufen als Sterne + Automatik** (Migration `20261108180000_stufen_automatik.sql`):
+  Aufgaben behalten intern `schwierigkeit` leicht/mittel/schwer (= 1/2/3 Sterne, `stufe_nr`/`stufeAus`); angezeigt wird
+  überall nur `Sterne` (`src/gemeinsam/Sterne.tsx`, Pixel-Icons `stern`/`stern-leer`, „Stufe n von 3“). Schüler:innen
+  bekommen nur `stufe` (Zahl), nie die Wörter. Je Schüler:in: `stufe_manuell` (1–3, gilt für alle Bereiche, Vorrang) oder
+  null = automatisch je Themenbereich (`schueler_stufen`, Start 1, nur Aufstieg, nach jeder Abgabe). **Regel nur in
+  `stufen_regel()`** (80 %, mind. 5): Anteil der bearbeiteten Aufgaben dieser Stufe und dieses Bereichs, die im ERSTEN
+  gewerteten Versuch richtig waren. Bereich einer Aufgabe = `aufgabe_bereich` (Kompetenz im KC der Schüler:in).
+  Sichtbar je Paket und Bereich nur die Aufgaben der eigenen Stufe (`sichtbare_aufgaben`; sonst nächst niedrigere, sonst
+  niedrigste vorhandene; Erklärseiten immer). Blumenwiese: „Paket abgeschlossen“ zählt nur sichtbare Aufgaben.
+  Die Sterne sind die Arbeitsstufe, kein Lernstand – Schüler:innen sehen weiterhin keine `--` bis `++`.
 - 2026-11-08 (didaktisch, Lehrkraft): Format **Sätze verbessern** (Typ `ueberarbeiten`, Teil `versionen`, Anzeige
   `src/gemeinsam/VersionenAnzeige.tsx`): je Satz optional `Kontext: …`, dann 2–4 Versionen (eine Zeile je Version,
   bessere mit `*`, genau eine), unter jeder Version `Hinweis: …` (Pflicht). Versionen erscheinen in der geschriebenen
