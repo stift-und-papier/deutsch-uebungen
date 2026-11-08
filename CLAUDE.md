@@ -58,11 +58,18 @@
   (Bausteine `aes-btn`, `aes-card`, `aes-nav`, `aes-gap`, `aes-choice`, `aes-word`, `aes-fb`, `aes-growth`, `aes-level`),
   `fonts/` (Fraunces, Nunito, lokal), `hintergruende/` (SVG). Eingebunden in `src/main.tsx`; App-eigene Regeln in
   `src/index.css` – dort nur Variablen aus `tokens.css`, **keine neuen Farbwerte**.
+- **Design-Update 2026-11-08 (Hallmark redesign, Branch `design-update`):** zwei Looks aus EINER Token-Datei
+  (`src/design/tokens.css`): Thema **„Pixel“** für `.wiese` (alle Schülerseiten) und `.vorschau-rahmen` (Schülervorschau im
+  Editor) – Radien 0, dunkelblaue Kontur und harter Schatten als box-shadow-Ring (ändert keine Maße), Pixelschrift
+  **Pixelify Sans** (`--font-pixel`, lokal, OFL) nur für Überschriften, Knöpfe, Menü, Zahlen; Aufgaben/Fließtext Nunito.
+  Regeln in `src/design/pixel.css`. Thema **„Ruhig“** für `.lehrkraft`/`.abendhimmel` – kleine Rundungen, flache Karten
+  mit feiner Linie, flacher warmer Hintergrund; Regeln in `src/design/lehrkraft.css`. Beide Dateien beginnen mit dem
+  Hallmark-Stempel. Prüfen: `node ~/.agents/skills/hallmark/scripts/sloplint.mjs src --genre playful --scope app --kept`.
 - **Neue Oberflächen immer zuerst aus den vorhandenen Bausteinen bauen.** Fehlt ein Baustein: der Lehrkraft einen
   vorschlagen und im gleichen Stil (Tokens, Pillen, große Radien) bauen, nichts Eigenes erfinden.
 - **Regeln:**
   - Text steht nie direkt auf dem Hintergrundbild, immer auf einer Karte (`aes-card`). Kein Maskottchen, keine Figuren.
-  - Buttons sind Pillen; Tippflächen ≥ 48 × 48 px (`--tipp-min`); Fließtext ≥ 17 px; keine Hover-Funktionen.
+  - Buttons: Schüleransicht eckig mit Kontur (Pixel), Lehrkraft Rechtecke mit leichter Rundung; Tippflächen ≥ 48 × 48 px (`--tipp-min`); Fließtext ≥ 17 px; keine Hover-Funktionen.
   - Schüleransicht: Fehler nie rot – „nochmal“ ist Pfirsich (`aes-fb--again`, `aes-gap--again`), richtig ist Grün.
   - Schüler:innen sehen Lernstand **nur** über `aes-growth` (vier Zustände, Entwicklung, nie absolute Stufen).
     `--stufe-*` und `aes-level` (`--` bis `++`) nur in der Lehrkraft-Ansicht, immer mit Symbol im Balken/Feld.

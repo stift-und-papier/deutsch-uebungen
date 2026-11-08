@@ -8,7 +8,7 @@
    Pixel-Bezug nur dezent: Schriftzug in der Pixelschrift, eckige Markierungen im Menü. */
 
 /* Flacher, warmer Hintergrund statt Abendhimmel-Streifen – weniger Schmuck, mehr Ruhe */
-.rahmen--lehrkraft {
+.lehrkraft {
   background: var(--flaeche-seite);
 }
 
@@ -117,4 +117,11 @@
 .lehrkraft .aes-level__track,
 .lehrkraft .aes-level__fill {
   border-radius: var(--radius-sm);
+}
+
+/* Druck (Linkliste, Einzelansicht): kein Hintergrund */
+@media print {
+  .lehrkraft {
+    background: none;
+  }
 }

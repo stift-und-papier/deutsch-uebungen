@@ -721,10 +721,9 @@ tr.ausgeblendet .aktionen {
 
 /* ---------- Lernstand (nur Lehrkraft) ---------- */
 
-/* Abendhimmel als ruhiger Kopfstreifen im Lehrkraft-Bereich */
+/* Hintergrund des Lehrkraft-Bereichs: siehe design/lehrkraft.css */
 .lehrkraft {
   min-height: 100vh;
-  background: var(--himmel-hell) url('./design/hintergruende/huegel-abend.svg') center top / 100% 420px no-repeat;
 }
 
 .auswertung-kopf {
@@ -1209,11 +1208,6 @@ tr.ausgeblendet .aktionen {
 }
 
 /* ---------- Lehrkraft-Bereich: Rahmen, Seitenkarte, Anmeldung ---------- */
-
-/* Ruhiger als die Schüleransicht: nur oben ein Streifen Abendhimmel, darunter helle Fläche */
-.rahmen--lehrkraft {
-  background: var(--himmel-hell) url('./design/hintergruende/huegel-abend.svg') center top / 100% 320px no-repeat;
-}
 
 .rahmen__inhalt--breit {
   max-width: 80rem;
