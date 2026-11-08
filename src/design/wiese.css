@@ -1,5 +1,5 @@
 /* Blumenwiese (Pixel-Szene). Szene 220 x 100 Pixel, Anzeige am besten in ganzzahligem Vielfachen (z. B. 4x = 880 px). */
-.aes-wiese { position: relative; width: 100%; aspect-ratio: 220 / 100; overflow: hidden; image-rendering: pixelated; background-color: #74b957; }
+.aes-wiese { position: relative; width: 100%; aspect-ratio: 220 / 100; overflow: hidden; image-rendering: pixelated; background-color: var(--wiese-gras); }
 .aes-wiese__szene { position: absolute; inset: 0; background-size: 100% 100%; image-rendering: pixelated; background-image: url(./wiese/szene.png); }
 .aes-wiese__blume, .aes-wiese__spross { position: absolute; transform: translate(-50%, -100%); background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; pointer-events: none; }
 .aes-wiese__blume { animation: aes-bluehen .6s ease-out both; }

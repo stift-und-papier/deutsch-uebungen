@@ -1,0 +1,233 @@
+/* Hallmark · shape: app screen · genre: playful · theme: brand · redesign: full · scope: app · copy: verbatim
+ * paper: wiese-tag.svg unter weißen Karten · accent: --schulblau · display: Pixelify Sans · body: Nunito
+ * nav: kept (Seitenleiste, im Hochformat unten) · signature: kept (die Blumenwiese) · states: die vorhandenen (laden, offline, Fehler, gesperrt)
+ * axes: wiese/pixel/schulblau · posture: kept · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P3 H3 E3 S3 R2 V3 · weakest: R, Struktur und Texte sind per Auftrag fest; der Look kommt allein aus Kontur, Schatten, Pixelschrift */
+/* Hallmark · waive 39a · „disabled“ heißt hier „nach dem Prüfen gesperrt“: die Antwort muss lesbar bleiben, Rahmen und ✓/↻ tragen den Zustand */
+/* Hallmark · waive 19, 63, 30a · copy: verbatim – der Auftrag verbietet Textänderungen (Gedankenstriche, „·“, „→“, 📊 bleiben) */
+/* Hallmark · tokens: src/design/tokens.css bleibt die einzige Token-Datei (Hallmarks eigene tokens.css/base.css wurden nicht übernommen, Floor-Regeln stehen hier und in index.css) */
+
+/* Schüleransicht im 16-Bit-Look. Gilt nur innerhalb von .wiese (alle Schülerseiten) und .vorschau-rahmen
+   (die Vorschau „So sehen es Schüler:innen“ im Editor). Werte kommen aus dem Thema „Pixel“ in tokens.css.
+   Pixelschrift nur für kurze Texte (Überschriften, Knöpfe, Menü, Zahlen); Aufgaben und Fließtext bleiben Nunito. */
+
+.wiese h1,
+.wiese h2,
+.vorschau-rahmen h1,
+.vorschau-rahmen h2 {
+  font-weight: 700;
+  letter-spacing: 0;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+/* ---------- Karten: weiße Fläche, dicke Kontur, harter Schatten ---------- */
+.wiese .aes-card,
+.wiese .aes-growth,
+.wiese .kachel,
+.vorschau-rahmen .aes-card {
+  box-shadow: var(--schatten-karte);
+}
+
+/* Platz für den versetzten Schatten der letzten Karte */
+.wiese .rahmen__inhalt,
+.wiese .seite {
+  padding-bottom: calc(3 * var(--pixel));
+}
+
+/* ---------- Knöpfe: Pixelschrift, Kontur, Kante unten; beim Drücken „sinkt“ der Knopf ---------- */
+.wiese .aes-btn,
+.vorschau-rahmen .aes-btn {
+  font-family: var(--font-pixel);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 24px;
+  border-width: 3px;
+  border-color: var(--kontur);
+  box-shadow: var(--kante-innen), var(--schatten-knopf);
+  transition: transform 80ms steps(2), box-shadow 80ms steps(2);
+}
+
+.wiese .aes-btn:active,
+.vorschau-rahmen .aes-btn:active {
+  transform: translateY(var(--pixel));
+  box-shadow: var(--kante-innen);
+}
+
+.wiese .aes-btn--secondary,
+.vorschau-rahmen .aes-btn--secondary {
+  background: var(--flaeche-warm);
+  color: var(--schulblau);
+}
+
+.wiese .aes-btn--ghost {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Gesperrt: drei Kanäle – Fläche, Schrift, Mauszeiger – und kein Schatten */
+.wiese .aes-btn[disabled],
+.vorschau-rahmen .aes-btn[disabled] {
+  background: var(--linie);
+  color: var(--tinte-gedaempft);
+  border-color: var(--linie-stark);
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.wiese :is(a, button, input, select, textarea, summary):focus-visible,
+.vorschau-rahmen :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--fokus);
+  outline-offset: 3px;
+}
+
+/* ---------- Seitenleiste wie ein Spielmenü ---------- */
+.wiese .aes-nav {
+  box-shadow: var(--schatten-karte);
+}
+
+.wiese .aes-nav__brand {
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 30px;
+}
+
+.wiese .aes-nav__item {
+  font-family: var(--font-pixel);
+  font-weight: 600;
+  font-size: 19px;
+}
+
+.wiese .aes-nav__item[aria-current='page'] {
+  box-shadow: inset 0 0 0 3px var(--kontur), 0 var(--pixel) 0 0 var(--kontur);
+}
+
+/* Icon ohne Münze dahinter – das Pixelbild steht für sich */
+.wiese .aes-nav__icon {
+  background: transparent;
+  border-radius: 0;
+}
+
+.wiese .rahmen__name {
+  font-family: var(--font-pixel);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 3px var(--kontur);
+}
+
+.wiese .rahmen__punkt {
+  border-radius: 0;
+  box-shadow: inset -3px -3px 0 var(--pflaume-dunkel);
+}
+
+/* ---------- Zahlen und Kennzeichen ---------- */
+.wiese .zaehler {
+  box-shadow: inset 0 0 0 3px var(--kontur);
+}
+
+.wiese .zaehler__zahl {
+  font-family: var(--font-pixel);
+  font-variant-numeric: tabular-nums;
+}
+
+.wiese .aes-growth__badge {
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+
+.wiese .aes-fb,
+.vorschau-rahmen .aes-fb {
+  box-shadow: inset 0 0 0 3px currentColor;
+}
+
+.wiese .aes-fb__icon,
+.vorschau-rahmen .aes-fb__icon {
+  border-radius: 0;
+}
+
+.wiese .aes-fb__title,
+.vorschau-rahmen .aes-fb__title {
+  font-family: var(--font-pixel);
+  font-weight: 600;
+  font-size: 19px;
+}
+
+/* ---------- Aufgaben-Bausteine: eckig, mit kleiner Kante zum Antippen ---------- */
+.wiese .aes-choice,
+.wiese .aes-word,
+.vorschau-rahmen .aes-choice,
+.vorschau-rahmen .aes-word {
+  box-shadow: var(--schatten-klein);
+}
+
+.wiese .aes-choice[aria-pressed='true'],
+.vorschau-rahmen .aes-choice[aria-pressed='true'] {
+  box-shadow: 0 0 0 2px var(--kontur), 0 var(--pixel) 0 2px var(--kontur);
+}
+
+.wiese .aes-word--target,
+.vorschau-rahmen .aes-word--target {
+  box-shadow: none;
+}
+
+.wiese .aes-gap,
+.vorschau-rahmen .aes-gap {
+  border-width: 3px;
+}
+
+/* Merk- und Hinweiskästen: Kontur rundum statt Streifen links */
+.wiese .merkkasten,
+.vorschau-rahmen .merkkasten {
+  border: 3px solid var(--schulblau);
+}
+
+/* Aufklappbare Einträge (Lernweg, Hilfe): Pfeil als Pixeltext */
+.wiese .lernweg-erste__knopf::after {
+  font-family: var(--font-pixel);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wiese .aes-btn,
+  .vorschau-rahmen .aes-btn {
+    transition: none;
+  }
+  .wiese .aes-btn:active,
+  .vorschau-rahmen .aes-btn:active {
+    transform: none;
+  }
+}
+
+/* Runde Formen werden eckig: Nummern der Aufgaben, Farbpunkt der Stifte (Zuordnen) */
+.wiese .karten-link__nr,
+.wiese .stift__punkt,
+.vorschau-rahmen .stift__punkt {
+  border-radius: 0;
+  box-shadow: inset 0 0 0 2px var(--kontur);
+  font-family: var(--font-pixel);
+}
+
+/* Listen aus Karten: Abstand so groß wie der versetzte Schatten */
+.wiese .kachelliste,
+.wiese .karten-liste {
+  gap: var(--space-5);
+}
+
+/* Lücken nach dem Prüfen: grün bzw. Pfirsich (nie rot). Muss die allgemeine Regel für Eingabefelder in index.css
+   überstimmen – die hatte die Farben bisher verdeckt. Das Zeichen ✓/↻ dahinter bleibt die zweite Kennzeichnung. */
+.wiese input.aes-gap--ok,
+.vorschau-rahmen input.aes-gap--ok,
+.wiese select.aes-gap--ok,
+.vorschau-rahmen select.aes-gap--ok {
+  border-color: var(--gruen-dunkel);
+  background: var(--erfolg-flaeche);
+}
+
+.wiese input.aes-gap--again,
+.vorschau-rahmen input.aes-gap--again,
+.wiese select.aes-gap--again,
+.vorschau-rahmen select.aes-gap--again {
+  border-color: var(--pfirsich-dunkel);
+  background: var(--pfirsich-hell);
+}

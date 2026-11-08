@@ -1,9 +1,12 @@
-/* Übungswiese – aus tokens.json erzeugt. Schriften liegen in fonts/ (kein Google Fonts, kein CDN). */
+/* Übungswiese – gemeinsame Werte (Tokens) für Schüler:innen- UND Lehrkraft-Ansicht. Ursprünglich aus tokens.json erzeugt,
+   Design-Update 2026-11-08 (Hallmark redesign): Pixelschrift + Thema „Pixel“ (Schüler:innen) + Thema „Ruhig“ (Lehrkraft).
+   Schriften liegen in fonts/ (kein Google Fonts, kein CDN). Farben NUR hier festlegen, nirgends sonst. */
 @font-face{font-family:'Fraunces';src:url('fonts/fraunces-latin-600-normal.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
 @font-face{font-family:'Fraunces';src:url('fonts/fraunces-latin-700-normal.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:'Nunito';src:url('fonts/nunito-latin-400-normal.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:'Nunito';src:url('fonts/nunito-latin-700-normal.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:'Nunito';src:url('fonts/nunito-latin-800-normal.woff2') format('woff2');font-weight:800;font-style:normal;font-display:swap}
+@font-face{font-family:'Pixelify Sans';src:url('fonts/PixelifySans-wght.ttf') format('truetype');font-weight:400 700;font-style:normal;font-display:swap}
 :root {
   --schulblau: #003466;
   --schulblau-dunkel: #00264d;
@@ -27,6 +30,8 @@
   --tinte: #14243a;
   --tinte-gedaempft: #44566c;
   --fokus: var(--schulblau);
+  /* Grundfarbe der gemalten Wiese (Szene wiese/szene.png) */
+  --wiese-gras: #74b957;
   --stufe-minus2: #b3261e;
   --stufe-minus1: #e8762b;
   --stufe-null: #f2c230;
@@ -51,5 +56,38 @@
   --schatten-karte: 0 2px 0 rgba(0,52,102,0.08), 0 10px 24px rgba(0,52,102,0.10);
   --schatten-klein: 0 2px 6px rgba(0,52,102,0.14);
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-pixel: "Pixelify Sans", "Courier New", monospace;
   --font-sans: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* ---------- Thema „Pixel“: Schüleransicht (.wiese) und die Schülervorschau im Editor (.vorschau-rahmen) ----------
+   16-Bit-Look: keine Rundungen, dicke dunkelblaue Kontur, harter Schatten ohne Unschärfe, Pixelschrift für Überschriften.
+   Kontur und Schatten sind box-shadow-Ringe – sie ändern keine Maße (wichtig für die Blumenwiese in 4-facher Größe). */
+.wiese,
+.vorschau-rahmen {
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-pill: 0;
+  --pixel: 4px;
+  --kontur: var(--schulblau-dunkel);
+  --kontur-hell: var(--linie-stark);
+  --schatten-karte: 0 0 0 var(--pixel) var(--kontur), calc(2 * var(--pixel)) calc(2 * var(--pixel)) 0 var(--pixel) var(--kontur);
+  --schatten-klein: 0 0 0 2px var(--kontur-hell), 0 var(--pixel) 0 2px var(--kontur-hell);
+  --schatten-knopf: 0 var(--pixel) 0 0 var(--kontur);
+  --kante-innen: inset calc(-1 * var(--pixel)) calc(-1 * var(--pixel)) 0 rgb(0 38 77 / 0.28);
+  --font-display: var(--font-pixel);
+}
+
+/* ---------- Thema „Ruhig“: Lehrkraft-Ansicht und Anmeldung ----------
+   Sachlich: kleine Rundungen, flache Karten mit feiner Linie, Knöpfe als Rechtecke mit leichter Rundung. */
+.lehrkraft,
+.abendhimmel {
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 8px;
+  --schatten-karte: 0 0 0 1px var(--linie), 0 1px 3px rgb(0 38 77 / 0.08);
+  --schatten-klein: 0 0 0 1px var(--linie);
+  --flaeche-seite: var(--flaeche-warm);
 }
