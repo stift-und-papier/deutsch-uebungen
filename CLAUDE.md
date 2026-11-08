@@ -119,10 +119,13 @@
     Editor umschaltbar. Editor in Abschnitte Inhalt (Text + Live-Vorschau) / Einordnen (Kompetenz, Schwierigkeit,
     Titel) / Extras (Tipp, Rückmeldung, eingeklappt).
   - Lernweg ✓, Editor (Format-Kacheln, Abschnitte, Live-Vorschau) ✓
-  - **Erklärseite im Aufgabenpaket** (ähnlich Lern-App Anton) – entschieden (2026-11-08), noch zu bauen:
-    Text + Merkkasten („Merke: …“) + Beispielsätze mit hervorgehobenen Wörtern, **keine Bilder**; frei an jeder Stelle
-    im Paket, mehrere pro Paket; **wiederverwendbar wie Aufgaben** (eigenes Format „Erklärung“ in der Aufgabenliste);
-    Knopf „Verstanden – weiter“ → zählt als erledigt im Paket (✓, „x von y geschafft“), **nie für den Lernstand**.
+  - **Erklärseite im Aufgabenpaket** ✓ (Typ `erklaerung`, `inhalt.erklaerung = {text, merke, beispiele}`,
+    Darstellung `ErklaerSeite` in `src/gemeinsam/AufgabeBearbeiten.tsx`, Icon `gluehbirne`): Text + Merkkasten +
+    Beispielsätze (`[Wort]` = hervorgehoben), keine Bilder; frei an jeder Stelle im Paket; wiederverwendbar wie Aufgaben;
+    „Verstanden – weiter“ = Abgabe `{}` → zählt als erledigt im Paket, **nie für den Lernstand**
+    (`antwort_abgeben` setzt `zaehlt_fuer_lernstand = false`), zählt nicht bei „Übungen geschafft“. Keine Schwierigkeit/
+    Kompetenzen im Editor. DB: `pruefe_aufgabe`/`inhalt_ohne_loesung`/`nur_loesung` sind dünne Hüllen um die
+    `*_formate`-Funktionen (Migration `20261108170000`).
 
 ## Lernstand (Etappe 2)
 - Kompetenzen pro Lehrkraft (`kompetenzen`, Import aus `docs/kompetenzen.csv` per `node scripts/kompetenzen-sql.ts <uuid>`).

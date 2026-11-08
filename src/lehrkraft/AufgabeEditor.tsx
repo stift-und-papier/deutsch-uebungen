@@ -74,6 +74,13 @@ export const FORMATE: Record<AufgabenTyp, { name: string; kurz: string; mini: st
     beispiel:
       'Kontext: Gestern war ich im Zoo.\nDann sah ich die Löwen und dann sah ich die Affen.\nHinweis: Hier steht zweimal „dann sah ich“. Das klingt eintönig.\n*Zuerst sah ich die Löwen, danach die Affen.\nHinweis: Die Wiederholung ist vermieden, der Satz ist kürzer.',
   },
+  erklaerung: {
+    name: 'Erklärung',
+    kurz: 'Eine Seite, die ein Thema erklärt – mit Merkkasten und Beispielen. Steht im Paket zwischen den Aufgaben.',
+    mini: 'Merke: „dass“ lässt sich nicht durch „dieses“ ersetzen.',
+    anweisung: '',
+    beispiel: '',
+  },
 }
 
 /** Aufgabenformat aus der Adresse („neu-auswahl“ → auswahl), sonst null */
@@ -122,6 +129,8 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
   const [geladen, setGeladen] = useState(aufgabeId === null)
   const [kompetenzIds, setKompetenzIds] = useState<Set<string>>(new Set())
   const [kompetenzIdsAlt, setKompetenzIdsAlt] = useState<Set<string>>(new Set())
+  // Erklärseite: Erklärtext, Merkkasten, Beispiele (eine Zeile je Beispiel)
+  const [erkl, setErkl] = useState({ text: '', merke: '', beispiele: '' })
 
   useEffect(() => {
     if (!aufgabeId) return
@@ -154,6 +163,8 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
         setSchwierigkeit(a.schwierigkeit)
         setGrossKlein(a.inhalt.gross_klein_beachten)
         setText(a.inhalt.text ?? teileZuText(a.inhalt.teile))
+        if (a.inhalt.erklaerung)
+          setErkl({ text: a.inhalt.erklaerung.text, merke: a.inhalt.erklaerung.merke, beispiele: a.inhalt.erklaerung.beispiele.join('\n') })
         setGeladen(true)
       })
   }, [aufgabeId])
@@ -166,18 +177,29 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
     setTyp(neu)
   }
 
+  const istErklaerung = typ === 'erklaerung'
+  const erklaerung = {
+    text: erkl.text.trim(),
+    merke: erkl.merke.trim(),
+    beispiele: erkl.beispiele.split('\n').map((b) => b.trim()).filter(Boolean),
+  }
   const { teile, fehler: textFehler } = useMemo(
     () =>
-      typ === 'reihenfolge'
-        ? reihenZuTeilen(text)
-        : typ === 'ueberarbeiten'
-          ? versionenZuTeilen(text)
-          : textZuTeilen(text, typ === 'fehler' ? 'fehler' : typ === 'zuordnen'),
+      typ === 'erklaerung'
+        ? { teile: [], fehler: [] }
+        : typ === 'reihenfolge'
+          ? reihenZuTeilen(text)
+          : typ === 'ueberarbeiten'
+            ? versionenZuTeilen(text)
+            : textZuTeilen(text, typ === 'fehler' ? 'fehler' : typ === 'zuordnen'),
     [text, typ],
   )
   const kategorien = typ === 'zuordnen' ? kategorienAus(teile, kategorienText.split(',')) : undefined
   const fehlerOptionen = typ === 'fehler' ? { korrigieren, anzahl_zeigen: anzahlZeigen } : {}
-  const inhalt = { text, gross_klein_beachten: grossKlein, darstellung, kategorien, ...fehlerOptionen, teile }
+  const inhalt = istErklaerung
+    ? { text: '', gross_klein_beachten: true, teile: [], erklaerung }
+    : { text, gross_klein_beachten: grossKlein, darstellung, kategorien, ...fehlerOptionen, teile }
+  const erklaerungLeer = !erklaerung.text && !erklaerung.merke
   const format = FORMATE[typ]
   const BEISPIEL = format.beispiel
   const hatLuecke = teile.some((t) => t.t === 'luecke') || (typ === 'fehler' && korrigieren)
@@ -187,6 +209,7 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
     setFehler(null)
     if (!titel.trim()) return setFehler('Bitte einen Titel eingeben.')
     if (textFehler.length) return setFehler('Der Aufgabentext hat noch Fehler (siehe oben).')
+    if (istErklaerung && erklaerungLeer) return setFehler('Bitte einen Erklärtext oder einen Merksatz schreiben.')
     const datensatz = {
       typ,
       titel: titel.trim(),
@@ -259,6 +282,38 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
           <h2 className="editor-abschnitt__titel">1 · Inhalt</h2>
           <div className="editor-inhalt">
             <div className="editor-inhalt__eingabe">
+          {istErklaerung ? (
+            <>
+              <label>
+                Erklärtext (Leerzeile = neuer Absatz; [Wort] wird hervorgehoben)
+                <textarea
+                  rows={6}
+                  value={erkl.text}
+                  onChange={(e) => setErkl({ ...erkl, text: e.target.value })}
+                  placeholder="„das“ ist ein Artikel oder ein Pronomen. „dass“ ist eine Konjunktion: Es leitet einen Nebensatz ein."
+                />
+              </label>
+              <label>
+                Merkkasten (erscheint als „Merke“-Kasten)
+                <textarea
+                  rows={3}
+                  value={erkl.merke}
+                  onChange={(e) => setErkl({ ...erkl, merke: e.target.value })}
+                  placeholder="Kannst du „dieses“, „jenes“ oder „welches“ einsetzen, schreibst du „das“."
+                />
+              </label>
+              <label>
+                Beispiele (ein Beispielsatz pro Zeile; [Wort] wird hervorgehoben)
+                <textarea
+                  rows={4}
+                  value={erkl.beispiele}
+                  onChange={(e) => setErkl({ ...erkl, beispiele: e.target.value })}
+                  placeholder={'Ich hoffe, [dass] du kommst.\n[Das] Buch ist spannend.'}
+                />
+              </label>
+            </>
+          ) : (
+          <>
           <label>
             Arbeitsanweisung (sehen die Schüler:innen über der Aufgabe)
             <input value={anweisung} onChange={(e) => setAnweisung(e.target.value)} />
@@ -418,12 +473,14 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
               </div>
             )}
           </fieldset>
+          </>
+          )}
             </div>
 
             {/* Live-Vorschau: so sehen es Schüler:innen; „Prüfen“ prüft wie echt, speichert aber nichts */}
             <div className="editor-inhalt__vorschau">
               <h3 className="editor-vorschau__titel">So sehen es Schüler:innen</h3>
-              {text && textFehler.length === 0 ? (
+              {(istErklaerung ? !erklaerungLeer : text && textFehler.length === 0) ? (
                 <div className="vorschau-rahmen">
                   <AufgabeBearbeiten
                     key={JSON.stringify([inhalt, anweisung, hinweis])}
@@ -434,7 +491,7 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
                       anweisung,
                       hinweis: hinweis || null,
                       schwierigkeit,
-                      inhalt: ohneLoesung(teile, darstellung, kategorien, fehlerOptionen),
+                      inhalt: istErklaerung ? { teile: [], erklaerung } : ohneLoesung(teile, darstellung, kategorien, fehlerOptionen),
                       versuche: 0,
                       geloest: false,
                       loesung_angesehen: false,
@@ -458,6 +515,13 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
             Titel (sehen auch die Schüler:innen)
             <input value={titel} onChange={(e) => setTitel(e.target.value)} maxLength={120} placeholder="z. B. das oder dass?" />
           </label>
+          {istErklaerung ? (
+            <p className="klein">
+              Erklärseiten zählen im Paket als erledigt, sobald Schüler:innen „Verstanden“ antippen – aber nie für den
+              Lernstand. Darum gibt es hier keine Schwierigkeit und keine Kompetenzen.
+            </p>
+          ) : (
+            <>
           <fieldset>
             <legend>Schwierigkeit</legend>
             <div className="umschalter">
@@ -469,8 +533,11 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
             </div>
           </fieldset>
           <KompetenzAuswahl ausgewaehlt={kompetenzIds} onChange={setKompetenzIds} />
+            </>
+          )}
         </section>
 
+        {!istErklaerung && (
         <Aufklappbar
           offen={Boolean(hinweis || rueckmeldung)}
           titel="3 · Extras (freiwillig): Tipp und Rückmeldung"
@@ -490,6 +557,7 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
             />
           </label>
         </Aufklappbar>
+        )}
 
         {fehler && <p className="hinweis-box">{fehler}</p>}
         <div className="knopfleiste">

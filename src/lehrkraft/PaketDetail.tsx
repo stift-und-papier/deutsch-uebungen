@@ -301,7 +301,10 @@ function PaketVorschau({ daten }: { daten: Daten }) {
             anweisung: a.anweisung,
             hinweis: a.hinweis,
             schwierigkeit: a.schwierigkeit,
-            inhalt: ohneLoesung(a.inhalt.teile, a.inhalt.darstellung, a.inhalt.kategorien, a.inhalt),
+            inhalt:
+              a.typ === 'erklaerung'
+                ? { teile: [], erklaerung: a.inhalt.erklaerung }
+                : ohneLoesung(a.inhalt.teile, a.inhalt.darstellung, a.inhalt.kategorien, a.inhalt),
             versuche: 0,
             geloest: false,
             loesung_angesehen: false,

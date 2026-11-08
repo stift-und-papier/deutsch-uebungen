@@ -97,7 +97,11 @@ export function SchuelerBereich({ token, pfad }: Props) {
   const basis = `/s/${token}`
   const [bereich, paketId, , aufgabeId] = pfad
   const paket = bereich === 'p' ? daten.pakete.find((p) => p.id === paketId) : undefined
-  const geschafftGesamt = daten.pakete.reduce((summe, p) => summe + p.aufgaben.filter((a) => a.geloest).length, 0)
+  // „Übungen geschafft“: gelesene Erklärseiten zählen hier nicht mit (im Paketfortschritt schon)
+  const geschafftGesamt = daten.pakete.reduce(
+    (summe, p) => summe + p.aufgaben.filter((a) => a.geloest && a.typ !== 'erklaerung').length,
+    0,
+  )
 
   const wartendHinweis = wartend > 0 && (
     <p className="hinweis-box" role="status">
@@ -178,7 +182,15 @@ export function SchuelerBereich({ token, pfad }: Props) {
                     <span>
                       <strong className="karten-link__titel">{a.titel}</strong>
                       <span className="aes-card__hint">
-                        {a.geloest ? 'Geschafft – du kannst sie noch einmal üben.' : a.versuche > 0 ? 'Angefangen' : 'Neu'}
+                        {a.typ === 'erklaerung'
+                          ? a.geloest
+                            ? 'Erklärung – gelesen. Du kannst sie jederzeit noch einmal lesen.'
+                            : 'Erklärung – lies sie dir in Ruhe durch.'
+                          : a.geloest
+                            ? 'Geschafft – du kannst sie noch einmal üben.'
+                            : a.versuche > 0
+                              ? 'Angefangen'
+                              : 'Neu'}
                       </span>
                     </span>
                   </a>
@@ -217,7 +229,7 @@ export function SchuelerBereich({ token, pfad }: Props) {
               aufgabe={aufgabe}
               kopf={{
                 zurueck: `#${basis}/p/${paket.id}`,
-                ort: `${paket.titel} · ${STUFEN_TEXT[aufgabe.schwierigkeit]}`,
+                ort: aufgabe.typ === 'erklaerung' ? paket.titel : `${paket.titel} · ${STUFEN_TEXT[aufgabe.schwierigkeit]}`,
                 nr: index + 1,
                 gesamt: paket.aufgaben.length,
               }}

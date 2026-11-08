@@ -22,8 +22,132 @@ type Props = {
 }
 
 // Bearbeitung einer Aufgabe – für Schüler:innen und für die Vorschau der Lehrkraft.
+// Erklärseiten haben eine eigene Darstellung (lesen, „Verstanden – weiter“).
+export function AufgabeBearbeiten(props: Props) {
+  return props.aufgabe.typ === 'erklaerung' ? <ErklaerSeite {...props} /> : <AufgabeUeben {...props} />
+}
+
+// Kopfkarte: Zurück, Ort im Paket, Titel mit Format-Icon, Fortschritt
+function KopfKarte({ aufgabe, kopf }: { aufgabe: SchuelerAufgabe; kopf?: AufgabenKopf }) {
+  return (
+    <header className="aes-card aufgabe-kopf">
+      {kopf && (
+        <a className="aes-btn aes-btn--secondary" href={kopf.zurueck}>
+          Zurück
+        </a>
+      )}
+      <div className="aufgabe-kopf__mitte" style={kopf ? undefined : { gridColumn: '1 / -1' }}>
+        <PixelIcon name={FORMAT_ICON[aufgabe.typ]} groesse="l" />
+        <div>
+          {kopf && <p className="aufgabe-kopf__ort">{kopf.ort}</p>}
+          <h1 className="aufgabe-kopf__titel">{aufgabe.titel}</h1>
+        </div>
+      </div>
+      {kopf && (
+        <div className="fortschritt">
+          <p className="fortschritt__text">
+            Aufgabe {kopf.nr} von {kopf.gesamt}
+          </p>
+          <div className="fortschritt__spur" aria-hidden="true">
+            <div className="fortschritt__balken" style={{ width: `${(kopf.nr / kopf.gesamt) * 100}%` }} />
+          </div>
+        </div>
+      )}
+    </header>
+  )
+}
+
+/** Text mit [hervorgehobenen] Wörtern (Beispielsätze der Erklärseite) */
+function hervorheben(text: string) {
+  return text.split(/\[([^\]]*)\]/).map((stueck, i) =>
+    i % 2 === 1 ? (
+      <mark key={i} className="erklaerseite__markiert">
+        {stueck}
+      </mark>
+    ) : (
+      stueck
+    ),
+  )
+}
+
+// Erklärseite im Paket: Erklärtext, Merkkasten, Beispiele. „Verstanden – weiter“ gilt als erledigt
+// (zählt im Paket, nie für den Lernstand – das regelt die Datenbank).
+function ErklaerSeite({ aufgabe, pruefen, weiter, kopf }: Props) {
+  const [gelesen, setGelesen] = useState(aufgabe.geloest)
+  const [beschaeftigt, setBeschaeftigt] = useState(false)
+  const [meldung, setMeldung] = useState<string | null>(null)
+  const e = aufgabe.inhalt.erklaerung ?? { text: '', merke: '', beispiele: [] }
+
+  async function verstanden() {
+    setBeschaeftigt(true)
+    setMeldung(null)
+    try {
+      await pruefen({}) // ohne Internet wird die Abgabe zwischengespeichert und später gesendet
+      setGelesen(true)
+      weiter?.ziel()
+    } catch (fehler) {
+      setMeldung(fehler instanceof Error ? fehler.message : String(fehler))
+    } finally {
+      setBeschaeftigt(false)
+    }
+  }
+
+  return (
+    <section className="aufgabe">
+      <KopfKarte aufgabe={aufgabe} kopf={kopf} />
+      <article className="aes-card aufgabe-hauptkarte erklaerseite">
+        {e.text
+          .split(/\n\s*\n/)
+          .filter((a) => a.trim())
+          .map((absatz, i) => (
+            <p key={i} className="erklaerseite__absatz">
+              {hervorheben(absatz.trim())}
+            </p>
+          ))}
+        {e.merke.trim() && (
+          <aside className="merkkasten">
+            <strong className="merkkasten__titel">Merke</strong>
+            <p className="merkkasten__text">{hervorheben(e.merke.trim())}</p>
+          </aside>
+        )}
+        {e.beispiele.length > 0 && (
+          <div>
+            <h2 className="erklaerseite__titel">Beispiele</h2>
+            <ul className="erklaerseite__beispiele">
+              {e.beispiele.map((b, i) => (
+                <li key={i}>{hervorheben(b)}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {meldung && (
+          <p className="hinweis-box" role="alert">
+            {meldung}
+          </p>
+        )}
+        <div className="aufgabe-fuss">
+          {gelesen && <span className="erklaerseite__gelesen">✓ Gelesen</span>}
+          <div className="aufgabe-fuss__rechts">
+            {gelesen && weiter ? (
+              <button type="button" className="aes-btn aes-btn--primary" onClick={weiter.ziel}>
+                {weiter.text}
+              </button>
+            ) : (
+              !gelesen && (
+                <button type="button" className="aes-btn aes-btn--primary" disabled={beschaeftigt} onClick={() => void verstanden()}>
+                  {beschaeftigt ? 'Einen Moment …' : weiter ? 'Verstanden – weiter' : 'Verstanden'}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+      </article>
+    </section>
+  )
+}
+
 // Aufbau nach dem Entwurf „Aufgabe“: Kopfkarte, große Aufgabenkarte, rechts die Tipp-Karte.
-export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntworten, onAntwortenGeaendert, weiter, kopf }: Props) {
+function AufgabeUeben({ aufgabe, pruefen, loesungHolen, startAntworten, onAntwortenGeaendert, weiter, kopf }: Props) {
   const [antworten, setAntworten] = useState<Antworten>(startAntworten ?? {})
   const [ergebnis, setErgebnis] = useState<PruefAntwort | null>(null)
   const [versuche, setVersuche] = useState(aufgabe.versuche)
@@ -166,30 +290,7 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
 
   return (
     <section className="aufgabe">
-      <header className="aes-card aufgabe-kopf">
-        {kopf && (
-          <a className="aes-btn aes-btn--secondary" href={kopf.zurueck}>
-            Zurück
-          </a>
-        )}
-        <div className="aufgabe-kopf__mitte" style={kopf ? undefined : { gridColumn: '1 / -1' }}>
-          <PixelIcon name={FORMAT_ICON[aufgabe.typ]} groesse="l" />
-          <div>
-            {kopf && <p className="aufgabe-kopf__ort">{kopf.ort}</p>}
-            <h1 className="aufgabe-kopf__titel">{aufgabe.titel}</h1>
-          </div>
-        </div>
-        {kopf && (
-          <div className="fortschritt">
-            <p className="fortschritt__text">
-              Aufgabe {kopf.nr} von {kopf.gesamt}
-            </p>
-            <div className="fortschritt__spur" aria-hidden="true">
-              <div className="fortschritt__balken" style={{ width: `${(kopf.nr / kopf.gesamt) * 100}%` }} />
-            </div>
-          </div>
-        )}
-      </header>
+      <KopfKarte aufgabe={aufgabe} kopf={kopf} />
 
       <div className={mitTipp && tippOffen ? 'aufgabe-raster' : 'aufgabe-raster aufgabe-raster--einspaltig'}>
         <form

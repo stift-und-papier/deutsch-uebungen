@@ -6,7 +6,7 @@ export type IconName =
   | 'luecke' | 'auswahl' | 'zuordnen' | 'lupe' | 'reihenfolge' | 'dokument'
   | 'buchstabe' | 'bausteine' | 'satz' | 'stift' | 'zeichen' | 'sprechblase'
   | 'blume' | 'spross' | 'giesskanne' | 'samen'
-  | 'stern' | 'paket'
+  | 'stern' | 'paket' | 'gluehbirne'
 
 // Aufgabenformat → Icon (Kopf der Aufgabe)
 export const FORMAT_ICON: Record<string, IconName> = {
@@ -16,6 +16,7 @@ export const FORMAT_ICON: Record<string, IconName> = {
   fehler: 'lupe',
   reihenfolge: 'reihenfolge',
   ueberarbeiten: 'dokument',
+  erklaerung: 'gluehbirne',
 }
 
 // Kompetenzbereich (Spalte „bereich“ aus kompetenzen.csv) → Icon (Entwicklungskachel)

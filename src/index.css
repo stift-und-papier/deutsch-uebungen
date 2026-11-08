@@ -1992,3 +1992,72 @@ summary.editor-abschnitt__titel,
   line-height: 24px;
   color: var(--tinte-gedaempft);
 }
+
+/* ---------- Erklärseite im Paket ---------- */
+
+.erklaerseite {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.erklaerseite__absatz {
+  margin: 0;
+  font-size: 19px;
+  line-height: 30px;
+  white-space: pre-line;
+}
+
+.erklaerseite__titel {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 28px;
+  color: var(--schulblau);
+}
+
+.erklaerseite__beispiele {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 19px;
+  line-height: 30px;
+}
+
+/* Hervorhebung: fett UND Hintergrund (Bedeutung nie nur über Farbe) */
+.erklaerseite__markiert {
+  padding: 0 4px;
+  border-radius: 6px;
+  background: var(--wiese);
+  color: var(--tinte);
+  font-weight: 800;
+}
+
+.merkkasten {
+  padding: var(--space-4) var(--space-5);
+  border-left: 6px solid var(--schulblau);
+  border-radius: var(--radius-md);
+  background: var(--himmel-hell);
+}
+
+.merkkasten__titel {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 28px;
+  color: var(--schulblau);
+}
+
+.merkkasten__text {
+  margin: var(--space-1) 0 0;
+  font-size: 19px;
+  line-height: 30px;
+  white-space: pre-line;
+}
+
+.erklaerseite__gelesen {
+  font-weight: 800;
+  color: var(--gruen-dunkel);
+}

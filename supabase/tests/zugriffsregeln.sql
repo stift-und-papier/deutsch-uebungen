@@ -31,6 +31,7 @@ declare
   c_auf_e constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a5';
   c_auf_f constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a6';
   c_auf_g constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a7';
+  c_auf_h constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000a8';
   c_fehler_finden constant jsonb := '{"text":"Ich [weis -> weiß] es [nich -> nicht].","korrigieren":false,"anzahl_zeigen":true,"gross_klein_beachten":true,"teile":[{"t":"wort","id":0,"v":"Ich","korrekturen":null},{"t":"text","v":" "},{"t":"wort","id":1,"v":"weis","korrekturen":["weiß"]},{"t":"text","v":" "},{"t":"wort","id":2,"v":"es","korrekturen":null},{"t":"text","v":" "},{"t":"wort","id":3,"v":"nich","korrekturen":["nicht"]},{"t":"text","v":"."}]}';
   c_kom_a constant uuid := 'aaaaaaaa-0000-4000-8000-0000000000d1';
   c_kom_b constant uuid := 'bbbbbbbb-0000-4000-8000-0000000000d1';
@@ -70,8 +71,11 @@ begin
   -- Sätze verbessern: zwei Versionen, die zweite ist besser, je ein Begründungshinweis
   insert into public.aufgaben (id, owner, typ, titel, inhalt) values
     (c_auf_g, c_lk_a, 'ueberarbeiten', 'Verbessern A', '{"text":"…","teile":[{"t":"versionen","id":0,"kontext":"Im Zoo.","optionen":["Dann sah ich Löwen und dann Affen.","Zuerst sah ich Löwen, danach Affen."],"richtig":[1],"hinweise":["GEHEIM-wiederholt","GEHEIM-abwechslung"]}]}');
+  -- Erklärseite (mit Kompetenz verknüpft, darf trotzdem nie für den Lernstand zählen)
+  insert into public.aufgaben (id, owner, typ, titel, inhalt) values
+    (c_auf_h, c_lk_a, 'erklaerung', 'Erklärung A', '{"text":"","teile":[],"erklaerung":{"text":"das oder dass?","merke":"MERKSATZ-A","beispiele":["Der [Hund] bellt."]}}');
   insert into public.paket_aufgaben (paket_id, aufgabe_id) values
-    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b), (c_pak_a1, c_auf_c), (c_pak_a1, c_auf_d), (c_pak_a1, c_auf_e), (c_pak_a1, c_auf_f), (c_pak_a1, c_auf_g);
+    (c_pak_a1, c_auf_a), (c_pak_a2, c_auf_a2), (c_pak_b, c_auf_b), (c_pak_a1, c_auf_c), (c_pak_a1, c_auf_d), (c_pak_a1, c_auf_e), (c_pak_a1, c_auf_f), (c_pak_a1, c_auf_g), (c_pak_a1, c_auf_h);
   insert into public.zuweisungen (owner, paket_id, klasse_id, schueler_id) values
     (c_lk_a, c_pak_a1, c_kl_a1, null),      -- Paket A1 an Klasse 7a
     (c_lk_a, c_pak_a2, null, c_sch_a2),     -- Paket A2 nur an Eule-02
@@ -123,6 +127,10 @@ begin
     foreach f in array array[
       'select public.pruefe_aufgabe(''lueckentext'', ''{}''::jsonb, ''{}''::jsonb)',
       'select public.nur_loesung(''lueckentext'', ''{}''::jsonb)',
+      'select public.inhalt_ohne_loesung(''lueckentext'', ''{}''::jsonb)',
+      'select public.pruefe_aufgabe_formate(''lueckentext'', ''{}''::jsonb, ''{}''::jsonb)',
+      'select public.inhalt_ohne_loesung_formate(''lueckentext'', ''{}''::jsonb)',
+      'select public.nur_loesung_formate(''lueckentext'', ''{}''::jsonb)',
       'select public.schueler_zum_token(''x'')',
       'select public.neuer_token()',
       'select public.wiese_zahl(1, 1, 1, 1, 1, null::public.einstellungen)'
@@ -334,6 +342,19 @@ begin
   end if;
   ok := ok || '1.10f Format Sätze verbessern: Hinweise erst nach dem Prüfen'::text;
 
+  -- 1.10g Erklärseite: Inhalt kommt an, „Verstanden“ (leere Antwort) gilt als erledigt
+  v := public.schueler_start(c_tok_a1);
+  select a into v from jsonb_array_elements(v -> 'pakete' -> 0 -> 'aufgaben') a where a ->> 'id' = c_auf_h::text;
+  if v is null or v -> 'inhalt' -> 'erklaerung' ->> 'merke' <> 'MERKSATZ-A' or (v -> 'inhalt') ? 'text' then
+    raise exception 'FEHLGESCHLAGEN: Erklärseite fehlt oder unvollständig: %', v;
+  end if;
+  v := public.antwort_abgeben(c_tok_a1, c_pak_a1, c_auf_h, '{}', 'aaaaaaaa-0000-4000-8000-00000000f0e1');
+  if not (v -> 'ergebnis' ->> 'richtig')::boolean then raise exception 'FEHLGESCHLAGEN: Erklärseite nicht erledigt: %', v; end if;
+  v := public.schueler_start(c_tok_a1);
+  select a into v from jsonb_array_elements(v -> 'pakete' -> 0 -> 'aufgaben') a where a ->> 'id' = c_auf_h::text;
+  if not (v ->> 'geloest')::boolean then raise exception 'FEHLGESCHLAGEN: Erklärseite nicht als erledigt markiert: %', v; end if;
+  ok := ok || '1.10g Erklärseite ausgeliefert und als gelesen gezählt'::text;
+
   -- 1.11 Token von A1 gibt keine Lösung von B heraus
   begin
     perform public.loesung_anzeigen(c_tok_a1, c_pak_b, c_auf_b);
@@ -396,6 +417,10 @@ begin
     raise exception 'FEHLGESCHLAGEN: Versuch nach Lösungsansicht zählt für Lernstand';
   end if;
   ok := ok || '1.12 Versuch nach Lösungsansicht zählt nicht'::text;
+  if (select zaehlt_fuer_lernstand from public.versuche where client_id = 'aaaaaaaa-0000-4000-8000-00000000f0e1') then
+    raise exception 'FEHLGESCHLAGEN: Erklärseite zählt für den Lernstand';
+  end if;
+  ok := ok || '1.12b Erklärseite zählt nie für den Lernstand'::text;
 
   -- =================================================================
   -- Teil 2: Angemeldet als Lehrkraft A
@@ -410,7 +435,7 @@ begin
   select count(*) into n from public.aufgaben where owner = c_lk_b;
   if n <> 0 then raise exception 'FEHLGESCHLAGEN: A sieht Aufgaben von B'; end if;
   select count(*) into n from public.versuche;
-  if n <> 31 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 31', n; end if;
+  if n <> 32 then raise exception 'FEHLGESCHLAGEN: A sieht % Versuche statt 32', n; end if;
   ok := ok || '2.1 Lehrkraft sieht nur eigene Daten'::text;
 
   update public.aufgaben set titel = 'gehackt' where id = c_auf_b;

@@ -10,7 +10,10 @@ export const SCHWIERIGKEITEN: { wert: Schwierigkeit; text: string }[] = [
 
 // ---- Aufgabeninhalt: Textstücke, Lücken und Auswahl-Stellen (dürfen gemischt vorkommen) ----
 
-export type AufgabenTyp = 'lueckentext' | 'auswahl' | 'zuordnen' | 'fehler' | 'reihenfolge' | 'ueberarbeiten'
+export type AufgabenTyp = 'lueckentext' | 'auswahl' | 'zuordnen' | 'fehler' | 'reihenfolge' | 'ueberarbeiten' | 'erklaerung'
+
+/** Erklärseite im Paket: Erklärtext (Absätze durch Leerzeile), Merkkasten, Beispielsätze ([Wort] = hervorgehoben) */
+export type Erklaerung = { text: string; merke: string; beispiele: string[] }
 
 export type TextTeil = { t: 'text'; v: string }
 export type LueckenTeil = { t: 'luecke'; id: number; loesungen: string[] }
@@ -53,6 +56,8 @@ export type LueckentextInhalt = {
   /** Fehler finden: Anzahl der Fehler anzeigen */
   anzahl_zeigen?: boolean
   teile: LueckentextTeil[]
+  /** nur beim Typ „erklaerung“ */
+  erklaerung?: Erklaerung
 }
 
 /** Was Schüler:innen bekommen: Stellen ohne Lösungen */
@@ -76,6 +81,7 @@ export type LueckentextInhaltSchueler = {
   korrigieren?: boolean
   /** Anzahl der Fehler (nur wenn die Lehrkraft sie anzeigen lässt) */
   anzahl_fehler?: number | null
+  erklaerung?: Erklaerung
   teile: (TextTeil | LueckenTeilOhneLoesung | AuswahlTeilOhneLoesung | EinheitOhneLoesung | WortOhneLoesung | ReiheOhneLoesung | VersionenOhneLoesung)[]
 }
 
