@@ -61,7 +61,7 @@
 - **Design-Update 2026-11-08 (Hallmark redesign, Branch `design-update`):** zwei Looks aus EINER Token-Datei
   (`src/design/tokens.css`): Thema **„Pixel“** für `.wiese` (alle Schülerseiten) und `.vorschau-rahmen` (Schülervorschau im
   Editor) – Radien 0, dunkelblaue Kontur und harter Schatten als box-shadow-Ring (ändert keine Maße), Pixelschrift
-  **Pixelify Sans** (`--font-pixel`, lokal, OFL) nur für Überschriften, Knöpfe, Menü, Zahlen; Aufgaben/Fließtext Nunito.
+  **Pixelify Sans** (`--font-pixel`, lokal, OFL) nur für Knöpfe, Menü, Zahlen; Überschriften Fraunces (Wunsch der Lehrkraft), Aufgaben/Fließtext Nunito.
   Regeln in `src/design/pixel.css`. Thema **„Ruhig“** für `.lehrkraft`/`.abendhimmel` – kleine Rundungen, flache Karten
   mit feiner Linie, flacher warmer Hintergrund; Regeln in `src/design/lehrkraft.css`. Beide Dateien beginnen mit dem
   Hallmark-Stempel. Prüfen: `node ~/.agents/skills/hallmark/scripts/sloplint.mjs src --genre playful --scope app --kept`.

@@ -61,7 +61,7 @@
 }
 
 /* ---------- Thema „Pixel“: Schüleransicht (.wiese) und die Schülervorschau im Editor (.vorschau-rahmen) ----------
-   16-Bit-Look: keine Rundungen, dicke dunkelblaue Kontur, harter Schatten ohne Unschärfe, Pixelschrift für Überschriften.
+   16-Bit-Look: keine Rundungen, dicke dunkelblaue Kontur, harter Schatten ohne Unschärfe, Pixelschrift für Knöpfe, Menü und Zahlen (Überschriften bleiben Fraunces, Wunsch der Lehrkraft).
    Kontur und Schatten sind box-shadow-Ringe – sie ändern keine Maße (wichtig für die Blumenwiese in 4-facher Größe). */
 .wiese,
 .vorschau-rahmen {
@@ -76,7 +76,6 @@
   --schatten-klein: 0 0 0 2px var(--kontur-hell), 0 var(--pixel) 0 2px var(--kontur-hell);
   --schatten-knopf: 0 var(--pixel) 0 0 var(--kontur);
   --kante-innen: inset calc(-1 * var(--pixel)) calc(-1 * var(--pixel)) 0 rgb(0 38 77 / 0.28);
-  --font-display: var(--font-pixel);
 }
 
 /* ---------- Thema „Ruhig“: Lehrkraft-Ansicht und Anmeldung ----------

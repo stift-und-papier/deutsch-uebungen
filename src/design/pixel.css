@@ -1,5 +1,5 @@
 /* Hallmark · shape: app screen · genre: playful · theme: brand · redesign: full · scope: app · copy: verbatim
- * paper: wiese-tag.svg unter weißen Karten · accent: --schulblau · display: Pixelify Sans · body: Nunito
+ * paper: wiese-tag.svg unter weißen Karten · accent: --schulblau · display: Fraunces (Überschriften, Wunsch der Lehrkraft) · pixel: Pixelify Sans für Knöpfe, Menü, Zahlen · body: Nunito
  * nav: kept (Seitenleiste, im Hochformat unten) · signature: kept (die Blumenwiese) · states: die vorhandenen (laden, offline, Fehler, gesperrt)
  * axes: wiese/pixel/schulblau · posture: kept · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P3 H3 E3 S3 R2 V3 · weakest: R, Struktur und Texte sind per Auftrag fest; der Look kommt allein aus Kontur, Schatten, Pixelschrift */
@@ -7,7 +7,7 @@
 
 /* Schüleransicht im 16-Bit-Look. Gilt nur innerhalb von .wiese (alle Schülerseiten) und .vorschau-rahmen
    (die Vorschau „So sehen es Schüler:innen“ im Editor). Werte kommen aus dem Thema „Pixel“ in tokens.css.
-   Pixelschrift nur für kurze Texte (Überschriften, Knöpfe, Menü, Zahlen); Aufgaben und Fließtext bleiben Nunito. */
+   Pixelschrift nur für Knöpfe, Menü und Zahlen; Überschriften bleiben Fraunces; Aufgaben und Fließtext bleiben Nunito. */
 
 .wiese h1,
 .wiese h2,
@@ -142,13 +142,6 @@
 .wiese .aes-fb__icon,
 .vorschau-rahmen .aes-fb__icon {
   border-radius: 0;
-}
-
-.wiese .aes-fb__title,
-.vorschau-rahmen .aes-fb__title {
-  font-family: var(--font-pixel);
-  font-weight: 600;
-  font-size: 19px;
 }
 
 /* ---------- Aufgaben-Bausteine: eckig, mit kleiner Kante zum Antippen ---------- */
