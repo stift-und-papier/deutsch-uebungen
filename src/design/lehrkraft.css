@@ -1,0 +1,120 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: brand · redesign: full · scope: app · copy: verbatim
+ * paper: --flaeche-warm · accent: --schulblau · display: Fraunces · body: Nunito
+ * nav: kept (schulblaue Seitenleiste, im Hochformat unten) · signature: kept (Klassenübersicht mit Stufenbalken) · states: die vorhandenen
+ * axes: warm/serif/schulblau · posture: kept · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P3 H3 E3 S3 R3 V3 · weakest: E, die Seiten bleiben inhaltlich gleich; ruhiger wird es durch weniger Schmuck, feine Linien, klare Tabellenköpfe */
+
+/* Lehrkraft-Ansicht: sachlich und ruhig. Werte aus dem Thema „Ruhig“ in tokens.css (kleine Rundungen, flache Karten).
+   Pixel-Bezug nur dezent: Schriftzug in der Pixelschrift, eckige Markierungen im Menü. */
+
+/* Flacher, warmer Hintergrund statt Abendhimmel-Streifen – weniger Schmuck, mehr Ruhe */
+.rahmen--lehrkraft {
+  background: var(--flaeche-seite);
+}
+
+.lehrkraft h1 {
+  text-wrap: balance;
+}
+
+/* ---------- Menü ---------- */
+.lehrkraft .aes-nav__brand {
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.lehrkraft .aes-nav__item {
+  border-radius: var(--radius-md);
+}
+
+/* Eckige Markierung statt runder Punkt (dezenter Pixel-Bezug) */
+.lehrkraft .aes-nav__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 0;
+  background: var(--himmel);
+}
+
+.lehrkraft .aes-nav__item[aria-current='page'] .aes-nav__dot {
+  background: var(--schulblau);
+}
+
+/* ---------- Karten und Abschnitte ---------- */
+.lehrkraft .seiten-karte .kasten,
+.lehrkraft .seiten-karte .kachel {
+  border-width: 1px;
+}
+
+/* ---------- Knöpfe: Rechtecke mit leichter Rundung, gleiche Höhe überall ---------- */
+.lehrkraft .aes-btn,
+.abendhimmel .aes-btn {
+  font-size: 17px;
+  padding: var(--space-3) var(--space-5);
+}
+
+.lehrkraft .aes-btn--klein {
+  padding: var(--space-2) var(--space-4);
+}
+
+.lehrkraft .aes-btn--secondary {
+  background: var(--flaeche-warm);
+}
+
+/* Gesperrt: Fläche, Schrift und Mauszeiger */
+.lehrkraft .aes-btn[disabled],
+.lehrkraft button:disabled {
+  background: var(--linie);
+  color: var(--tinte-gedaempft);
+  border-color: var(--linie);
+  cursor: not-allowed;
+}
+
+/* ---------- Tabellen: klarer Kopf, ruhige Zeilen ---------- */
+.lehrkraft .tabelle th {
+  font-size: 15px;
+  letter-spacing: 0;
+  color: var(--tinte-gedaempft);
+  background: var(--flaeche-warm);
+  border-bottom: 2px solid var(--linie);
+}
+
+.lehrkraft .tabelle td {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+/* ---------- Formulare ---------- */
+.lehrkraft .formular label {
+  font-size: 15px;
+  letter-spacing: 0;
+}
+
+.lehrkraft input:not([type='checkbox']):not([type='radio']),
+.lehrkraft textarea,
+.lehrkraft select {
+  border-width: 1px;
+  border-color: var(--linie-stark);
+}
+
+.lehrkraft input:not([type='checkbox']):not([type='radio']):focus-visible,
+.lehrkraft textarea:focus-visible,
+.lehrkraft select:focus-visible {
+  outline: 2px solid var(--fokus);
+  outline-offset: 1px;
+  border-color: var(--fokus);
+}
+
+.lehrkraft fieldset {
+  border-width: 1px;
+}
+
+/* ---------- Reiter ---------- */
+.lehrkraft .umschalter button {
+  border-width: 1px;
+}
+
+/* Stufenbalken: Ränder an die ruhigen Rundungen angleichen; Farben und Symbole bleiben unverändert */
+.lehrkraft .aes-level__track,
+.lehrkraft .aes-level__fill {
+  border-radius: var(--radius-sm);
+}

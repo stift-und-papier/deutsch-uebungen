@@ -4,7 +4,7 @@
 
 /* Buttons: Pille wie auf der Schulwebsite */
 .aes-btn { font-family: var(--font-sans); font-weight: 800; font-size: 18px; line-height: 22px; min-height: var(--tipp-min); min-width: var(--tipp-min);
-  padding: 12px 28px; border-radius: var(--radius-pill); border: 2px solid transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); }
+  padding: var(--space-3) 28px; border-radius: var(--radius-pill); border: 2px solid transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); }
 .aes-btn:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
 .aes-btn--primary { background: var(--schulblau); color: var(--flaeche); }
 .aes-btn--primary:active { background: var(--schulblau-dunkel); }
@@ -32,15 +32,15 @@
 /* Aufgaben-Bausteine */
 .aes-task { font-size: 20px; line-height: 40px; }
 .aes-gap { font-family: var(--font-sans); font-size: 20px; font-weight: 700; color: var(--schulblau); width: 7ch; min-height: 44px; text-align: center; padding: 0 var(--space-2);
-  background: var(--flaeche); border: 2px solid var(--linie-stark); border-radius: var(--radius-sm); margin: 0 4px; vertical-align: middle; }
+  background: var(--flaeche); border: 2px solid var(--linie-stark); border-radius: var(--radius-sm); margin: 0 var(--space-1); vertical-align: middle; }
 .aes-gap:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
 .aes-gap--ok { border-color: var(--gruen-dunkel); background: var(--erfolg-flaeche); }
 .aes-gap--again { border-color: var(--pfirsich-dunkel); background: var(--pfirsich-hell); }
-.aes-choice { font-family: var(--font-sans); font-size: 18px; font-weight: 700; min-height: var(--tipp-min); padding: 8px 20px; color: var(--schulblau);
+.aes-choice { font-family: var(--font-sans); font-size: 18px; font-weight: 700; min-height: var(--tipp-min); padding: var(--space-2) 20px; color: var(--schulblau);
   background: var(--flaeche); border: 2px solid var(--linie-stark); border-radius: var(--radius-md); cursor: pointer; }
 .aes-choice[aria-pressed="true"] { background: var(--schulblau); color: var(--flaeche); border-color: var(--schulblau); }
 .aes-choice:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
-.aes-word { font-family: var(--font-sans); font-size: 18px; font-weight: 700; min-height: var(--tipp-min); padding: 8px 18px; display: inline-flex; align-items: center;
+.aes-word { font-family: var(--font-sans); font-size: 18px; font-weight: 700; min-height: var(--tipp-min); padding: var(--space-2) 18px; display: inline-flex; align-items: center;
   color: var(--tinte); background: var(--himmel); border-radius: var(--radius-md); box-shadow: var(--schatten-klein); cursor: grab; touch-action: none; }
 .aes-word--target { background: transparent; box-shadow: none; border: 2px dashed var(--linie-stark); color: var(--tinte-gedaempft); min-width: 96px; justify-content: center; cursor: default; }
 
@@ -74,7 +74,7 @@
 .aes-level { display: grid; grid-template-columns: 200px 1fr 230px; align-items: center; gap: var(--space-4); }
 .aes-level__label { font-weight: 800; font-size: 14px; line-height: 18px; letter-spacing: 0.02em; }
 .aes-level__track { position: relative; height: 32px; border-radius: var(--radius-pill); background: var(--linie); overflow: visible; }
-.aes-level__fill { height: 100%; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; font-weight: 800; font-size: 16px; min-width: 44px; }
+.aes-level__fill { height: 100%; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-3); font-weight: 800; font-size: 16px; min-width: 44px; }
 .aes-level--m2 .aes-level__fill { background: var(--stufe-minus2); color: var(--flaeche); width: 20%; }
 .aes-level--m1 .aes-level__fill { background: var(--stufe-minus1); color: var(--tinte); width: 40%; }
 .aes-level--o  .aes-level__fill { background: var(--stufe-null); color: var(--tinte); width: 60%; }
@@ -83,5 +83,5 @@
 .aes-level__start { position: absolute; top: -6px; bottom: -6px; width: 4px; border-radius: 2px; background: var(--schulblau); }
 .aes-level__start::after { content: "Start"; position: absolute; top: -18px; left: -14px; font-size: 12px; font-weight: 800; color: var(--schulblau); }
 .aes-level__trend { font-weight: 800; font-size: 14px; white-space: nowrap; color: var(--tinte-gedaempft); }
-.aes-level__trend b { color: var(--tinte); font-size: 20px; margin-right: 4px; }
+.aes-level__trend b { color: var(--tinte); font-size: 20px; margin-right: var(--space-1); }
 .aes-level--nodata .aes-level__fill { width: 100%; background: transparent; color: var(--tinte-gedaempft); font-weight: 700; justify-content: center; padding: 0; border: 2px dashed var(--linie-stark); }

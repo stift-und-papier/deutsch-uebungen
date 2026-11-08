@@ -8,6 +8,7 @@ import './design/icons.css'
 import './design/wiese.css'
 import './index.css'
 import './design/pixel.css'
+import './design/lehrkraft.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(

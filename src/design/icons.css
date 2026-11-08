@@ -29,7 +29,7 @@
 .aes-nav__item[aria-current="page"] .aes-nav__icon { background: var(--flaeche); }
 .aes-growth__topic { display: inline-flex; align-items: center; gap: var(--space-2); }
 .aes-growth__badge .aes-icon { margin: -6px 0 -6px -10px; }
-.aes-nav__item:has(.aes-nav__icon) { gap: 10px; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
+.aes-nav__item:has(.aes-nav__icon) { gap: 10px; padding-left: var(--space-2); padding-right: var(--space-2); white-space: nowrap; }
 .aes-icon--gluehbirne { background-image: url(./icons/gluehbirne.svg); }
 .aes-icon--stern-leer { background-image: url(./icons/stern-leer.svg); }
 .aes-icon--fragezeichen { background-image: url(./icons/fragezeichen.svg); }

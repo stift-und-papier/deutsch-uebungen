@@ -3,9 +3,7 @@
  * nav: kept (Seitenleiste, im Hochformat unten) · signature: kept (die Blumenwiese) · states: die vorhandenen (laden, offline, Fehler, gesperrt)
  * axes: wiese/pixel/schulblau · posture: kept · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P3 H3 E3 S3 R2 V3 · weakest: R, Struktur und Texte sind per Auftrag fest; der Look kommt allein aus Kontur, Schatten, Pixelschrift */
-/* Hallmark · waive 39a · „disabled“ heißt hier „nach dem Prüfen gesperrt“: die Antwort muss lesbar bleiben, Rahmen und ✓/↻ tragen den Zustand */
-/* Hallmark · waive 19, 63, 30a · copy: verbatim – der Auftrag verbietet Textänderungen (Gedankenstriche, „·“, „→“, 📊 bleiben) */
-/* Hallmark · tokens: src/design/tokens.css bleibt die einzige Token-Datei (Hallmarks eigene tokens.css/base.css wurden nicht übernommen, Floor-Regeln stehen hier und in index.css) */
+/* Token-Datei: src/design/tokens.css bleibt die einzige Token-Datei (Hallmarks eigene tokens.css/base.css wurden nicht übernommen, Floor-Regeln stehen hier und in index.css) */
 
 /* Schüleransicht im 16-Bit-Look. Gilt nur innerhalb von .wiese (alle Schülerseiten) und .vorschau-rahmen
    (die Vorschau „So sehen es Schüler:innen“ im Editor). Werte kommen aus dem Thema „Pixel“ in tokens.css.
