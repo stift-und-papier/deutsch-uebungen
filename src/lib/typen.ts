@@ -22,8 +22,17 @@ export type EinheitTeil = { t: 'einheit'; id: number; v: string; kategorie: stri
 export type WortTeil = { t: 'wort'; id: number; v: string; korrekturen: string[] | null }
 /** Baustein zum Ordnen: k = zufällige Kennung (verrät die Reihenfolge nicht), v = Text */
 export type Baustein = { k: string; v: string }
-/** Satz zum Ordnen: Bausteine in richtiger Reihenfolge, loesungen = alle richtigen Reihenfolgen (als Texte) */
-export type ReiheTeil = { t: 'reihe'; id: number; bausteine: Baustein[]; loesungen: string[][] }
+/** Satz zum Ordnen: Bausteine (ohne großen Satzanfang/Schlusszeichen), loesungen = alle richtigen Reihenfolgen,
+ *  satzart wird immer angezeigt, zeichen erst bei richtiger Lösung, varianten = so viele verschiedene sind gefordert */
+export type ReiheTeil = {
+  t: 'reihe'
+  id: number
+  satzart: string
+  zeichen: string
+  varianten: number
+  bausteine: Baustein[]
+  loesungen: string[][]
+}
 export type LueckentextTeil = TextTeil | LueckenTeil | AuswahlTeil | EinheitTeil | WortTeil | ReiheTeil
 
 export type Darstellung = 'antippen' | 'dropdown'
@@ -49,7 +58,14 @@ export type AuswahlTeilOhneLoesung = { t: 'auswahl'; id: number; optionen: strin
 export type EinheitOhneLoesung = { t: 'einheit'; id: number; v: string }
 export type WortOhneLoesung = { t: 'wort'; id: number; v: string }
 /** Bausteine nach Kennung sortiert, also gemischt */
-export type ReiheOhneLoesung = { t: 'reihe'; id: number; bausteine: Baustein[] }
+export type ReiheOhneLoesung = {
+  t: 'reihe'
+  id: number
+  satzart?: string
+  zeichen?: string
+  varianten?: number
+  bausteine: Baustein[]
+}
 export type LueckentextInhaltSchueler = {
   darstellung?: Darstellung
   kategorien?: string[]
@@ -61,7 +77,7 @@ export type LueckentextInhaltSchueler = {
 
 /** Antworten je Stelle: Text bei Lücken, Liste der angetippten Möglichkeiten bei Auswahl, Kategorie beim Zuordnen,
  *  Liste der Baustein-Kennungen in gelegter Reihenfolge beim Ordnen */
-export type Antwort = string | number[] | boolean | string[]
+export type Antwort = string | number[] | boolean | string[] | string[][]
 export type Antworten = Record<string, Antwort>
 
 // ---- Tabellen ----
@@ -127,7 +143,7 @@ export type Zuweisung = {
 
 export type Pruefergebnis = {
   /** id null = nicht gefundener Fehler (Stelle wird bewusst nicht verraten) */
-  luecken: { id: number | null; richtig: boolean; positionen?: boolean[] }[]
+  luecken: { id: number | null; richtig: boolean; positionen?: boolean[]; variante?: number }[]
   anteil: number
   richtig: boolean
 }

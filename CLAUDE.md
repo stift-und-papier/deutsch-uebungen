@@ -123,6 +123,12 @@
   Anzahl gelöster Aufgaben, nächster Schritt. **Nie Punkte/Stufen** – Test 1.13 prüft das.
 
 ## Entscheidungen (Protokoll)
+- 2026-11-08 (didaktisch, Lehrkraft): **Reihenfolge überarbeitet:** Jeder Satz nennt die **Satzart** (aus `.`/`?`/`!`
+  = Aussage-/Frage-/Aufforderungssatz, sonst Zeile `Satzart: …`). **Varianten:** Zeile `Varianten: N` fordert N
+  verschiedene richtige Sätze aus denselben Bausteinen (jede Variante eigene Reihe; Antwort dann `string[][]`, die DB
+  verbraucht je richtige Variante eine Lösung, doppelte zählen nicht). **Keine Hinweise:** Bausteine ohne großen
+  Satzanfang und ohne Schlusszeichen (erstes Wort in der Eingabe klein schreiben); beides erscheint erst, wenn der Satz
+  richtig liegt (`satzFertig`). Migration `20261108150000_reihenfolge_varianten.sql`.
 - 2026-11-08 (didaktisch, Lehrkraft): Format **Reihenfolge** (deckt auch Überarbeitungsformat „Satzbausteine umstellen“
   ab): Schreibweise `Gestern | bin ich | ins Kino | gegangen.` in richtiger Reihenfolge, weitere richtige Reihenfolgen
   in den Zeilen direkt darunter, Leerzeile = neuer Satz (Parser `reihenZuTeilen`). Bausteine bekommen zufällige

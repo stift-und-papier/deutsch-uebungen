@@ -43,7 +43,12 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
     if (a === true) return true
     // Reihenfolge: alle Bausteine müssen in der Reihe liegen
     const reihe = aufgabe.inhalt.teile.find((t) => t.t === 'reihe' && t.id === id)
-    if (reihe && reihe.t === 'reihe') return Array.isArray(a) && a.length === reihe.bausteine.length
+    if (reihe && reihe.t === 'reihe') {
+      // Reihenfolge: in jeder geforderten Variante liegen alle Bausteine
+      const varianten = Math.max(1, reihe.varianten ?? 1)
+      const listen = !Array.isArray(a) ? [] : Array.isArray(a[0]) ? (a as string[][]) : [a as string[]]
+      return Array.from({ length: varianten }, (_, j) => listen[j]?.length === reihe.bausteine.length).every(Boolean)
+    }
     return Array.isArray(a) ? a.length > 0 : typeof a === 'string' && a.trim() !== ''
   }
   const alleAusgefuellt =
@@ -82,8 +87,8 @@ export function AufgabeBearbeiten({ aufgabe, pruefen, loesungHolen, startAntwort
             ...alt,
             ergebnis: {
               ...alt.ergebnis,
-              // Reihenfolge: nach jeder Änderung verschwinden die ✓/↻ dieses Satzes
-              luecken: alt.ergebnis.luecken.filter((l) => l.id !== id || (l.richtig && !l.positionen)),
+              // Richtige Stellen (auch richtig gelegte Varianten) bleiben gesperrt und grün
+              luecken: alt.ergebnis.luecken.filter((l) => l.id !== id || l.richtig),
             },
           }
         : alt,

@@ -1627,3 +1627,24 @@ tr.ausgeblendet .aktionen {
 .reihe__loesung {
   margin: 0;
 }
+
+.reihe__satzart {
+  font-weight: 700;
+  color: var(--tinte-gedaempft);
+}
+
+.reihe__auftrag {
+  margin: 0;
+}
+
+.reihe__variante {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.reihe__variante-titel {
+  margin: var(--space-2) 0 0;
+  font-weight: 700;
+  color: var(--tinte-gedaempft);
+}

@@ -195,45 +195,69 @@ describe('neuNummerieren', () => {
 })
 
 describe('Reihenfolge', () => {
+  const reihe = (text: string) => {
+    const e = reihenZuTeilen(text)
+    return { ...e, saetze: e.teile.flatMap((t) => (t.t === 'reihe' ? [t] : [])) }
+  }
+
   it('liest Bausteine, weitere Reihenfolgen und mehrere Sätze', () => {
-    const { teile, fehler } = reihenZuTeilen(
-      'Gestern | bin ich | ins Kino | gegangen.\nIns Kino | bin ich | gestern | gegangen.\n\nDer Hund | bellt.',
+    const { saetze, fehler } = reihe(
+      'Gestern | bin ich | ins Kino | gegangen.\nIns Kino | bin ich | gestern | gegangen.\n\nDer Hund | bellt?',
     )
     expect(fehler).toEqual([])
-    expect(teile).toHaveLength(2)
-    const [a, b] = teile
-    if (a.t !== 'reihe' || b.t !== 'reihe') throw new Error('kein Satz')
-    expect(a.id).toBe(0)
-    expect(b.id).toBe(1)
-    expect(a.bausteine.map((x) => x.v)).toEqual(['Gestern', 'bin ich', 'ins Kino', 'gegangen.'])
-    expect(a.loesungen[1]).toEqual(['Ins Kino', 'bin ich', 'gestern', 'gegangen.'])
-    // Kennungen eindeutig
+    expect(saetze).toHaveLength(2)
+    const [a, b] = saetze
+    expect([a.id, b.id]).toEqual([0, 1])
+    expect(a.satzart).toBe('Aussagesatz')
+    expect(b.satzart).toBe('Fragesatz')
+    expect(a.zeichen).toBe('.')
+    expect(a.varianten).toBe(1)
     expect(new Set(a.bausteine.map((x) => x.k)).size).toBe(4)
+    // Lösungen als fertige Sätze
+    expect(a.loesungen[1]).toEqual(['Ins Kino', 'bin ich', 'gestern', 'gegangen.'])
+  })
+
+  it('verrät nichts durch großen Satzanfang oder Schlusszeichen', () => {
+    const { saetze } = reihe('Gestern | bin ich | ins Kino | gegangen.\nIns Kino | bin ich | gestern | gegangen.')
+    // „Gestern“ steht in Zeile 2 mitten im Satz → klein; „gegangen“ ohne Punkt
+    expect(saetze[0].bausteine.map((x) => x.v)).toEqual(['gestern', 'bin ich', 'ins Kino', 'gegangen'])
+    // Nomen am Anfang bleiben so, wie die Lehrkraft sie schreibt
+    expect(reihe('der Hund | bellt | laut.').saetze[0].bausteine[0].v).toBe('der Hund')
+    expect(reihe('Hunde | bellen | laut.').saetze[0].bausteine[0].v).toBe('Hunde')
   })
 
   it('mischt: nach Kennung sortiert ist die Reihenfolge nie die richtige', () => {
     for (let n = 0; n < 50; n++) {
-      const { teile } = reihenZuTeilen('a | b | c')
-      const t = teile[0]
-      if (t.t !== 'reihe') throw new Error('kein Satz')
+      const { teile } = reihenZuTeilen('a | b | c.')
       const gemischt = ohneLoesung(teile).teile[0]
       if (gemischt.t !== 'reihe') throw new Error('kein Satz')
       expect(gemischt.bausteine.map((x) => x.v)).not.toEqual(['a', 'b', 'c'])
       expect(gemischt).not.toHaveProperty('loesungen')
+      expect(gemischt.satzart).toBe('Aussagesatz')
     }
   })
 
+  it('Varianten und Satzart lassen sich angeben', () => {
+    const { saetze, fehler } = reihe('Varianten: 2\nSatzart: Ausrufesatz\nwie | schön | das ist!\ndas ist | wie | schön!')
+    expect(fehler).toEqual([])
+    expect(saetze[0].varianten).toBe(2)
+    expect(saetze[0].satzart).toBe('Ausrufesatz')
+    expect(reihe('Varianten: 2\na | b.').fehler[0]).toMatch(/mindestens 2 verschiedene/)
+    expect(reihe('Varianten: null\na | b.').fehler[0]).toMatch(/Zahl von 1 bis 10/)
+  })
+
   it('meldet Fehler in der Schreibweise', () => {
-    expect(reihenZuTeilen('Nur ein Baustein').fehler[0]).toMatch(/mit \| trennen/)
-    expect(reihenZuTeilen('a | b\nb | c').fehler[0]).toMatch(/dieselben Bausteine/)
-    expect(reihenZuTeilen('').fehler[0]).toMatch(/mindestens einen Satz/)
-    // Groß-/Kleinschreibung und Satzzeichen am Ende zählen beim Vergleich nicht
-    expect(reihenZuTeilen('Gestern | kam er.\nEr kam | gestern').fehler[0]).toMatch(/dieselben/)
-    expect(reihenZuTeilen('Gestern | kam er.\nkam er | gestern.').fehler).toEqual([])
+    expect(reihe('Nur ein Baustein.').fehler[0]).toMatch(/mit \| trennen/)
+    expect(reihe('a | b.\nb | c.').fehler[0]).toMatch(/dieselben Bausteine/)
+    expect(reihe('a | b.\nA | b.').fehler[0]).toMatch(/steht schon/)
+    expect(reihe('a | b').fehler[0]).toMatch(/Satzschlusszeichen/)
+    expect(reihe('').fehler[0]).toMatch(/mindestens einen Satz/)
   })
 
   it('wandelt zurück in die Schreibweise', () => {
-    const text = 'a | b\nb | a\n\nc | d'
+    const text = 'Varianten: 2\na | b.\nb | a.\n\nSatzart: Ausrufesatz\nc | d!'
     expect(teileZuText(reihenZuTeilen(text).teile)).toBe(text)
+    // großer Satzanfang wird beim Zurückwandeln zur Anzeigeform aus der anderen Zeile
+    expect(teileZuText(reihenZuTeilen('A | b.\nB | a.').teile)).toBe('a | b.\nb | a.')
   })
 })

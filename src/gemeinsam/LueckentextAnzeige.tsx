@@ -32,18 +32,24 @@ export function LueckentextAnzeige({ inhalt, antworten, onAntwort, ergebnis, loe
     return (
       <div className="reihen">
         {reihen.map((teil, nr) => {
-          const e = ergebnis?.luecken.find((l) => l.id === teil.id)
+          const varianten = Math.max(1, teil.varianten ?? 1)
           const a = antworten[teil.id]
+          // Antwort: bei einer Variante eine Liste von Kennungen, bei mehreren eine Liste je Variante
+          const gelegt: string[][] = !Array.isArray(a)
+            ? []
+            : Array.isArray(a[0])
+              ? (a as string[][]).map((l) => l.map(String))
+              : [(a as string[]).map(String)]
           return (
             <ReiheAnzeige
               key={teil.id}
               teil={teil}
               nr={nr}
-              anzahlSaetze={reihen.length}
-              gelegt={Array.isArray(a) ? a.map(String) : []}
-              onAenderung={(neu) => onAntwort(teil.id, neu)}
-              positionen={e?.positionen}
-              richtig={e?.richtig}
+              gelegt={gelegt}
+              onAenderung={(neu) => onAntwort(teil.id, varianten > 1 ? neu : neu[0])}
+              ergebnisse={Array.from({ length: varianten }, (_, j) =>
+                ergebnis?.luecken.find((l) => l.id === teil.id && (l.variante ?? 0) === j),
+              )}
               loesung={loesungen?.[teil.id]}
               gesperrt={Boolean(gesperrt)}
             />

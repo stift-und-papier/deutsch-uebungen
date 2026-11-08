@@ -36,7 +36,8 @@ const FORMATE: Record<AufgabenTyp, { name: string; anweisung: string; beispiel: 
   reihenfolge: {
     name: 'Reihenfolge',
     anweisung: 'Bring die Bausteine in die richtige Reihenfolge.',
-    beispiel: 'Gestern | bin ich | ins Kino | gegangen.\nIns Kino | bin ich | gestern | gegangen.\n\nDer Hund | bellt | laut.',
+    beispiel:
+      'Varianten: 2\ngestern | bin ich | ins Kino | gegangen.\nins Kino | bin ich | gestern | gegangen.\n\nder Hund | bellt | laut.',
   },
   zuordnen: {
     name: 'Zuordnen',
@@ -247,8 +248,12 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
                     <p>
                       Schreiben Sie jeden Satz in die richtige Reihenfolge und trennen Sie die Bausteine mit <strong>|</strong>.
                       Gibt es weitere richtige Reihenfolgen, schreiben Sie sie in die Zeilen <strong>direkt darunter</strong>.
-                      Eine <strong>Leerzeile</strong> beginnt einen neuen Satz. Groß-/Kleinschreibung und Satzzeichen am Ende
-                      eines Bausteins zählen beim Vergleich nicht. Schüler:innen bekommen die Bausteine gemischt.
+                      Eine <strong>Leerzeile</strong> beginnt einen neuen Satz. Schreiben Sie das erste Wort so, wie es mitten
+                      im Satz stünde (z. B. <code>gestern</code>), und setzen Sie das Satzzeichen ans Ende. Schüler:innen
+                      sehen Bausteine gemischt, ohne großen Satzanfang und ohne Satzzeichen – beides erscheint erst, wenn der
+                      Satz richtig ist. Die Satzart wird aus dem Satzzeichen erkannt (. ? !); sonst eine Zeile{' '}
+                      <code>Satzart: Ausrufesatz</code> darüber schreiben. Sollen mehrere richtige Sätze gebildet werden,
+                      schreiben Sie z. B. <code>Varianten: 2</code> darüber.
                     </p>
                   ) : typ === 'fehler' ? (
                     <p>
@@ -499,28 +504,73 @@ function FormularModus({ teile, onChange }: { teile: LueckentextTeil[]; onChange
   )
 }
 
-// Formular für „Reihenfolge“: ein Feld je Satz (Bausteine mit |, weitere Reihenfolgen in weiteren Zeilen).
-function ReihenFormular({ text, onChange }: { text: string; onChange: (text: string) => void }) {
-  const [saetze, setSaetze] = useState<string[]>(() => {
-    const liste = text.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean)
-    return liste.length ? liste : ['']
-  })
-  function setzen(neu: string[]) {
-    setSaetze(neu)
-    onChange(neu.map((s) => s.trim()).filter(Boolean).join('\n\n'))
+// Formular für „Reihenfolge“: je Satz Satzart, Anzahl Varianten und ein Feld mit den Reihenfolgen.
+type SatzFeld = { satzart: string; varianten: number; zeilen: string }
+const SATZARTEN = ['Aussagesatz', 'Fragesatz', 'Aufforderungssatz', 'Ausrufesatz']
+
+function satzFeldAus(block: string): SatzFeld {
+  const feld: SatzFeld = { satzart: '', varianten: 1, zeilen: '' }
+  const zeilen: string[] = []
+  for (const z of block.split('\n')) {
+    const art = /^\s*satzart\s*:\s*(.*)$/i.exec(z)
+    const anzahl = /^\s*varianten\s*:\s*(.*)$/i.exec(z)
+    if (art) feld.satzart = art[1].trim()
+    else if (anzahl) feld.varianten = Number(anzahl[1]) || 1
+    else zeilen.push(z)
   }
+  feld.zeilen = zeilen.join('\n')
+  return feld
+}
+
+function satzFeldZuText(f: SatzFeld): string {
+  return [...(f.varianten > 1 ? [`Varianten: ${f.varianten}`] : []), ...(f.satzart ? [`Satzart: ${f.satzart}`] : []), f.zeilen.trim()]
+    .join('\n')
+    .trim()
+}
+
+function ReihenFormular({ text, onChange }: { text: string; onChange: (text: string) => void }) {
+  const [saetze, setSaetze] = useState<SatzFeld[]>(() => {
+    const liste = text.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean)
+    return (liste.length ? liste : ['']).map(satzFeldAus)
+  })
+  function setzen(neu: SatzFeld[]) {
+    setSaetze(neu)
+    onChange(neu.filter((s) => s.zeilen.trim()).map(satzFeldZuText).join('\n\n'))
+  }
+  const aendern = (i: number, teil: Partial<SatzFeld>) => setzen(saetze.map((x, j) => (j === i ? { ...x, ...teil } : x)))
   return (
     <div className="formular-modus">
       {saetze.map((s, i) => (
         <div key={i} className="teil teil-luecke">
           <label>
-            Satz {i + 1}: Bausteine in richtiger Reihenfolge, mit | getrennt. Weitere richtige Reihenfolgen in neue Zeilen.
+            Satz {i + 1}: Satzart
+            <select value={s.satzart} onChange={(e) => aendern(i, { satzart: e.target.value })}>
+              <option value="">automatisch (aus . ? !)</option>
+              {[...SATZARTEN, ...(s.satzart && !SATZARTEN.includes(s.satzart) ? [s.satzart] : [])].map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Wie viele verschiedene richtige Sätze sollen gebildet werden?
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={s.varianten}
+              onChange={(e) => aendern(i, { varianten: Math.min(10, Math.max(1, Number(e.target.value) || 1)) })}
+            />
+          </label>
+          <label>
+            Bausteine in richtiger Reihenfolge, mit | getrennt, Satzzeichen ans Ende. Weitere richtige Reihenfolgen in neue Zeilen.
             <textarea
               rows={2}
-              value={s}
-              onChange={(e) => setzen(saetze.map((x, j) => (j === i ? e.target.value.replace(/\n\s*\n/g, '\n') : x)))}
+              value={s.zeilen}
+              onChange={(e) => aendern(i, { zeilen: e.target.value.replace(/\n\s*\n/g, '\n') })}
               spellCheck={false}
-              placeholder="Gestern | bin ich | ins Kino | gegangen."
+              placeholder="gestern | bin ich | ins Kino | gegangen."
             />
           </label>
           <button
@@ -534,7 +584,7 @@ function ReihenFormular({ text, onChange }: { text: string; onChange: (text: str
         </div>
       ))}
       <div className="knopfleiste">
-        <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setSaetze([...saetze, ''])}>
+        <button type="button" className="aes-btn aes-btn--secondary aes-btn--klein" onClick={() => setSaetze([...saetze, satzFeldAus('')])}>
           + Satz
         </button>
       </div>

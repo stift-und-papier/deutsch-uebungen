@@ -96,11 +96,14 @@ export function textZuTeilen(text: string, woerterAntippbar: boolean | 'fehler' 
 
 // ---- Format „Reihenfolge“ ----
 // Schreibweise: Bausteine eines Satzes mit | trennen, in der richtigen Reihenfolge:
-//   Gestern | bin ich | ins Kino | gegangen.
-//   Ins Kino | bin ich | gestern | gegangen.      ← weitere richtige Reihenfolge (direkt darunter)
+//   Varianten: 2                                  ← optional: so viele verschiedene Reihenfolgen sind gefordert
+//   Satzart: Aussagesatz                          ← optional, sonst aus dem Schlusszeichen (. ? !)
+//   gestern | bin ich | ins Kino | gegangen.
+//   ins Kino | bin ich | gestern | gegangen.      ← weitere richtige Reihenfolge (direkt darunter)
 //
-//   Der Hund | bellt | laut.                       ← Leerzeile = neuer Satz
-// Verglichen wird ohne Groß-/Kleinschreibung und ohne Satzzeichen am Ende eines Bausteins (wie in der Datenbank).
+//   der Hund | bellt | laut.                       ← Leerzeile = neuer Satz
+// Schüler:innen sehen die Bausteine ohne großen Satzanfang und ohne Schlusszeichen; beides erscheint erst,
+// wenn der Satz richtig liegt. Verglichen wird ohne Groß-/Kleinschreibung und ohne Satzzeichen am Bausteinende.
 
 /** Baustein für den Vergleich vereinheitlichen (entspricht baustein_norm in der Datenbank) */
 export function bausteinNorm(v: string): string {
@@ -125,6 +128,17 @@ export function kennungen(anzahl: number, zufall: () => number = Math.random): s
   return Array.from({ length: anzahl }, (_, i) => BUCHSTABEN[anzahl - 1 - i].repeat(6))
 }
 
+const SATZART_AUS_ZEICHEN: Record<string, string> = { '.': 'Aussagesatz', '?': 'Fragesatz', '!': 'Aufforderungssatz' }
+
+/** Bausteine als fertiger Satz: erster Buchstabe groß, Schlusszeichen am letzten Baustein */
+export function satzFertig(bausteine: string[], zeichen: string): string[] {
+  return bausteine.map((b, i) => {
+    let v = i === 0 ? b.charAt(0).toUpperCase() + b.slice(1) : b
+    if (i === bausteine.length - 1) v += zeichen
+    return v
+  })
+}
+
 /** Wandelt den Eingabetext der Lehrkraft in Sätze zum Ordnen um. */
 export function reihenZuTeilen(text: string, zufall: () => number = Math.random): ParseErgebnis {
   const teile: LueckentextTeil[] = []
@@ -134,21 +148,88 @@ export function reihenZuTeilen(text: string, zufall: () => number = Math.random)
     .map((b) => b.split('\n').map((z) => z.trim()).filter(Boolean))
     .filter((b) => b.length > 0)
 
-  bloecke.forEach((zeilen, nr) => {
-    const loesungen = zeilen.map((z) => z.split('|').map((s) => s.trim().replace(/\s+/g, ' ')))
-    const [erste] = loesungen
-    if (erste.length < 2) {
-      fehler.push(`Satz ${nr + 1}: Bitte die Bausteine mit | trennen, z. B. Gestern | bin ich | ins Kino | gegangen.`)
+  bloecke.forEach((alleZeilen, nr) => {
+    const satz = `Satz ${nr + 1}`
+    // Angaben „Satzart: …“ und „Varianten: …“ (beliebige Reihenfolge, eigene Zeilen)
+    let satzart = ''
+    let varianten = 1
+    const zeilen: string[] = []
+    for (const z of alleZeilen) {
+      const art = /^satzart\s*:\s*(.*)$/i.exec(z)
+      const anzahl = /^varianten\s*:\s*(.*)$/i.exec(z)
+      if (art) satzart = art[1].trim()
+      else if (anzahl) {
+        varianten = Number(anzahl[1])
+        if (!Number.isInteger(varianten) || varianten < 1 || varianten > 10) {
+          fehler.push(`${satz}: Bei „Varianten:“ bitte eine Zahl von 1 bis 10 eintragen.`)
+          varianten = 1
+        }
+      } else zeilen.push(z)
+    }
+    if (zeilen.length === 0) {
+      fehler.push(`${satz}: Es fehlt die Zeile mit den Bausteinen.`)
       return
     }
-    if (erste.some((b) => b === '')) fehler.push(`Satz ${nr + 1}: Ein Baustein ist leer. Bitte zwischen den | etwas eintragen.`)
+
+    // Satzschlusszeichen vom letzten Baustein jeder Zeile abtrennen (es wird erst bei richtiger Lösung gezeigt)
+    let zeichen = ''
+    const reihen = zeilen.map((z, zeile) => {
+      const teileDerZeile = z.split('|').map((s) => s.trim().replace(/\s+/g, ' '))
+      const letzter = teileDerZeile.length - 1
+      const schluss = /\s*([.?!]+)$/.exec(teileDerZeile[letzter])
+      if (schluss) {
+        if (zeile === 0) zeichen = schluss[1]
+        teileDerZeile[letzter] = teileDerZeile[letzter].slice(0, schluss.index).trim()
+      }
+      return teileDerZeile
+    })
+    const [erste] = reihen
+    if (erste.length < 2) {
+      fehler.push(`${satz}: Bitte die Bausteine mit | trennen, z. B. gestern | bin ich | ins Kino | gegangen.`)
+      return
+    }
+    if (reihen.some((r) => r.some((b) => b === '')))
+      fehler.push(`${satz}: Ein Baustein ist leer. Bitte zwischen den | etwas eintragen.`)
+
     const muster = erste.map(bausteinNorm).sort().join('|')
-    loesungen.slice(1).forEach((l, i) => {
-      if (l.map(bausteinNorm).sort().join('|') !== muster)
-        fehler.push(`Satz ${nr + 1}, Zeile ${i + 2}: Diese Reihenfolge muss genau dieselben Bausteine enthalten wie die erste Zeile.`)
+    const gesehen = new Set<string>()
+    reihen.forEach((r, i) => {
+      if (i > 0 && r.map(bausteinNorm).sort().join('|') !== muster)
+        fehler.push(`${satz}, Zeile ${i + 1}: Diese Reihenfolge muss genau dieselben Bausteine enthalten wie die erste Zeile.`)
+      const schluessel = r.map(bausteinNorm).join('|')
+      if (gesehen.has(schluessel)) fehler.push(`${satz}, Zeile ${i + 1}: Diese Reihenfolge steht schon in einer Zeile darüber.`)
+      gesehen.add(schluessel)
+    })
+
+    if (!satzart) satzart = SATZART_AUS_ZEICHEN[zeichen[0]] ?? ''
+    if (!satzart)
+      fehler.push(`${satz}: Bitte ein Satzschlusszeichen (. ? !) ans Ende setzen oder eine Zeile „Satzart: …“ ergänzen.`)
+    if (varianten > reihen.length)
+      fehler.push(
+        `${satz}: Für ${varianten} Varianten brauchen Sie mindestens ${varianten} verschiedene richtige Reihenfolgen (je eine Zeile).`,
+      )
+
+    // Anzeigeform eines Bausteins: so, wie er mitten im Satz steht (kein großer Satzanfang als Hinweis).
+    // Steht er in einer anderen Zeile nicht am Anfang, wird diese Schreibweise genommen.
+    const anzeige = erste.map((v, i) => {
+      if (i > 0) return v
+      for (const r of reihen) {
+        const stelle = r.findIndex((b, j) => j > 0 && bausteinNorm(b) === bausteinNorm(v))
+        if (stelle > 0) return r[stelle]
+      }
+      return v
     })
     const k = kennungen(erste.length, zufall)
-    teile.push({ t: 'reihe', id: nr, bausteine: erste.map((v, i) => ({ k: k[i], v })), loesungen })
+    teile.push({
+      t: 'reihe',
+      id: nr,
+      satzart,
+      zeichen,
+      varianten,
+      bausteine: anzeige.map((v, i) => ({ k: k[i], v })),
+      // Lösungen so, wie der fertige Satz aussieht (für „Lösung ansehen“): großer Anfang, Schlusszeichen
+      loesungen: reihen.map((r) => satzFertig(r, zeichen)),
+    })
   })
   if (bloecke.length === 0) fehler.push('Schreiben Sie mindestens einen Satz, die Bausteine mit | getrennt.')
   return { teile, fehler }
@@ -193,7 +274,16 @@ export function kategorienAus(teile: LueckentextTeil[], eingetragen: string[] = 
 
 /** Eine Stelle wieder in Schreibweise umwandeln (für den Formular-Modus und die Umkehrung). */
 export function stelleZuText(t: Exclude<LueckentextTeil, { t: 'text' }>): string {
-  if (t.t === 'reihe') return t.loesungen.map((l) => l.join(' | ')).join('\n')
+  if (t.t === 'reihe')
+    return [
+      ...(t.varianten > 1 ? [`Varianten: ${t.varianten}`] : []),
+      ...(t.satzart && t.satzart !== SATZART_AUS_ZEICHEN[t.zeichen[0]] ? [`Satzart: ${t.satzart}`] : []),
+      // Bausteine in ihrer Anzeigeform (ohne großen Satzanfang), Schlusszeichen nur am Zeilenende
+      ...t.loesungen.map((l) => {
+        const zeile = l.map((b) => t.bausteine.find((x) => bausteinNorm(x.v) === bausteinNorm(b))?.v ?? b)
+        return zeile.join(' | ') + t.zeichen
+      }),
+    ].join('\n')
   if (t.t === 'luecke') return t.loesungen.join('/')
   if (t.t === 'einheit') return `${t.v} = ${t.kategorie ?? ''}`
   if (t.t === 'wort') return `${t.v} -> ${(t.korrekturen ?? []).join('/')}`
@@ -239,7 +329,14 @@ export function ohneLoesung(
             : t.t === 'wort'
               ? { t: 'wort', id: t.id, v: t.v }
               : t.t === 'reihe'
-                ? { t: 'reihe', id: t.id, bausteine: [...t.bausteine].sort((a, b) => (a.k < b.k ? -1 : 1)) }
+                ? {
+                    t: 'reihe',
+                    id: t.id,
+                    satzart: t.satzart,
+                    zeichen: t.zeichen,
+                    varianten: t.varianten,
+                    bausteine: [...t.bausteine].sort((a, b) => (a.k < b.k ? -1 : 1)),
+                  }
                 : t,
     ),
   }

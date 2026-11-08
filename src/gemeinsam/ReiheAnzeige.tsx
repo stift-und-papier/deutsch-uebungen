@@ -14,27 +14,77 @@ import {
 import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useState } from 'react'
-import type { ReiheOhneLoesung } from '../lib/typen'
+import { satzFertig } from '../lib/lueckentext'
+import type { Baustein, ReiheOhneLoesung } from '../lib/typen'
 
 // Format „Reihenfolge“: Bausteine (Wortkarten aes-word) in die richtige Reihenfolge bringen.
+// * Über jedem Satz steht die Satzart. Werden mehrere Varianten verlangt, gibt es je Variante eine eigene Reihe.
+// * Bausteine erscheinen ohne großen Satzanfang und ohne Schlusszeichen – beides erst, wenn die Reihe richtig ist.
 // Bedienung am iPad:
 //   * Antippen: Baustein oben antippen → er kommt ans Ende der Reihe. In der Reihe antippen → er geht zurück.
 //   * Ziehen: Bausteine in die Reihe ziehen und innerhalb der Reihe verschieben, oder zurück nach oben ziehen.
 // Nach dem Prüfen: je Platz ✓ (grün) oder ↻ (Pfirsich) – nie rot.
 
+export type VariantenErgebnis = { richtig: boolean; positionen?: boolean[] }
+
 type Props = {
   teil: ReiheOhneLoesung
   nr: number
-  anzahlSaetze: number
-  gelegt: string[]
-  onAenderung: (neu: string[]) => void
-  positionen?: boolean[]
-  richtig?: boolean
+  /** gelegte Kennungen je Variante */
+  gelegt: string[][]
+  onAenderung: (neu: string[][]) => void
+  ergebnisse: (VariantenErgebnis | undefined)[]
   loesung?: string[]
   gesperrt: boolean
 }
 
-export function ReiheAnzeige({ teil, nr, anzahlSaetze, gelegt, onAenderung, positionen, richtig, loesung, gesperrt }: Props) {
+export function ReiheAnzeige({ teil, nr, gelegt, onAenderung, ergebnisse, loesung, gesperrt }: Props) {
+  const varianten = Math.max(1, teil.varianten ?? 1)
+  return (
+    <div className="reihe">
+      <p className="reihe__nr">
+        Satz {nr + 1}
+        {teil.satzart && <span className="reihe__satzart"> · {teil.satzart}</span>}
+      </p>
+      {varianten > 1 && (
+        <p className="reihe__auftrag">Bilde {varianten} verschiedene richtige Sätze aus denselben Bausteinen.</p>
+      )}
+      {Array.from({ length: varianten }, (_, j) => (
+        <Variante
+          key={j}
+          teilId={teil.id}
+          bausteine={teil.bausteine}
+          zeichen={teil.zeichen ?? ''}
+          titel={varianten > 1 ? `Variante ${j + 1}` : null}
+          gelegt={gelegt[j] ?? []}
+          onAenderung={(neu) => onAenderung(Array.from({ length: varianten }, (_, x) => (x === j ? neu : (gelegt[x] ?? []))))}
+          ergebnis={ergebnisse[j]}
+          gesperrt={gesperrt}
+          beschriftung={`Satz ${nr + 1}${varianten > 1 ? `, Variante ${j + 1}` : ''}`}
+        />
+      ))}
+      {loesung && (
+        <p className="reihe__loesung">
+          <span className="loesung-anzeige">{loesung.join(' / ')}</span>
+        </p>
+      )}
+    </div>
+  )
+}
+
+type VarianteProps = {
+  teilId: number
+  bausteine: Baustein[]
+  zeichen: string
+  titel: string | null
+  gelegt: string[]
+  onAenderung: (neu: string[]) => void
+  ergebnis: VariantenErgebnis | undefined
+  gesperrt: boolean
+  beschriftung: string
+}
+
+function Variante({ teilId, bausteine, zeichen, titel, gelegt, onAenderung, ergebnis, gesperrt, beschriftung }: VarianteProps) {
   const [gezogen, setGezogen] = useState<string | null>(null)
   const sensoren = useSensors(
     // Erst nach kurzer Bewegung wird gezogen – ein einfaches Antippen bleibt ein Antippen
@@ -42,11 +92,13 @@ export function ReiheAnzeige({ teil, nr, anzahlSaetze, gelegt, onAenderung, posi
     useSensor(TouchSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
-  const text = (k: string) => teil.bausteine.find((b) => b.k === k)?.v ?? ''
-  const vorrat = teil.bausteine.filter((b) => !gelegt.includes(b.k))
-  const fertig = gesperrt || richtig === true
-  const reiheId = `reihe:${teil.id}`
-  const vorratId = `vorrat:${teil.id}`
+  const text = (k: string) => bausteine.find((b) => b.k === k)?.v ?? ''
+  const vorrat = bausteine.filter((b) => !gelegt.includes(b.k))
+  const fertig = gesperrt || ergebnis?.richtig === true
+  // Richtig gelegt: jetzt mit großem Satzanfang und Schlusszeichen zeigen
+  const anzeige = ergebnis?.richtig ? satzFertig(gelegt.map(text), zeichen) : gelegt.map(text)
+  const reiheId = `reihe:${teilId}`
+  const vorratId = `vorrat:${teilId}`
 
   function beimLoslassen({ active, over }: DragEndEvent) {
     setGezogen(null)
@@ -70,8 +122,8 @@ export function ReiheAnzeige({ teil, nr, anzahlSaetze, gelegt, onAenderung, posi
   }
 
   return (
-    <div className="reihe">
-      {anzahlSaetze > 1 && <p className="reihe__nr">Satz {nr + 1}</p>}
+    <div className="reihe__variante">
+      {titel && <p className="reihe__variante-titel">{titel}</p>}
       <DndContext
         sensors={sensoren}
         collisionDetection={closestCenter}
@@ -80,7 +132,7 @@ export function ReiheAnzeige({ teil, nr, anzahlSaetze, gelegt, onAenderung, posi
         onDragEnd={beimLoslassen}
       >
         {!fertig && (
-          <Bereich id={vorratId} className="reihe__vorrat" label={`Bausteine für Satz ${nr + 1}`}>
+          <Bereich id={vorratId} className="reihe__vorrat" label={`Bausteine für ${beschriftung}`}>
             {vorrat.length === 0 ? (
               <span className="reihe__leer">Alle Bausteine liegen in der Reihe.</span>
             ) : (
@@ -91,21 +143,21 @@ export function ReiheAnzeige({ teil, nr, anzahlSaetze, gelegt, onAenderung, posi
           </Bereich>
         )}
 
-        <Bereich id={reiheId} className="reihe__ablage" label={`Deine Reihenfolge für Satz ${nr + 1}`}>
+        <Bereich id={reiheId} className="reihe__ablage" label={`Deine Reihenfolge für ${beschriftung}`}>
           <SortableContext items={gelegt} strategy={rectSortingStrategy}>
             {gelegt.map((k, i) => (
               <ReihenKarte
                 key={k}
                 id={k}
-                text={text(k)}
+                text={anzeige[i]}
                 platz={i + 1}
-                stimmt={positionen?.[i]}
+                stimmt={ergebnis?.positionen?.[i]}
                 gesperrt={fertig}
                 onTippen={() => onAenderung(gelegt.filter((x) => x !== k))}
               />
             ))}
           </SortableContext>
-          {!fertig && gelegt.length < teil.bausteine.length && (
+          {!fertig && gelegt.length < bausteine.length && (
             <span className="aes-word aes-word--target" aria-hidden="true">
               hier ablegen
             </span>
@@ -116,11 +168,6 @@ export function ReiheAnzeige({ teil, nr, anzahlSaetze, gelegt, onAenderung, posi
           {gezogen ? <span className="aes-word reihe__karte--gezogen">{text(gezogen.replace(/^v:/, ''))}</span> : null}
         </DragOverlay>
       </DndContext>
-      {loesung && (
-        <p className="reihe__loesung">
-          <span className="loesung-anzeige">{loesung.join(' / ')}</span>
-        </p>
-      )}
     </div>
   )
 }

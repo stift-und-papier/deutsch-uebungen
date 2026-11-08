@@ -484,6 +484,31 @@ begin
   if (v ->> 'anteil')::numeric <> 0.333 then raise exception 'FEHLGESCHLAGEN: nur finden mit Ablenker: %', v; end if;
   ok := ok || '2.6a Fehler finden ohne Verbesserung'::text;
 
+  -- Reihenfolge mit 2 geforderten Varianten: zweimal dieselbe Reihenfolge zählt nicht doppelt
+  declare c_zwei jsonb := '{"teile":[{"t":"reihe","id":0,"satzart":"Aussagesatz","zeichen":".","varianten":2,
+    "bausteine":[{"k":"m","v":"gestern"},{"k":"c","v":"bin ich"},{"k":"x","v":"ins Kino"},{"k":"a","v":"gegangen"}],
+    "loesungen":[["Gestern","bin ich","ins Kino","gegangen."],["Ins Kino","bin ich","gestern","gegangen."]]}]}';
+  begin
+    v := public.pruefe_aufgabe('reihenfolge', c_zwei, '{"0":[["m","c","x","a"],["x","c","m","a"]]}');
+    if not (v ->> 'richtig')::boolean or jsonb_array_length(v -> 'luecken') <> 2
+       or (v -> 'luecken' -> 1 ->> 'variante')::int <> 1 then
+      raise exception 'FEHLGESCHLAGEN: zwei richtige Varianten: %', v;
+    end if;
+    v := public.pruefe_aufgabe('reihenfolge', c_zwei, '{"0":[["m","c","x","a"],["m","c","x","a"]]}');
+    if (v ->> 'richtig')::boolean or (v ->> 'anteil')::numeric <> 0.75 then
+      raise exception 'FEHLGESCHLAGEN: doppelte Variante gewertet: %', v;
+    end if;
+    v := public.pruefe_aufgabe('reihenfolge', c_zwei, '{"0":["m","c","x","a"]}');
+    if (v ->> 'richtig')::boolean then raise exception 'FEHLGESCHLAGEN: nur eine von zwei Varianten: %', v; end if;
+    reset role;  -- inhalt_ohne_loesung ist intern (nur über schueler_start erreichbar)
+    v := public.inhalt_ohne_loesung('reihenfolge', c_zwei);
+    if v::text like '%loesungen%' or v -> 'teile' -> 0 ->> 'varianten' <> '2' or v -> 'teile' -> 0 ->> 'satzart' <> 'Aussagesatz' then
+      raise exception 'FEHLGESCHLAGEN: Reihenfolge für Schüler:innen: %', v;
+    end if;
+    set local role authenticated;
+  end;
+  ok := ok || '2.6b Reihenfolge mit mehreren Varianten und Satzart'::text;
+
   -- Vorschau-Prüfung für Lehrkräfte
   v := public.pruefe_aufgabe('lueckentext', c_inhalt, '{"0":"dass"}');
   if not (v ->> 'richtig')::boolean then raise exception 'FEHLGESCHLAGEN: Vorschau-Prüfung'; end if;
