@@ -113,6 +113,13 @@
 ### To-do für weitere Etappen (Wunsch der Lehrkraft, 2026-11-08)
 - **Aufgaben erstellen verbessern und übersichtlicher machen** (Editor aufräumen, Formate leichter wählbar).
 - **Aufgaben und Aufgabenpakete filtern** nach Klassenstufe (Jahrgang) und/oder Kompetenz.
+- **Usability-Überarbeitung (Wunsch der Lehrkraft, 2026-11-08):**
+  - Lernweg entschlacken (nächster Schritt oben, nach Bereich gruppiert, schlanke Zeilen, Ungeübtes eingeklappt).
+  - Editor: „+ Neue Aufgabe“ → Seite mit **anklickbaren Format-Kacheln** (Icon, ein Satz, Mini-Beispiel); Format auch im
+    Editor umschaltbar. Editor in Abschnitte Inhalt (Text + Live-Vorschau) / Einordnen (Kompetenz, Schwierigkeit,
+    Titel) / Extras (Tipp, Rückmeldung, eingeklappt).
+  - **Erklärseite im Aufgabenpaket** (ähnlich Lern-App Anton): Seite, die das Konzept erklärt, im Paket zwischen den
+    Aufgaben. Inhalt/Gestaltung (Text, Beispiele, Bilder?) vor dem Bau mit der Lehrkraft klären.
 
 ## Lernstand (Etappe 2)
 - Kompetenzen pro Lehrkraft (`kompetenzen`, Import aus `docs/kompetenzen.csv` per `node scripts/kompetenzen-sql.ts <uuid>`).

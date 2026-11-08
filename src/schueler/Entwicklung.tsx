@@ -14,13 +14,13 @@ type Daten = {
   naechster_schritt: string | null
 }
 
-// Zuordnung zu den vier Zuständen der Entwicklungskachel. Die Segmente zeigen den Weg, nicht ein Niveau.
-// „Deutlich besser“ ist zusätzlich hervorgehoben (kräftig grüne Pille, siehe index.css).
-const ZUSTAND: Record<Kategorie, { klasse: keyof typeof ENTWICKLUNG_ICON; segmente: number }> = {
-  deutlich: { klasse: 'stark', segmente: 4 },
-  besser: { klasse: 'gut', segmente: 3 },
-  dranbleiben: { klasse: 'dran', segmente: 2 },
-  erste: { klasse: 'sammeln', segmente: 0 },
+// Zuordnung zu den vier Entwicklungszuständen (Pille aes-growth__badge mit Wachstums-Icon).
+// Bewusst ohne Segment-Balken: der sah wie eine Stufenanzeige aus. „Deutlich besser“ = kräftig grüne Pille (index.css).
+const ZUSTAND: Record<Kategorie, { klasse: keyof typeof ENTWICKLUNG_ICON }> = {
+  deutlich: { klasse: 'stark' },
+  besser: { klasse: 'gut' },
+  dranbleiben: { klasse: 'dran' },
+  erste: { klasse: 'sammeln' },
 }
 const REIHENFOLGE: Kategorie[] = ['deutlich', 'besser', 'dranbleiben', 'erste']
 
@@ -41,58 +41,19 @@ export function Entwicklung({ token, pseudonym, geschafft, uebungen }: Props) {
 
   const gelungen = (anzahl: number) =>
     daten.texte.gelungen.replace('{anzahl}', String(anzahl)).replace('{aufgaben}', anzahl === 1 ? 'Aufgabe' : 'Aufgaben')
-  const sortiert = [...daten.kompetenzen].sort((a, b) => REIHENFOLGE.indexOf(a.kategorie) - REIHENFOLGE.indexOf(b.kategorie))
+  // Themen mit Entwicklung nach Bereich gruppiert (Reihenfolge der Bereiche wie von der Datenbank geliefert);
+  // Themen, zu denen noch Ergebnisse gesammelt werden, kommen eingeklappt ans Ende.
+  const mitWeg = daten.kompetenzen.filter((k) => k.kategorie !== 'erste')
+  const ersteSchritte = daten.kompetenzen.filter((k) => k.kategorie === 'erste')
+  const bereiche = [...new Set(mitWeg.map((k) => k.bereich))].map((bereich) => ({
+    bereich,
+    themen: mitWeg
+      .filter((k) => k.bereich === bereich)
+      .sort((a, b) => REIHENFOLGE.indexOf(a.kategorie) - REIHENFOLGE.indexOf(b.kategorie)),
+  }))
 
-  return (
-    <>
-      <header className="aes-card seitenkopf">
-        <div>
-          <h1 className="titel-gross">Dein Lernweg</h1>
-          <p className="seitenkopf__text">Hallo {pseudonym}! Schau, was du schon geschafft hast.</p>
-        </div>
-        <div className="zaehler">
-          <span className="zaehler__zahl">{geschafft}</span>
-          <span className="zaehler__text">{geschafft === 1 ? 'Übung geschafft' : 'Übungen geschafft'}</span>
-        </div>
-      </header>
-
-      {sortiert.length === 0 ? (
-        <p className="aes-card">Sobald du ein paar Aufgaben bearbeitet hast, siehst du hier deinen Weg.</p>
-      ) : (
-        <ul className="karten-raster">
-          {sortiert.map((k) => {
-            const z = ZUSTAND[k.kategorie]
-            return (
-              <li key={k.name}>
-                <article className={`aes-growth aes-growth--${z.klasse}`}>
-                  <span className="aes-growth__topic">
-                    <PixelIcon name={BEREICH_ICON[k.bereich]} />
-                    {k.bereich}
-                  </span>
-                  <h2 className="aes-growth__title">{k.name}</h2>
-                  <span className="aes-growth__badge">
-                    <PixelIcon name={ENTWICKLUNG_ICON[z.klasse]} /> {daten.texte[k.kategorie]}
-                  </span>
-                  <div className="aes-growth__steps" aria-hidden="true">
-                    {[0, 1, 2, 3].map((i) => (
-                      <span key={i} className={i < z.segmente ? 'aes-growth__step is-on' : 'aes-growth__step'} />
-                    ))}
-                  </div>
-                  <p className="aes-growth__next">
-                    {k.geloest > 0
-                      ? gelungen(k.geloest)
-                      : k.kategorie === 'erste'
-                        ? 'Bearbeite noch ein paar Aufgaben, dann siehst du hier deinen Weg.'
-                        : 'Du bist auf dem Weg. Übe weiter mit den Aufgaben aus deinem Paket.'}
-                  </p>
-                </article>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-
-      <section className="aes-card naechster-schritt">
+  const naechsterSchritt = (
+    <section className="aes-card naechster-schritt">
         <div>
           <h2 className="aes-card__title">Dein nächster Schritt</h2>
           <p className="seitenkopf__text">
@@ -109,6 +70,73 @@ export function Entwicklung({ token, pseudonym, geschafft, uebungen }: Props) {
           Weiter üben
         </a>
       </section>
+  )
+
+  return (
+    <>
+      <header className="aes-card seitenkopf">
+        <div>
+          <h1 className="titel-gross">Dein Lernweg</h1>
+          <p className="seitenkopf__text">Hallo {pseudonym}! Schau, was du schon geschafft hast.</p>
+        </div>
+        <div className="zaehler">
+          <span className="zaehler__zahl">{geschafft}</span>
+          <span className="zaehler__text">{geschafft === 1 ? 'Übung geschafft' : 'Übungen geschafft'}</span>
+        </div>
+      </header>
+
+      {naechsterSchritt}
+
+      {daten.kompetenzen.length === 0 && (
+        <p className="aes-card">Sobald du ein paar Aufgaben bearbeitet hast, siehst du hier deinen Weg.</p>
+      )}
+
+      {bereiche.map(({ bereich, themen }) => (
+        <section key={bereich} className="aes-card lernweg-bereich">
+          <h2 className="lernweg-bereich__titel">
+            <PixelIcon name={BEREICH_ICON[bereich]} />
+            {bereich}
+          </h2>
+          <ul className="lernweg-liste">
+            {themen.map((k) => {
+              const z = ZUSTAND[k.kategorie]
+              return (
+                <li key={k.name} className={`lernweg-thema aes-growth--${z.klasse}`}>
+                  <div>
+                    <h3 className="lernweg-thema__name">{k.name}</h3>
+                    {k.geloest > 0 && <p className="lernweg-thema__zusatz">{gelungen(k.geloest)}</p>}
+                  </div>
+                  <span className="aes-growth__badge">
+                    <PixelIcon name={ENTWICKLUNG_ICON[z.klasse]} /> {daten.texte[k.kategorie]}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ))}
+
+      {ersteSchritte.length > 0 && (
+        <details className="aes-card lernweg-bereich lernweg-erste">
+          <summary className="lernweg-erste__knopf">
+            <PixelIcon name={ENTWICKLUNG_ICON.sammeln} />
+            <span>
+              {ersteSchritte.length === 1 ? 'Ein Thema' : `${ersteSchritte.length} Themen`}, bei denen wir noch deine ersten
+              Ergebnisse sammeln
+            </span>
+          </summary>
+          <ul className="lernweg-liste">
+            {ersteSchritte.map((k) => (
+              <li key={k.name} className="lernweg-thema">
+                <div>
+                  <h3 className="lernweg-thema__name">{k.name}</h3>
+                  <p className="lernweg-thema__zusatz">{k.bereich}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </>
   )
 }

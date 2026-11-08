@@ -1732,3 +1732,102 @@ tr.ausgeblendet .aktionen {
   padding-top: var(--space-3);
   border-top: 1px solid var(--linie);
 }
+
+/* ---------- Mein Lernweg: je Bereich eine Karte, je Thema eine schlanke Zeile ---------- */
+
+.lernweg-bereich__titel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 30px;
+  color: var(--schulblau);
+}
+
+.lernweg-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lernweg-thema {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--linie);
+}
+
+.lernweg-thema:first-child {
+  border-top: none;
+}
+
+.lernweg-thema__name {
+  margin: 0;
+  font-size: 19px;
+  line-height: 26px;
+  font-weight: 800;
+  color: var(--tinte);
+}
+
+.lernweg-thema__zusatz {
+  margin: 0;
+  font-size: 17px;
+  line-height: 24px;
+  color: var(--tinte-gedaempft);
+}
+
+/* Eingeklappte Liste der Themen ohne genug Ergebnisse */
+.lernweg-erste__knopf {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tipp-min);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 800;
+  color: var(--schulblau);
+  cursor: pointer;
+}
+
+.lernweg-erste[open] .lernweg-erste__knopf {
+  margin-bottom: var(--space-2);
+}
+
+.lernweg-erste__knopf::-webkit-details-marker {
+  display: none;
+}
+
+.lernweg-erste__knopf::after {
+  content: 'anzeigen ▾';
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--tinte-gedaempft);
+}
+
+.lernweg-erste[open] .lernweg-erste__knopf::after {
+  content: 'ausblenden ▴';
+}
+
+/* Pille immer rechts neben dem Thema; lange Texte brechen in der Pille um */
+.lernweg-thema {
+  flex-wrap: nowrap;
+}
+
+.lernweg-thema > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.lernweg-thema > .aes-growth__badge {
+  flex: 0 1 auto;
+  max-width: 55%;
+}
+
+.lernweg-erste__knopf::after {
+  white-space: nowrap;
+}
