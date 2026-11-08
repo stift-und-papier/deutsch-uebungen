@@ -25,22 +25,7 @@ export function AufgabenListe() {
       <h1>Aufgaben</h1>
       <div className="knopfleiste">
         <a className="aes-btn aes-btn--primary" href="#/lehrkraft/aufgaben/neu">
-          + Neuer Lückentext
-        </a>
-        <a className="aes-btn aes-btn--secondary" href="#/lehrkraft/aufgaben/neu-auswahl">
-          + Neue Auswahl
-        </a>
-        <a className="aes-btn aes-btn--secondary" href="#/lehrkraft/aufgaben/neu-zuordnen">
-          + Neues Zuordnen
-        </a>
-        <a className="aes-btn aes-btn--secondary" href="#/lehrkraft/aufgaben/neu-fehler">
-          + Neues Fehlerfinden
-        </a>
-        <a className="aes-btn aes-btn--secondary" href="#/lehrkraft/aufgaben/neu-reihenfolge">
-          + Neue Reihenfolge
-        </a>
-        <a className="aes-btn aes-btn--secondary" href="#/lehrkraft/aufgaben/neu-ueberarbeiten">
-          + Neues Sätze verbessern
+          + Neue Aufgabe
         </a>
       </div>
       {fehler && <p className="hinweis-box">{fehler}</p>}

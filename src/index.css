@@ -1831,3 +1831,164 @@ tr.ausgeblendet .aktionen {
 .lernweg-erste__knopf::after {
   white-space: nowrap;
 }
+
+/* ---------- Aufgaben-Editor: Kopf mit Format, drei Abschnitte, Live-Vorschau ---------- */
+
+.editor-kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+}
+
+.editor-kopf h1 {
+  margin: 0;
+}
+
+.editor-format {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 14rem;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.editor-abschnitt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 2px solid var(--linie);
+  border-radius: var(--radius-lg);
+}
+
+.editor-abschnitt__titel {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 30px;
+  color: var(--schulblau);
+}
+
+summary.editor-abschnitt__titel,
+.erklaerung__titel {
+  display: flex;
+  align-items: center;
+  min-height: var(--tipp-min);
+  cursor: pointer;
+}
+
+.erklaerung__titel {
+  font-weight: 800;
+  color: var(--schulblau);
+}
+
+/* Eingabe und Vorschau: auf breiten Bildschirmen nebeneinander, sonst untereinander */
+.editor-inhalt {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.editor-inhalt__eingabe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+@media (min-width: 1400px) {
+  .editor-inhalt {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .editor-inhalt__vorschau {
+    position: sticky;
+    top: var(--space-4);
+  }
+}
+
+.editor-vorschau__titel {
+  margin: 0 0 var(--space-2);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--tinte-gedaempft);
+}
+
+.editor-vorschau__leer {
+  margin: 0;
+  padding: var(--space-5);
+  border: 3px dashed var(--linie-stark);
+  border-radius: var(--radius-lg);
+  color: var(--tinte-gedaempft);
+}
+
+/* ---------- Neue Aufgabe: Format-Kacheln ---------- */
+
+.format-kacheln {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--space-4);
+}
+
+.format-kacheln > li {
+  display: flex;
+}
+
+.format-kachel {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 2px solid var(--linie);
+  border-radius: var(--radius-lg);
+  background: var(--flaeche);
+  color: var(--tinte);
+  text-decoration: none;
+}
+
+.format-kachel:focus-visible {
+  outline: 2px solid var(--fokus);
+  outline-offset: 2px;
+}
+
+.format-kachel:active {
+  border-color: var(--schulblau);
+  background: var(--schulblau-hell);
+}
+
+.format-kachel__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.format-kachel__name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--schulblau);
+}
+
+.format-kachel__kurz {
+  font-size: 17px;
+  line-height: 24px;
+}
+
+.format-kachel__mini {
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  width: fit-content;
+  border-radius: var(--radius-md);
+  background: var(--himmel-hell);
+  font-size: 17px;
+  line-height: 24px;
+  color: var(--tinte-gedaempft);
+}

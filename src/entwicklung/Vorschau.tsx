@@ -3,7 +3,8 @@
 // (sie wird nur geladen, wenn import.meta.env.DEV wahr ist).
 import { useState } from 'react'
 import { Blumenwiese, wieseSatz } from '../gemeinsam/Blumenwiese'
-import { AufgabeEditor } from '../lehrkraft/AufgabeEditor'
+import { AufgabeEditor, formatAusAdresse } from '../lehrkraft/AufgabeEditor'
+import { FormatWahl } from '../lehrkraft/FormatWahl'
 import { AuswertungAnsicht } from '../lehrkraft/KlassenLernstand'
 import { KlassenListe } from '../lehrkraft/KlassenListe'
 import { LehrkraftRahmen } from '../lehrkraft/LehrkraftBereich'
@@ -124,10 +125,16 @@ export function Vorschau() {
         <KlassenListe />
       </LehrkraftRahmen>
     )
-  if (seite === 'aufgabe' || seite === 'auswahl' || seite === 'zuordnen' || seite === 'fehler' || seite === 'reihenfolge' || seite === 'ueberarbeiten')
+  if (seite === 'formate')
     return (
       <LehrkraftRahmen bereich="aufgaben" eigeneKarten={false}>
-        <AufgabeEditor aufgabeId={null} neuerTyp={seite === 'auswahl' || seite === 'zuordnen' || seite === 'fehler' || seite === 'reihenfolge' || seite === 'ueberarbeiten' ? seite : 'lueckentext'} />
+        <FormatWahl />
+      </LehrkraftRahmen>
+    )
+  if (seite === 'aufgabe' || formatAusAdresse(`neu-${seite}`))
+    return (
+      <LehrkraftRahmen bereich="aufgaben" eigeneKarten={false}>
+        <AufgabeEditor aufgabeId={null} neuerTyp={formatAusAdresse(`neu-${seite}`) ?? 'lueckentext'} />
       </LehrkraftRahmen>
     )
   return (

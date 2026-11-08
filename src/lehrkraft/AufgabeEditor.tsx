@@ -27,41 +27,78 @@ import {
 } from '../lib/typen'
 import { KompetenzAuswahl } from './KompetenzAuswahl'
 
-// Je Format: Name, Standard-Arbeitsanweisung und Beispiel für den Texteingabe-Modus
-const FORMATE: Record<AufgabenTyp, { name: string; anweisung: string; beispiel: string }> = {
+// Je Format: Name, kurze Beschreibung und Mini-Beispiel (Format-Kacheln), Standard-Arbeitsanweisung und
+// Beispiel für den Texteingabe-Modus. Die Reihenfolge hier ist die Reihenfolge der Kacheln.
+export const FORMATE: Record<AufgabenTyp, { name: string; kurz: string; mini: string; anweisung: string; beispiel: string }> = {
   lueckentext: {
     name: 'Lückentext',
+    kurz: 'Schüler:innen tippen fehlende Wörter ein.',
+    mini: 'Ich weiß, ____ du kommst.',
     anweisung: 'Ergänze die Lücken.',
     beispiel: 'Ich weiß, [dass] du heute [Rad fährst/radfährst].',
   },
   auswahl: {
     name: 'Auswahl',
+    kurz: 'Schüler:innen tippen die richtige Möglichkeit an – auch mehrere.',
+    mini: 'Ich weiß, [das | dass] du kommst.',
     anweisung: 'Tippe die richtige Antwort an.',
     beispiel: 'Ich weiß, [das | *dass] du kommst.\n\nWelche Wörter sind Nomen?\n[*Hund | laufen | *Baum | schnell]',
   },
+  zuordnen: {
+    name: 'Zuordnen',
+    kurz: 'Schüler:innen markieren Wörter mit einem Kategorie-„Stift“.',
+    mini: 'Hund → Nomen · läuft → Verb',
+    anweisung: 'Wähle oben eine Kategorie und tippe die passenden Wörter an.',
+    beispiel: 'Der [Hund = Nomen] [läuft = Verb] [schnell = Adjektiv] über die [Wiese = Nomen].',
+  },
   fehler: {
     name: 'Fehler finden',
+    kurz: 'Schüler:innen tippen Fehlerwörter an und verbessern sie auf Wunsch.',
+    mini: 'Ich weis nicht … → weiß',
     anweisung: 'Finde die Fehler im Text.',
     beispiel: 'Ich [weis -> weiß] nicht, ob mein Bruder heute [komt -> kommt]. Wir wollen [radfahren -> Rad fahren].',
   },
   reihenfolge: {
     name: 'Reihenfolge',
+    kurz: 'Schüler:innen bringen Satzbausteine in eine richtige Reihenfolge.',
+    mini: 'ins Kino · gestern · gegangen · bin ich',
     anweisung: 'Bring die Bausteine in die richtige Reihenfolge.',
     beispiel:
       'Varianten: 2\ngestern | bin ich | ins Kino | gegangen.\nins Kino | bin ich | gestern | gegangen.\n\nder Hund | bellt | laut.',
   },
   ueberarbeiten: {
     name: 'Sätze verbessern',
+    kurz: 'Schüler:innen wählen die bessere Version eines Satzes und lesen danach die Begründung.',
+    mini: 'Version A oder Version B?',
     anweisung: 'Welche Version ist besser? Tippe sie an.',
     beispiel:
       'Kontext: Gestern war ich im Zoo.\nDann sah ich die Löwen und dann sah ich die Affen.\nHinweis: Hier steht zweimal „dann sah ich“. Das klingt eintönig.\n*Zuerst sah ich die Löwen, danach die Affen.\nHinweis: Die Wiederholung ist vermieden, der Satz ist kürzer.',
   },
-  zuordnen: {
-    name: 'Zuordnen',
-    anweisung: 'Wähle oben eine Kategorie und tippe die passenden Wörter an.',
-    beispiel: 'Der [Hund = Nomen] [läuft = Verb] [schnell = Adjektiv] über die [Wiese = Nomen].',
-  },
 }
+
+/** Aufgabenformat aus der Adresse („neu-auswahl“ → auswahl), sonst null */
+export function formatAusAdresse(id: string): AufgabenTyp | null {
+  const typ = id.replace(/^neu-/, '')
+  return id.startsWith('neu-') && typ in FORMATE ? (typ as AufgabenTyp) : null
+}
+
+// Aufklappbarer Bereich: Anfangszustand einmal festgelegt (z. B. Erklärung offen, solange noch kein Text da ist),
+// danach klappt die Lehrkraft selbst auf und zu.
+function Aufklappbar(p: { offen: boolean; titel: string; klasse: string; titelKlasse: string; children: React.ReactNode }) {
+  const [auf, setAuf] = useState(p.offen)
+  return (
+    <details className={p.klasse} open={auf} onToggle={(e) => setAuf(e.currentTarget.open)}>
+      <summary className={p.titelKlasse}>{p.titel}</summary>
+      {p.children}
+    </details>
+  )
+}
+
+const Erklaerung = ({ offen, children }: { offen: boolean; children: React.ReactNode }) => (
+  <Aufklappbar offen={offen} titel="So schreiben Sie die Aufgabe" klasse="erklaerung" titelKlasse="erklaerung__titel">
+    {children}
+  </Aufklappbar>
+)
 
 // Aufgabe anlegen oder bearbeiten (alle Formate) – wahlweise als Text mit [Klammern] oder per Formular.
 export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabeId: string | null; neuerTyp?: AufgabenTyp }) {
@@ -80,7 +117,6 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
   const [grossKlein, setGrossKlein] = useState(true)
   const [text, setText] = useState('')
   const [modus, setModus] = useState<'text' | 'formular'>('text')
-  const [vorschau, setVorschau] = useState(false)
   const [fehler, setFehler] = useState<string | null>(null)
   const [gespeichert, setGespeichert] = useState(false)
   const [geladen, setGeladen] = useState(aufgabeId === null)
@@ -121,6 +157,14 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
         setGeladen(true)
       })
   }, [aufgabeId])
+
+  // Format wechseln (nur neue Aufgaben): Standard-Anweisung mitwechseln, wenn sie nicht selbst geändert wurde.
+  // Der Text bleibt stehen; ein leerer Text bekommt so die passende Erklärung.
+  function formatWechseln(neu: AufgabenTyp) {
+    if (anweisung === FORMATE[typ].anweisung) setAnweisung(FORMATE[neu].anweisung)
+    setModus('text')
+    setTyp(neu)
+  }
 
   const { teile, fehler: textFehler } = useMemo(
     () =>
@@ -193,64 +237,32 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
       <a className="aes-btn aes-btn--ghost zurueck" href="#/lehrkraft/aufgaben">
         ← Alle Aufgaben
       </a>
-      <h1>{aufgabeId ? `${format.name} bearbeiten` : `Neue Aufgabe: ${format.name}`}</h1>
-
-      <div className="umschalter" role="tablist">
-        <button role="tab" aria-selected={!vorschau} onClick={() => setVorschau(false)}>
-          Bearbeiten
-        </button>
-        <button role="tab" aria-selected={vorschau} onClick={() => setVorschau(true)} disabled={textFehler.length > 0}>
-          Vorschau (so sehen es Schüler:innen)
-        </button>
+      <div className="editor-kopf">
+        <h1>{aufgabeId ? `${format.name} bearbeiten` : 'Neue Aufgabe'}</h1>
+        {/* Format nur bei neuen Aufgaben umschaltbar – gespeicherte Antworten passen sonst nicht mehr */}
+        {!aufgabeId && (
+          <label className="editor-format">
+            Format
+            <select value={typ} onChange={(e) => formatWechseln(e.target.value as AufgabenTyp)}>
+              {(Object.keys(FORMATE) as AufgabenTyp[]).map((t) => (
+                <option key={t} value={t}>
+                  {FORMATE[t].name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
-      {vorschau ? (
-        <div className="vorschau-rahmen">
-          <AufgabeBearbeiten
-            key={JSON.stringify(inhalt)}
-            aufgabe={{
-              id: aufgabeId ?? 'vorschau',
-              typ,
-              titel: titel || '(ohne Titel)',
-              anweisung,
-              hinweis: hinweis || null,
-              schwierigkeit,
-              inhalt: ohneLoesung(teile, darstellung, kategorien, fehlerOptionen),
-              versuche: 0,
-              geloest: false,
-              loesung_angesehen: false,
-            }}
-            pruefen={vorschauPruefen(typ, inhalt, rueckmeldung)}
-          />
-          <p className="klein">In der Vorschau wird nichts gespeichert.</p>
-        </div>
-      ) : (
-        <form
-          className="formular"
-          onSubmit={(e) => {
-            e.preventDefault()
-            void speichern()
-          }}
-        >
+      <div className="formular editor">
+        <section className="editor-abschnitt">
+          <h2 className="editor-abschnitt__titel">1 · Inhalt</h2>
+          <div className="editor-inhalt">
+            <div className="editor-inhalt__eingabe">
           <label>
-            Titel (sehen auch die Schüler:innen)
-            <input value={titel} onChange={(e) => setTitel(e.target.value)} required maxLength={120} placeholder="z. B. das oder dass?" />
-          </label>
-          <label>
-            Arbeitsanweisung
+            Arbeitsanweisung (sehen die Schüler:innen über der Aufgabe)
             <input value={anweisung} onChange={(e) => setAnweisung(e.target.value)} />
           </label>
-
-          <fieldset>
-            <legend>Schwierigkeit</legend>
-            <div className="umschalter">
-              {SCHWIERIGKEITEN.map((s) => (
-                <button type="button" key={s.wert} aria-pressed={schwierigkeit === s.wert} onClick={() => setSchwierigkeit(s.wert)}>
-                  {s.text}
-                </button>
-              ))}
-            </div>
-          </fieldset>
 
           <fieldset>
             <legend>Aufgabentext</legend>
@@ -265,7 +277,7 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
 
             {modus === 'text' ? (
               <>
-                <div className="erklaerung">
+                <Erklaerung offen={!text}>
                   {typ === 'ueberarbeiten' ? (
                     <p>
                       Schreiben Sie jede Version eines Satzes in eine <strong>eigene Zeile</strong> (2 bis 4 Versionen) und
@@ -317,7 +329,7 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
                       Beispiel einfügen
                     </button>
                   </p>
-                </div>
+                </Erklaerung>
                 <textarea
                   rows={7}
                   value={text}
@@ -406,33 +418,91 @@ export function AufgabeEditor({ aufgabeId, neuerTyp = 'lueckentext' }: { aufgabe
               </div>
             )}
           </fieldset>
+            </div>
 
-          <KompetenzAuswahl ausgewaehlt={kompetenzIds} onChange={setKompetenzIds} />
+            {/* Live-Vorschau: so sehen es Schüler:innen; „Prüfen“ prüft wie echt, speichert aber nichts */}
+            <div className="editor-inhalt__vorschau">
+              <h3 className="editor-vorschau__titel">So sehen es Schüler:innen</h3>
+              {text && textFehler.length === 0 ? (
+                <div className="vorschau-rahmen">
+                  <AufgabeBearbeiten
+                    key={JSON.stringify([inhalt, anweisung, hinweis])}
+                    aufgabe={{
+                      id: aufgabeId ?? 'vorschau',
+                      typ,
+                      titel: titel || format.name,
+                      anweisung,
+                      hinweis: hinweis || null,
+                      schwierigkeit,
+                      inhalt: ohneLoesung(teile, darstellung, kategorien, fehlerOptionen),
+                      versuche: 0,
+                      geloest: false,
+                      loesung_angesehen: false,
+                    }}
+                    pruefen={vorschauPruefen(typ, inhalt, rueckmeldung)}
+                  />
+                  <p className="klein">Probieren Sie die Aufgabe hier aus – in der Vorschau wird nichts gespeichert.</p>
+                </div>
+              ) : (
+                <p className="editor-vorschau__leer">
+                  {text ? 'Die Vorschau erscheint, sobald der Aufgabentext keine Fehler mehr hat.' : 'Hier erscheint die Aufgabe, sobald Sie Text eingeben.'}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
 
+        <section className="editor-abschnitt">
+          <h2 className="editor-abschnitt__titel">2 · Einordnen</h2>
           <label>
-            Tipp (optional – Schüler:innen können ihn aufklappen)
+            Titel (sehen auch die Schüler:innen)
+            <input value={titel} onChange={(e) => setTitel(e.target.value)} maxLength={120} placeholder="z. B. das oder dass?" />
+          </label>
+          <fieldset>
+            <legend>Schwierigkeit</legend>
+            <div className="umschalter">
+              {SCHWIERIGKEITEN.map((s) => (
+                <button type="button" key={s.wert} aria-pressed={schwierigkeit === s.wert} onClick={() => setSchwierigkeit(s.wert)}>
+                  {s.text}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <KompetenzAuswahl ausgewaehlt={kompetenzIds} onChange={setKompetenzIds} />
+        </section>
+
+        <Aufklappbar
+          offen={Boolean(hinweis || rueckmeldung)}
+          titel="3 · Extras (freiwillig): Tipp und Rückmeldung"
+          klasse="editor-abschnitt"
+          titelKlasse="editor-abschnitt__titel"
+        >
+          <label>
+            Tipp (Schüler:innen können ihn aufklappen)
             <input value={hinweis} onChange={(e) => setHinweis(e.target.value)} placeholder="z. B. Kannst du „dieses“ oder „welches“ einsetzen?" />
           </label>
           <label>
-            Rückmeldung bei Fehlern (optional – erscheint nach falschem Prüfen)
+            Rückmeldung bei Fehlern (erscheint nach falschem Prüfen)
             <input
               value={rueckmeldung}
               onChange={(e) => setRueckmeldung(e.target.value)}
               placeholder="z. B. Denk an die Ersatzprobe: „das“ kann man durch „dieses“ ersetzen."
             />
           </label>
+        </Aufklappbar>
 
-          {fehler && <p className="hinweis-box">{fehler}</p>}
-          <div className="knopfleiste">
-            <button className="aes-btn aes-btn--primary">{gespeichert ? '✓ Gespeichert' : 'Speichern'}</button>
-            {aufgabeId && (
-              <button type="button" className="aes-btn aes-btn--secondary knopf-gefahr" onClick={() => void loeschen()}>
-                Aufgabe löschen
-              </button>
-            )}
-          </div>
-        </form>
-      )}
+        {fehler && <p className="hinweis-box">{fehler}</p>}
+        <div className="knopfleiste">
+          <button type="button" className="aes-btn aes-btn--primary" onClick={() => void speichern()}>
+            {gespeichert ? '✓ Gespeichert' : 'Speichern'}
+          </button>
+          {aufgabeId && (
+            <button type="button" className="aes-btn aes-btn--secondary knopf-gefahr" onClick={() => void loeschen()}>
+              Aufgabe löschen
+            </button>
+          )}
+        </div>
+      </div>
     </>
   )
 }

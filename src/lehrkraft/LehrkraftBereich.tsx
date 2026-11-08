@@ -2,7 +2,8 @@ import type { Session } from '@supabase/supabase-js'
 import { useEffect, useState, type ReactNode } from 'react'
 import { fehlerText } from '../lib/fehler'
 import { supabase } from '../lib/supabase'
-import { AufgabeEditor } from './AufgabeEditor'
+import { AufgabeEditor, formatAusAdresse } from './AufgabeEditor'
+import { FormatWahl } from './FormatWahl'
 import { AufgabenListe } from './AufgabenListe'
 import { KlasseDetail } from './KlasseDetail'
 import { EinstellungenSeite } from './EinstellungenSeite'
@@ -56,12 +57,9 @@ export function LehrkraftBereich({ pfad }: { pfad: string[] }) {
       {bereich === 'schueler' && id && <SchuelerLernstand schuelerId={id} />}
       {bereich === 'einstellungen' && <EinstellungenSeite />}
       {bereich === 'aufgaben' && !id && <AufgabenListe />}
-      {bereich === 'aufgaben' && id && (
-        <AufgabeEditor
-          key={id}
-          aufgabeId={id.startsWith('neu') ? null : id}
-          neuerTyp={id === 'neu-auswahl' ? 'auswahl' : id === 'neu-zuordnen' ? 'zuordnen' : id === 'neu-fehler' ? 'fehler' : id === 'neu-reihenfolge' ? 'reihenfolge' : id === 'neu-ueberarbeiten' ? 'ueberarbeiten' : 'lueckentext'}
-        />
+      {bereich === 'aufgaben' && id === 'neu' && <FormatWahl />}
+      {bereich === 'aufgaben' && id && id !== 'neu' && (
+        <AufgabeEditor key={id} aufgabeId={id.startsWith('neu') ? null : id} neuerTyp={formatAusAdresse(id) ?? 'lueckentext'} />
       )}
       {bereich === 'pakete' && !id && <PaketListe />}
       {bereich === 'pakete' && id && <PaketDetail paketId={id} vorschau={unter === 'vorschau'} />}
