@@ -118,8 +118,11 @@
   - Editor: „+ Neue Aufgabe“ → Seite mit **anklickbaren Format-Kacheln** (Icon, ein Satz, Mini-Beispiel); Format auch im
     Editor umschaltbar. Editor in Abschnitte Inhalt (Text + Live-Vorschau) / Einordnen (Kompetenz, Schwierigkeit,
     Titel) / Extras (Tipp, Rückmeldung, eingeklappt).
-  - **Erklärseite im Aufgabenpaket** (ähnlich Lern-App Anton): Seite, die das Konzept erklärt, im Paket zwischen den
-    Aufgaben. Inhalt/Gestaltung (Text, Beispiele, Bilder?) vor dem Bau mit der Lehrkraft klären.
+  - Lernweg ✓, Editor (Format-Kacheln, Abschnitte, Live-Vorschau) ✓
+  - **Erklärseite im Aufgabenpaket** (ähnlich Lern-App Anton) – entschieden (2026-11-08), noch zu bauen:
+    Text + Merkkasten („Merke: …“) + Beispielsätze mit hervorgehobenen Wörtern, **keine Bilder**; frei an jeder Stelle
+    im Paket, mehrere pro Paket; **wiederverwendbar wie Aufgaben** (eigenes Format „Erklärung“ in der Aufgabenliste);
+    Knopf „Verstanden – weiter“ → zählt als erledigt im Paket (✓, „x von y geschafft“), **nie für den Lernstand**.
 
 ## Lernstand (Etappe 2)
 - Kompetenzen pro Lehrkraft (`kompetenzen`, Import aus `docs/kompetenzen.csv` per `node scripts/kompetenzen-sql.ts <uuid>`).
