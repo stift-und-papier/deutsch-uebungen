@@ -2097,3 +2097,34 @@ summary.editor-abschnitt__titel,
   gap: var(--space-3);
   margin: 0 0 var(--space-3);
 }
+
+/* ---------- Schüler:innen: Hilfe & Antworten (Klappen wie lernweg-erste) ---------- */
+
+.hilfe-abschnitt .aes-card__title {
+  margin-bottom: var(--space-2);
+}
+
+.hilfe-eintrag {
+  border-top: 1px solid var(--linie);
+  padding: var(--space-1) 0;
+}
+
+.hilfe-eintrag > p,
+.hilfe-eintrag > ul {
+  margin: 0 0 var(--space-3);
+  font-size: 17px;
+  line-height: 26px;
+}
+
+/* Schmales Handy: vier Menüpunkte unten – Beschriftung darf umbrechen statt aus der Leiste zu laufen */
+@media (max-width: 480px) {
+  .rahmen__nav {
+    gap: var(--space-1);
+  }
+  .rahmen__nav .aes-nav__item {
+    min-width: 0;
+    text-align: center;
+    white-space: normal;
+    line-height: 18px;
+  }
+}

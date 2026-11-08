@@ -98,6 +98,17 @@ export function Start({ token, daten, geschafft, basis }: Props) {
           </a>
         )}
       </section>
+
+      <section className="aes-card naechster-schritt">
+        <PixelIcon name="fragezeichen" groesse="m" />
+        <div>
+          <h2 className="aes-card__title">Hilfe & Antworten</h2>
+          <p className="seitenkopf__text">Was bedeuten die Sterne? Wer sieht meine Antworten? Hier findest du Antworten.</p>
+        </div>
+        <a className="aes-btn aes-btn--secondary" href={`#${basis}/hilfe`}>
+          Hilfe öffnen
+        </a>
+      </section>
     </>
   )
 }

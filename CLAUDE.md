@@ -85,10 +85,13 @@
   höchstens 80. Gespeichert wird der Höchststand `schueler.wiese_blumen` – die Wiese welkt nie. Keine Zahl/kein Bruch
   in der Schüleransicht, Satz unter der Szene, Anzeige nur in ganzzahligen Vielfachen (4× quer, 3× hochkant).
   Füllstände prüfen: `#/vorschau/wiese/<zahl>` (nur `npm run dev`).
-- **Schüler-Navigation:** Start (Wiese, `#/s/<token>`), Meine Übungen (`/uebungen`), Mein Lernweg (`/entwicklung`).
+- **Schüler-Navigation:** Start (Wiese, `#/s/<token>`), Meine Übungen (`/uebungen`), Mein Lernweg (`/entwicklung`), Hilfe (`/hilfe`).
+- **Hilfe & Antworten** (2026-11-08, Lehrkraft): Seite `src/schueler/Hilfe.tsx`, Texte in **`src/schueler/hilfe.md`** (ohne Code
+  änderbar; `#` Abschnitt, `##` aufklappbarer Eintrag, Parser `src/lib/hilfe.ts`). Abschnitt 1 = wörtlich Teil B aus
+  `DATENSCHUTZ.md` (beide gleich halten), Abschnitt 2 = Schülerfragen – **Antworten müssen zum Verhalten der App passen**,
+  bei Änderungen an Sternen, Wiese, Lösung ansehen usw. mit anpassen. Zugang: Kachel auf der Startseite + Menüpunkt (Icon `fragezeichen`).
 - **Offen:** Schullogo fehlt noch – Platz `logo-platz` oben in den Seitenleisten ist reserviert. Navigationspunkt
-  „Tipps“ aus dem Entwurf: Inhalt mit der Lehrkraft klären, bis dahin weggelassen (Icon `gluehbirne` dann aus
-  `design/assets/Icons/` holen; ungenutzte Icons sind bewusst nicht in der App).
+  „Tipps“ aus dem Entwurf ist durch „Hilfe“ ersetzt.
 
 ## Tests
 - `npm test` – Logik (Lückentext, Pseudonyme) + Zugriff über das Netzwerk ohne Anmeldung (`supabase/tests/netzwerk.test.ts`).

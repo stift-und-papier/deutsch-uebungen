@@ -32,3 +32,4 @@
 .aes-nav__item:has(.aes-nav__icon) { gap: 10px; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
 .aes-icon--gluehbirne { background-image: url(./icons/gluehbirne.svg); }
 .aes-icon--stern-leer { background-image: url(./icons/stern-leer.svg); }
+.aes-icon--fragezeichen { background-image: url(./icons/fragezeichen.svg); }

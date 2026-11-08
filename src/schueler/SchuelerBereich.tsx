@@ -8,6 +8,7 @@ import type { AbgabeAntwort, Loesung, SchuelerStart } from '../lib/typen'
 import { neueId } from '../lib/zufall'
 import { NAV_ICON, PixelIcon } from '../lib/icons'
 import { Entwicklung } from './Entwicklung'
+import { Hilfe } from './Hilfe'
 import { Start } from './Start'
 import {
   entwurfLesen,
@@ -114,7 +115,7 @@ export function SchuelerBereich({ token, pfad }: Props) {
       <SchuelerRahmen
         basis={basis}
         pseudonym={daten.pseudonym}
-        aktiv={bereich === 'entwicklung' ? 'lernweg' : bereich === 'uebungen' || paket ? 'uebungen' : 'start'}
+        aktiv={bereich === 'entwicklung' ? 'lernweg' : bereich === 'hilfe' ? 'hilfe' : bereich === 'uebungen' || paket ? 'uebungen' : 'start'}
       >
         {wartendHinweis}
 
@@ -124,7 +125,9 @@ export function SchuelerBereich({ token, pfad }: Props) {
           <Entwicklung token={token} pseudonym={daten.pseudonym} geschafft={geschafftGesamt} uebungen={`#${basis}/uebungen`} />
         )}
 
-        {!paket && bereich && bereich !== 'entwicklung' && (
+        {bereich === 'hilfe' && <Hilfe start={`#${basis}`} />}
+
+        {!paket && bereich && bereich !== 'entwicklung' && bereich !== 'hilfe' && (
           <>
             <header className="aes-card seitenkopf">
               <div>
@@ -302,13 +305,14 @@ function SchuelerRahmen({
 }: {
   basis: string
   pseudonym: string
-  aktiv: 'start' | 'uebungen' | 'lernweg'
+  aktiv: 'start' | 'uebungen' | 'lernweg' | 'hilfe'
   children: ReactNode
 }) {
   const eintraege = [
     { id: 'start', text: 'Start', ziel: '' },
     { id: 'uebungen', text: 'Meine Übungen', ziel: '/uebungen' },
     { id: 'lernweg', text: 'Mein Lernweg', ziel: '/entwicklung' },
+    { id: 'hilfe', text: 'Hilfe', ziel: '/hilfe' },
   ] as const
   return (
     <div className="wiese rahmen">

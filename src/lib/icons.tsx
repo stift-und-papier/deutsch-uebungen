@@ -6,7 +6,7 @@ export type IconName =
   | 'luecke' | 'auswahl' | 'zuordnen' | 'lupe' | 'reihenfolge' | 'dokument'
   | 'buchstabe' | 'bausteine' | 'satz' | 'stift' | 'zeichen' | 'sprechblase'
   | 'blume' | 'spross' | 'giesskanne' | 'samen'
-  | 'stern' | 'stern-leer' | 'paket' | 'gluehbirne'
+  | 'stern' | 'stern-leer' | 'paket' | 'gluehbirne' | 'fragezeichen'
 
 // Aufgabenformat → Icon (Kopf der Aufgabe)
 export const FORMAT_ICON: Record<string, IconName> = {
@@ -39,7 +39,7 @@ export const ENTWICKLUNG_ICON: Record<'stark' | 'gut' | 'dran' | 'sammeln', Icon
 }
 
 // Navigation der Schüleransicht
-export const NAV_ICON = { start: 'haus', uebungen: 'buch', lernweg: 'flagge' } as const
+export const NAV_ICON = { start: 'haus', uebungen: 'buch', lernweg: 'flagge', hilfe: 'fragezeichen' } as const
 
 type Props = { name: IconName | undefined; groesse?: 'm' | 'l' | 'xl' }
 
