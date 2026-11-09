@@ -147,7 +147,19 @@ export type Kompetenz = {
   sortierung: number
 }
 
-export type Paket ={ id: string; titel: string; beschreibung: string | null; erstellt_am: string }
+// Tags eines Pakets (nur Lehrkraft): einzelne Jahrgänge und Schulzweige, je mehrere möglich
+export const JAHRGAENGE = [5, 6, 7, 8, 9, 10] as const
+export const ZWEIGE = ['Hauptschule', 'Realschule', 'Gymnasium'] as const
+export type Zweig = (typeof ZWEIGE)[number]
+
+export type Paket = {
+  id: string
+  titel: string
+  beschreibung: string | null
+  jahrgaenge: number[]
+  zweige: Zweig[]
+  erstellt_am: string
+}
 
 export type PaketAufgabe = { paket_id: string; aufgabe_id: string; position: number }
 

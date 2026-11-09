@@ -715,6 +715,29 @@ begin
     ok := ok || '4.6 Ergebnisse zurücksetzen: nur eigene, Antworten/Lösungen/Stufen/Wiese weg, manuelle Stufe bleibt'::text;
   end;
 
+  -- 4.7 Paket-Tags: nur erlaubte Werte, fremde Pakete nicht änderbar
+  begin
+    set local role authenticated;
+    perform set_config('request.jwt.claims', json_build_object('sub', c_lk_a, 'role', 'authenticated')::text, true);
+    update public.pakete set jahrgaenge = '{5,6}', zweige = '{Realschule,Gymnasium}' where owner = c_lk_a;
+    if not found then raise exception 'FEHLGESCHLAGEN: A kann Tags nicht setzen'; end if;
+    begin
+      update public.pakete set jahrgaenge = '{4}' where owner = c_lk_a;
+      raise exception 'FEHLGESCHLAGEN: Jahrgang 4 erlaubt';
+    exception when check_violation then null;
+    end;
+    begin
+      update public.pakete set zweige = '{Oberschule}' where owner = c_lk_a;
+      raise exception 'FEHLGESCHLAGEN: unbekannter Zweig erlaubt';
+    exception when check_violation then null;
+    end;
+    perform set_config('request.jwt.claims', json_build_object('sub', c_lk_b, 'role', 'authenticated')::text, true);
+    update public.pakete set jahrgaenge = '{10}' where owner = c_lk_a;
+    if found then raise exception 'FEHLGESCHLAGEN: B ändert Tags von A'; end if;
+    reset role;
+    ok := ok || '4.7 Paket-Tags: nur Jahrgang 5–10 und HS/RS/Gym, nur eigene Pakete'::text;
+  end;
+
   -- Alles rückgängig machen und Ergebnis melden
   raise exception 'ALLE TESTS BESTANDEN (%): %', array_length(ok, 1), array_to_string(ok, ' | ');
 end

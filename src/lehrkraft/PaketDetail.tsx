@@ -7,6 +7,7 @@ import { stufeAus, sternText, type Aufgabe, type Klasse, type Paket, type PaketA
 import { Sterne } from '../gemeinsam/Sterne'
 import { ohneLoesung } from '../lib/lueckentext'
 import { TYP_NAMEN } from './AufgabenListe'
+import { PaketTags, TagAuswahl } from './PaketTags'
 
 type Daten = {
   paket: Paket
@@ -241,14 +242,16 @@ function PaketKopf({ paket, onGeaendert, onFehler }: { paket: Paket; onGeaendert
   const [bearbeiten, setBearbeiten] = useState(false)
   const [titel, setTitel] = useState(paket.titel)
   const [beschreibung, setBeschreibung] = useState(paket.beschreibung ?? '')
+  const [tags, setTags] = useState({ jahrgaenge: paket.jahrgaenge, zweige: paket.zweige })
 
   if (!bearbeiten) {
     return (
       <>
         <h1>{paket.titel}</h1>
         {paket.beschreibung && <p>{paket.beschreibung}</p>}
+        <PaketTags jahrgaenge={paket.jahrgaenge} zweige={paket.zweige} />
         <button className="aes-btn aes-btn--ghost aes-btn--klein" onClick={() => setBearbeiten(true)}>
-          Titel/Beschreibung ändern
+          Titel, Beschreibung, Tags ändern
         </button>
       </>
     )
@@ -260,7 +263,7 @@ function PaketKopf({ paket, onGeaendert, onFehler }: { paket: Paket; onGeaendert
         e.preventDefault()
         const { error } = await supabase
           .from('pakete')
-          .update({ titel: titel.trim(), beschreibung: beschreibung.trim() || null })
+          .update({ titel: titel.trim(), beschreibung: beschreibung.trim() || null, ...tags })
           .eq('id', paket.id)
         if (error) return onFehler(fehlerText(error))
         setBearbeiten(false)
@@ -275,6 +278,7 @@ function PaketKopf({ paket, onGeaendert, onFehler }: { paket: Paket; onGeaendert
         Beschreibung für Schüler:innen (optional)
         <input value={beschreibung} onChange={(e) => setBeschreibung(e.target.value)} />
       </label>
+      <TagAuswahl wert={tags} onChange={setTags} />
       <button className="aes-btn aes-btn--primary">Speichern</button>
     </form>
   )

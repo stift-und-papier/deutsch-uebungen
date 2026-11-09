@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import type { Paket } from '../lib/typen'
 import { LEERER_FILTER, passt } from '../lib/filter'
 import { ListenFilter, useKompetenzen } from './ListenFilter'
+import { PaketTags, TagAuswahl } from './PaketTags'
 
 // Kompetenzen eines Pakets = die seiner Aufgaben
 type PaketMitAnzahl = Paket & {
@@ -15,6 +16,7 @@ type PaketMitAnzahl = Paket & {
 export function PaketListe() {
   const [pakete, setPakete] = useState<PaketMitAnzahl[] | null>(null)
   const [titel, setTitel] = useState('')
+  const [tags, setTags] = useState<Pick<Paket, 'jahrgaenge' | 'zweige'>>({ jahrgaenge: [], zweige: [] })
   const [fehler, setFehler] = useState<string | null>(null)
   const [filter, setFilter] = useState(LEERER_FILTER)
   const kompetenzen = useKompetenzen(setFehler)
@@ -63,22 +65,25 @@ export function PaketListe() {
         <ul className="kachelliste">
           {gefiltert.map((p) => (
             <li key={p.id}>
-              <a className="kachel" href={`#/lehrkraft/pakete/${p.id}`}>
-                <strong>{p.titel}</strong>
-                <span className="klein">
-                  {p.paket_aufgaben.length} Aufgaben ·{' '}
-                  {(p.zuweisungen[0]?.count ?? 0) === 0 ? 'noch nicht zugewiesen' : `${p.zuweisungen[0].count}× zugewiesen`}
+              <a className="kachel kachel--mit-tags" href={`#/lehrkraft/pakete/${p.id}`}>
+                <span className="kachel__text">
+                  <strong>{p.titel}</strong>
+                  <span className="klein">
+                    {p.paket_aufgaben.length} Aufgaben ·{' '}
+                    {(p.zuweisungen[0]?.count ?? 0) === 0 ? 'noch nicht zugewiesen' : `${p.zuweisungen[0].count}× zugewiesen`}
+                  </span>
                 </span>
+                <PaketTags jahrgaenge={p.jahrgaenge} zweige={p.zweige} />
               </a>
             </li>
           ))}
         </ul>
       )}
       <form
-        className="formular zeile"
+        className="formular"
         onSubmit={async (e) => {
           e.preventDefault()
-          const { data, error } = await supabase.from('pakete').insert({ titel: titel.trim() }).select('id').single()
+          const { data, error } = await supabase.from('pakete').insert({ titel: titel.trim(), ...tags }).select('id').single()
           if (error) setFehler(fehlerText(error))
           else gehe(`/lehrkraft/pakete/${data.id}`)
         }}
@@ -87,6 +92,7 @@ export function PaketListe() {
           Neues Paket
           <input value={titel} onChange={(e) => setTitel(e.target.value)} placeholder="z. B. das oder dass – Übung 1" required maxLength={120} />
         </label>
+        <TagAuswahl wert={tags} onChange={setTags} />
         <button className="aes-btn aes-btn--primary">Anlegen</button>
       </form>
     </>

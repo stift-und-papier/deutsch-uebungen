@@ -133,6 +133,11 @@
 - **Aufgabenliste sortierbar** (2026-11-08, ROADMAP 1): Spaltenköpfe Titel/Format/Stufe antippen (gleiche Spalte = Richtung
   umdrehen, ▲/▼/↕ + `aria-sort`). Stufe 1 → 2 → 3 Sterne, Erklärseiten immer am Ende, Gleichstand nach Titel; Format nach
   angezeigtem Namen; ohne Klick „zuletzt geändert zuerst“. Logik `src/lib/sortierung.ts` (getestet).
+- **Paket-Tags** (2026-11-09, ROADMAP 2, Lehrkraft): `pakete.jahrgaenge` (einzelne Jahrgänge 5–10) und `pakete.zweige`
+  (Hauptschule/Realschule/Gymnasium), je mehrere, per CHECK auf erlaubte Werte begrenzt (Migration `20261109100000`, DB-Test 4.7).
+  Setzbar beim Anlegen und unter „Titel, Beschreibung, Tags ändern“; sichtbar rechts in der Paketübersicht und im Paketkopf
+  (`src/lehrkraft/PaketTags.tsx`). Nicht im Filter.
+- **Aufgabenbibliothek** (ROADMAP 3): Entscheidung Lehrkraft: Übernahme = **Kopie**. Konten-Frage noch offen → wartet.
 - **Usability-Überarbeitung (Wunsch der Lehrkraft, 2026-11-08):**
   - Lernweg entschlacken (nächster Schritt oben, nach Bereich gruppiert, schlanke Zeilen, Ungeübtes eingeklappt).
   - Editor: „+ Neue Aufgabe“ → Seite mit **anklickbaren Format-Kacheln** (Icon, ein Satz, Mini-Beispiel); Format auch im
