@@ -2128,3 +2128,32 @@ summary.editor-abschnitt__titel,
     line-height: 18px;
   }
 }
+
+/* ---------- Sortierbare Spaltenköpfe (Aufgabenliste der Lehrkraft) ---------- */
+/* Der ganze Kopf ist die Tippfläche; Pfeil ▲/▼ zeigt die Richtung (nicht nur Farbe), ↕ = noch nicht sortiert */
+.sortier-knopf {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tipp-min);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sortier-knopf__pfeil {
+  color: var(--tinte-gedaempft);
+}
+
+th[aria-sort] .sortier-knopf {
+  color: var(--schulblau);
+}
+
+th[aria-sort] .sortier-knopf__pfeil {
+  color: var(--schulblau);
+}

@@ -130,6 +130,9 @@
   (KC-Stufe Ende Jg. 6/8/10 → 5/6, 7/8, 9/10; „6-10“ passt überall; „ohne Kompetenz-Zuordnung“), Bereich, einzelne
   Kompetenz. Alle Merkmale müssen bei derselben Kompetenz zutreffen. Logik `src/lib/filter.ts` (getestet),
   Leiste `src/lehrkraft/ListenFilter.tsx`; Pakete erben die Kompetenzen ihrer Aufgaben.
+- **Aufgabenliste sortierbar** (2026-11-08, ROADMAP 1): Spaltenköpfe Titel/Format/Stufe antippen (gleiche Spalte = Richtung
+  umdrehen, ▲/▼/↕ + `aria-sort`). Stufe 1 → 2 → 3 Sterne, Erklärseiten immer am Ende, Gleichstand nach Titel; Format nach
+  angezeigtem Namen; ohne Klick „zuletzt geändert zuerst“. Logik `src/lib/sortierung.ts` (getestet).
 - **Usability-Überarbeitung (Wunsch der Lehrkraft, 2026-11-08):**
   - Lernweg entschlacken (nächster Schritt oben, nach Bereich gruppiert, schlanke Zeilen, Ungeübtes eingeklappt).
   - Editor: „+ Neue Aufgabe“ → Seite mit **anklickbaren Format-Kacheln** (Icon, ein Satz, Mini-Beispiel); Format auch im

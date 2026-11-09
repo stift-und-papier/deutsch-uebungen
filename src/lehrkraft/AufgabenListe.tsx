@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react'
 import { fehlerText } from '../lib/fehler'
 import { LEERER_FILTER, passt } from '../lib/filter'
+import { naechsteSortierung, sortiere, type Sortierung, type Spalte } from '../lib/sortierung'
 import { supabase } from '../lib/supabase'
 import { stufeAus, type Aufgabe } from '../lib/typen'
 import { Sterne } from '../gemeinsam/Sterne'
 import { ListenFilter, useKompetenzen } from './ListenFilter'
 
 export const TYP_NAMEN: Record<Aufgabe['typ'], string> = { lueckentext: 'Lückentext', auswahl: 'Auswahl', zuordnen: 'Zuordnen', fehler: 'Fehler finden', reihenfolge: 'Reihenfolge', ueberarbeiten: 'Sätze verbessern', erklaerung: 'Erklärung' }
+
+const SPALTEN: { spalte: Spalte; name: string }[] = [
+  { spalte: 'titel', name: 'Titel' },
+  { spalte: 'format', name: 'Format' },
+  { spalte: 'stufe', name: 'Stufe' },
+]
 
 type AufgabeMitKompetenzen = Aufgabe & { aufgabe_kompetenzen: { kompetenz_id: string }[] }
 
@@ -15,6 +22,8 @@ export function AufgabenListe() {
   const [fehler, setFehler] = useState<string | null>(null)
   const [filter, setFilter] = useState(LEERER_FILTER)
   const kompetenzen = useKompetenzen(setFehler)
+  // null = wie geladen (zuletzt geändert zuerst)
+  const [sortierung, setSortierung] = useState<Sortierung>(null)
 
   useEffect(() => {
     void supabase
@@ -29,6 +38,7 @@ export function AufgabenListe() {
   const gefiltert = aufgaben?.filter(
     (a) => !(filter.jahrgang === 'ohne' && a.typ === 'erklaerung') && passt(a.titel, ids(a), filter, kompetenzen),
   )
+  const sortiert = gefiltert && sortiere(gefiltert, sortierung, (typ) => TYP_NAMEN[typ])
   const verwendet = [...new Set((aufgaben ?? []).flatMap(ids))].flatMap((id) => kompetenzen.get(id) ?? [])
 
   return (
@@ -60,13 +70,24 @@ export function AufgabenListe() {
         <table className="tabelle">
           <thead>
             <tr>
-              <th>Titel</th>
-              <th>Format</th>
-              <th>Stufe</th>
+              {SPALTEN.map(({ spalte, name }) => {
+                const aktiv = sortierung?.spalte === spalte
+                const richtung = aktiv ? (sortierung.absteigend ? 'descending' : 'ascending') : undefined
+                return (
+                  <th key={spalte} aria-sort={richtung}>
+                    <button type="button" className="sortier-knopf" onClick={() => setSortierung(naechsteSortierung(sortierung, spalte))}>
+                      {name}
+                      <span className="sortier-knopf__pfeil" aria-hidden="true">
+                        {aktiv ? (sortierung.absteigend ? '▼' : '▲') : '↕'}
+                      </span>
+                    </button>
+                  </th>
+                )
+              })}
             </tr>
           </thead>
           <tbody>
-            {gefiltert.map((a) => (
+            {sortiert?.map((a) => (
               <tr key={a.id}>
                 <td>
                   <a href={`#/lehrkraft/aufgaben/${a.id}`}>{a.titel}</a>
